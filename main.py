@@ -44,15 +44,16 @@ def build_tree(dot, node, parser, parent=None):
         for child in node.children:
             build_tree(dot, child, parser, node)
 def main():
-        # Set up command line argument parsing
-    parser = argparse.ArgumentParser(description='Process some file.')
-    parser.add_argument('input_file', type=str, help='The input file to process.')
+    #     # Set up command line argument parsing
+    # parser = argparse.ArgumentParser(description='Process some file.')
+    # parser.add_argument('input_file', type=str, help='The input file to process.')
 
-    # Parse command line arguments
-    args = parser.parse_args()
+    # # Parse command line arguments
+    # args = parser.parse_args()
 
     # Set up the input and lexer
-    input_stream = FileStream(args.input_file)
+    #input_stream = FileStream(args.input_file)
+    input_stream = FileStream('./inputF.txt')
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()

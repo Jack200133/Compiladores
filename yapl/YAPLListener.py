@@ -44,6 +44,15 @@ class YAPLListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by YAPLParser#returnFunc.
+    def enterReturnFunc(self, ctx:YAPLParser.ReturnFuncContext):
+        pass
+
+    # Exit a parse tree produced by YAPLParser#returnFunc.
+    def exitReturnFunc(self, ctx:YAPLParser.ReturnFuncContext):
+        pass
+
+
     # Enter a parse tree produced by YAPLParser#expr.
     def enterExpr(self, ctx:YAPLParser.ExprContext):
         pass

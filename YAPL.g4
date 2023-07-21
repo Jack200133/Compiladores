@@ -24,8 +24,7 @@ LET: 'let';
 INT: [0-9]+; // Enteros
 TYPE_ID: [A-Z][a-z0-9_]*; // Identificadores de tipos
 ID: [a-z][a-zA-Z0-9_]*; // Identificadores
-STRING: '"' ~[\r\n]{0,255}? '"' { getText().length() <= 257 }?; // Limitado a 255 caracteres sin contar comillas
-INVALID_STRING: '"' ~[\r\n]* '"'; // Cualquier otro string que no cumple con las restricciones
+STRING: '"' (~["\r\n\\] | '\\' ["\\/bfnrt])* '"';
 
 // Identificadores
 SELF: 'self';
@@ -63,10 +62,11 @@ ERROR: . ;
 
 program: (classDef SEMI)+ EOF;
 classDef : CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (featureDef SEMI)* RBRACE ;
-featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE expr RBRACE
+featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
            | ID DOBLE TYPE_ID (LEFT_ARROW expr)?
            ;
 formalDef: ID DOBLE TYPE_ID ;
+returnFunc: 'return' expr SEMI;
 
 expr : ID LEFT_ARROW expr
     | expr (AT TYPE_ID)? DOT ID LPAREN (expr (COMMA expr)*)? RPAREN
