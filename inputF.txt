@@ -1,29 +1,30 @@
-class Plain inherits Vehicle {
-    radius: Int <- 10;
-    color: String <- "Red";
-    diameter() : Int {
-        radius * 2
+class Moto inherits Vehiculo {
+    velocidadMaxima: Int <- 100;
+    color: String <- "Rojo";
+    obtenerVelocidadMaxima() : Int {
+        return velocidadMaxima * 2;
     };
     getArea() : Int {
         if true then 
-            radius <- 8
+            velocidadMaxima <- 80
         else 
-            radius <- 4
+            velocidadMaxima <- 40
         fi
-        return 3 * radius * radius;
+        return 3 * velocidadMaxima * velocidadMaxima;
     };
     getColor() : String {
         return color;
     };
 } ;
 
-class Rectangle inherits Shape {
-    length: Int <- 5;
-    width: Int <- 10;
+class Coche inherits Vehiculo {
+    longitud: Int <- 5;
+    ancho: Int <- 10;
     getArea() : Int {
-        while length < width loop {
-            length <- length + 1;
-        } pool
-        return length * width;
+        while longitud < ancho loop {
+            longitud <- longitud + 1;
+        }
+        pool
+        return longitud * ancho;
     };
-};
+} ;

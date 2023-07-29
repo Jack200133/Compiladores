@@ -1,24 +1,24 @@
 grammar YAPL;
 
 // Palabras reservadas
-CLASS: 'class';
-ELSE: 'else';
+CLASS: 'class'|'CLASS';
+ELSE: 'else'|'ELSE';
 FALSE: 'false';
-FI: 'fi';
-IF: 'if';
-IN: 'in';
-INHERITS: 'inherits';
-ISVOID: 'isvoid';
-LOOP: 'loop';
-POOL: 'pool';
-THEN: 'then';
-WHILE: 'while';
-NEW: 'new';
-NOT: 'not';
 TRUE: 'true';
-AND: 'and';
-OR: 'or';
-LET: 'let';
+FI: 'fi'|'FI';
+IF: 'if'|'IF';
+IN: 'in'|'IN';
+INHERITS: 'inherits'|'INHERITS';
+ISVOID: 'isvoid'|'ISVOID';
+LOOP: 'loop'|'LOOP';
+POOL: 'pool'|'POOL';
+THEN: 'then'|'THEN';
+WHILE: 'while'|'WHILE';
+NEW: 'new'|'NEW';
+NOT: 'not'|'NOT';
+AND: 'and'|'AND';
+OR: 'or'|'OR';
+LET: 'let'|'LET';
 
 // Reglas lexicas
 INT: [0-9]+; // Enteros
@@ -68,8 +68,7 @@ featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRA
 formalDef: ID DOBLE TYPE_ID ;
 returnFunc: 'return' expr SEMI;
 
-expr : ID LEFT_ARROW expr
-    | expr (AT TYPE_ID)? DOT ID LPAREN (expr (COMMA expr)*)? RPAREN
+expr : expr (AT TYPE_ID)? DOT ID LPAREN (expr (COMMA expr)*)? RPAREN
     | ID LPAREN (expr (COMMA expr)*)? RPAREN
     | IF expr THEN expr ELSE expr FI
     | WHILE expr LOOP expr POOL
@@ -77,10 +76,10 @@ expr : ID LEFT_ARROW expr
     | LET ID DOBLE TYPE_ID (LEFT_ARROW expr)? (COMMA ID DOBLE TYPE_ID (LEFT_ARROW expr)?)* IN expr
     | NEW TYPE_ID
     | ISVOID expr
-    | expr PLUS expr
-    | expr MINUS expr
-    | expr MULT expr
     | expr DIV expr
+    | expr MULT expr
+    | expr MINUS expr
+    | expr PLUS expr
     | TILDE expr
     | expr LESS_THAN expr
     | expr LESS_THAN EQ expr
@@ -92,4 +91,5 @@ expr : ID LEFT_ARROW expr
     | STRING
     | TRUE
     | FALSE   
+    | ID LEFT_ARROW expr
     ;

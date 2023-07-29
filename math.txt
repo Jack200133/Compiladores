@@ -1,0 +1,14 @@
+class Math {
+	a : Int;
+	b : Int;
+	c : Bool;
+
+	main() : Int {
+		{
+		a <- 1;
+        b <- 2;
+        c <- true;
+        c <- a+ b * c ;
+		}
+    };
+};
