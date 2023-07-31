@@ -107,7 +107,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         # Si es terminal regresar el tipo
         if isinstance(node, TerminalNode):
-            result = node.getSymbol().type
+            pass
+            # result = node.getSymbol().type
         # Aquí puedes poner código adicional que se ejecuta después de visitar todos los hijos del nodo.
 
         return result
@@ -120,8 +121,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
         return self.visitChildren(ctx)
     
     def visitClassDef(self, ctx: YAPLParser.ClassDefContext):
-        print(f"Visitando clase: {ctx.TYPE_ID().getText()}")
-        class_name = ctx.TYPE_ID().getText()
+        print(f"Visitando clase:")
+        class_name = ctx.TYPE_ID()[0].getText()
         symbol = Symbol(class_name, 'Class')
         self.symbol_table.add(symbol)
         return self.visitChildren(ctx)
@@ -152,11 +153,12 @@ class SemanticAnalyzer(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
     def visitExpr(self, ctx: YAPLParser.ExprContext):
-        print(f"Visitando expresión: {ctx.getText()}")
-        if ctx.PLUS():
-            self.verify_operation(ctx, ctx.PLUS().getText())
-        elif ctx.MINUS():
-            self.verify_operation(ctx, ctx.MINUS().getText())
+        #print(ctx)
+        #print(f"Visitando expresión: {ctx.getText()}")
+        # if ctx.PLUS():
+        #     self.verify_operation(ctx, ctx.PLUS().getText())
+        # elif ctx.MINUS():
+        #     self.verify_operation(ctx, ctx.MINUS().getText())
         # Agrega aquí más operadores según sea necesario
 
         return self.visitChildren(ctx)
@@ -222,6 +224,10 @@ def main():
         dot.view()
         semantic_analyzer = SemanticAnalyzer()
         semantic_analyzer.visit(tree)
+        print("\nTabla de Símbolos:")
+        print("Nombre\t\tTipo")
+        for symbol, value in semantic_analyzer.symbol_table.table.items():
+            print(f"{symbol}\t\t{value.type}")
 
 
 if __name__ == '__main__':
