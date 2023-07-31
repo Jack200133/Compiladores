@@ -6,7 +6,7 @@ from antlr4.error.ErrorListener import ErrorListener
 from yapl.YAPLLexer import YAPLLexer
 from yapl.YAPLParser import YAPLParser
 from yapl.YAPLListener import YAPLListener
-
+import os
 
 class MyErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
@@ -49,7 +49,10 @@ class SymboTable:
         self.table[symbol.name] = symbol
     
     def lookup(self, name):
-        return self.table[name]
+        if name in self.table:
+            return self.table[name]
+        else:
+            return None
     
     def __str__(self):
         return str(self.table)
@@ -142,10 +145,16 @@ class SemanticAnalyzer(ParseTreeVisitor):
     def visitFormalDef(self, ctx: YAPLParser.FormalDefContext):
         name = ctx.ID().getText()
         type = ctx.TYPE_ID().getText()
-        symbol = Symbol(name, type)
-        self.symbol_table.add(symbol)
-        return self.visitChildren(ctx)
+        # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
+        if self.symbol_table.lookup(name) is not None:
+            print(
+                f"Error semántico: el símbolo '{name}' ya ha sido declarado en el ámbito actual.")
+        else:
+            # Si el nombre del símbolo no está en la tabla, agregarlo como nuevo símbolo.
+            symbol = Symbol(name, type)
+            self.symbol_table.add(symbol)
 
+        return self.visitChildren(ctx)
     def visitReturnFunc(self, ctx: YAPLParser.ReturnFuncContext):
         expr_type = self.visit(ctx.expr())
         if not self.type_system.check(expr_type, 'Int'):  # Reemplazar 'Int' con el tipo de retorno esperado
@@ -193,7 +202,12 @@ def main():
 
     # # # Parse command line arguments
     # args = parser.parse_args()
-
+    
+    # Verifica si Graphviz está instalado y agregado al PATH del sistema
+    # Si no lo está, agrega la ubicación correcta del ejecutable "dot"
+    if "C:\\Program Files\\Graphviz\\bin" not in os.environ['PATH']:
+        os.environ['PATH'] += os.pathsep + "C:\\Program Files\\Graphviz\\bin"
+        
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
     input_stream = FileStream('./math.txt')
