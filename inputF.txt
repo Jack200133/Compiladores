@@ -1,6 +1,10 @@
 class Moto inherits Vehiculo {
     velocidadMaxima: Int <- 100;
     color: String <- "Rojo";
+
+
+    puertas: Int <- velocidadMaxima / 2;
+
     obtenerVelocidadMaxima() : Int {
         return velocidadMaxima * 2;
     };

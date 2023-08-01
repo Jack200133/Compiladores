@@ -34,12 +34,14 @@ class MyErrorListener(ErrorListener):
 
 
 class Symbol:
-    def __init__(self, name, type):
+    def __init__(self, name, _type, definicion=None, derivation=None):
         self.name = name
-        self.type = type
+        self.type = _type
+        self.definicion = definicion
+        self.derivation = derivation
 
     def __str__(self):
-        return f"{self.name} : {self.type}"
+        return f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}"
 
 class SymboTable:
     def __init__(self):
@@ -47,16 +49,18 @@ class SymboTable:
 
     def add(self, symbol):
         self.table[symbol.name] = symbol
-    
+
     def lookup(self, name):
         if name in self.table:
             return self.table[name]
         else:
             return None
-    
-    def __str__(self):
-        return str(self.table)
-    
+
+    def display(self):
+        print("Tabla de Símbolos:")
+        print("Nombre\tTipo\tdefinicion\tderivation")
+        for name, symbol in self.table.items():
+            print(str(symbol))
 
 class TypeSystem:
     def __init__(self):
@@ -99,6 +103,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
             result = self.visitReturnFunc(tree)
         elif isinstance(tree, YAPLParser.ExprContext):
             result = self.visitExpr(tree)
+        else:
+            result = self.visitChildren(tree)
 
         return result
 
@@ -119,15 +125,22 @@ class SemanticAnalyzer(ParseTreeVisitor):
     
 
     def visitProgram(self, ctx: YAPLParser.ProgramContext):
-        print("Programa analizado correctamente.")
+        #print("Programa analizado correctamente.")
         self.symbol_table = SymboTable()
         return self.visitChildren(ctx)
     
     def visitClassDef(self, ctx: YAPLParser.ClassDefContext):
-        print(f"Visitando clase:")
+        #print(f"Visitando clase:")
         class_name = ctx.TYPE_ID()[0].getText()
-        symbol = Symbol(class_name, 'Class')
-        self.symbol_table.add(symbol)
+
+            # Comprobando si la clase hereda de otra
+        inherits_from = None
+        if ctx.INHERITS():
+            inherits_from = ctx.TYPE_ID()[1].getText()  # El segundo TYPE_ID debe ser la clase de la que se hereda
+        definition = Symbol(class_name, 'Class','ClassDef' ,f"{class_name} -> {inherits_from}")
+
+        #symbol = Symbol(class_name, 'Class')
+        self.symbol_table.add(definition)
         return self.visitChildren(ctx)
     
     # featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
@@ -135,10 +148,16 @@ class SemanticAnalyzer(ParseTreeVisitor):
     #       ;
 
     def visitFeatureDef(self, ctx: YAPLParser.FeatureDefContext):
-        print(f"Visitando función: {ctx.ID().getText()}")
+        # #print(f"Visitando función: {ctx.ID().getText()}")
         name = ctx.ID().getText()
         type = ctx.TYPE_ID().getText()
-        symbol = Symbol(name, type)
+
+        class_context = ctx.parentCtx
+        class_name = class_context.TYPE_ID()[0].getText()
+
+        symbol = Symbol(name, type, 'FeatureDef', f"{class_name}.{name} -> {type}")
+
+        #symbol = Symbol(name, type)
         self.symbol_table.add(symbol)
         return self.visitChildren(ctx)
     
@@ -147,18 +166,20 @@ class SemanticAnalyzer(ParseTreeVisitor):
         type = ctx.TYPE_ID().getText()
         # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
         if self.symbol_table.lookup(name) is not None:
-            print(
-                f"Error semántico: el símbolo '{name}' ya ha sido declarado en el ámbito actual.")
+            pass
+            #print(f"Error semántico: el símbolo '{name}' ya ha sido declarado en el ámbito actual.")
         else:
             # Si el nombre del símbolo no está en la tabla, agregarlo como nuevo símbolo.
-            symbol = Symbol(name, type)
+
+            symbol = Symbol(name, type, 'FormalDef', f"{name} -> {type}")
             self.symbol_table.add(symbol)
 
         return self.visitChildren(ctx)
     def visitReturnFunc(self, ctx: YAPLParser.ReturnFuncContext):
         expr_type = self.visit(ctx.expr())
         if not self.type_system.check(expr_type, 'Int'):  # Reemplazar 'Int' con el tipo de retorno esperado
-            print(f"Error semántico: tipo de retorno incorrecto para función, esperado Int pero se obtuvo {expr_type}")
+            pass
+            #print(f"Error semántico: tipo de retorno incorrecto para función, esperado Int pero se obtuvo {expr_type}")
         return self.visitChildren(ctx)
 
     def visitExpr(self, ctx: YAPLParser.ExprContext):
@@ -205,12 +226,12 @@ def main():
     
     # Verifica si Graphviz está instalado y agregado al PATH del sistema
     # Si no lo está, agrega la ubicación correcta del ejecutable "dot"
-    if "C:\\Program Files\\Graphviz\\bin" not in os.environ['PATH']:
-        os.environ['PATH'] += os.pathsep + "C:\\Program Files\\Graphviz\\bin"
+    # if "C:\\Program Files\\Graphviz\\bin" not in os.environ['PATH']:
+    #     os.environ['PATH'] += os.pathsep + "C:\\Program Files\\Graphviz\\bin"
         
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./math.txt')
+    input_stream = FileStream('./shapes.txt')
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()
@@ -242,6 +263,9 @@ def main():
         print("Nombre\t\tTipo")
         for symbol, value in semantic_analyzer.symbol_table.table.items():
             print(f"{symbol}\t\t{value.type}")
+
+        print("\n\nTipos:")
+        semantic_analyzer.symbol_table.display()
 
 
 if __name__ == '__main__':
