@@ -55,6 +55,12 @@ class SymboTable:
             return self.table[name]
         else:
             return None
+        
+    def replace(self, symbol):
+        self.table[symbol.name] = symbol
+
+    def delete(self, name):
+        del self.table[name]
 
     def display(self):
         print("Tabla de Símbolos:")
