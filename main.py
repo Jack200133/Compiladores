@@ -34,21 +34,25 @@ class MyErrorListener(ErrorListener):
 
 
 class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None):
+    def __init__(self, name, _type, definicion=None, derivation=None,scope = None):
         self.name = name
         self.type = _type
         self.definicion = definicion
         self.derivation = derivation
+        self.scope = scope
 
     def __str__(self):
-        return f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}"
+        if len(self.name) < 8:
+            return f"{self.name}\t\t{self.type}\t{self.definicion}\t{self.derivation}"
+        else:
+            return f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}"
 
 class SymboTable:
     def __init__(self):
         self.table = {}
 
     def add(self, symbol):
-        self.table[symbol.name] = symbol
+        self.table[symbol.scope] = symbol
 
     def lookup(self, name):
         if name in self.table:
@@ -57,14 +61,14 @@ class SymboTable:
             return None
         
     def replace(self, symbol):
-        self.table[symbol.name] = symbol
+        self.table[symbol.scope] = symbol
 
     def delete(self, name):
         del self.table[name]
 
     def display(self):
         print("Tabla de Símbolos:")
-        print("Nombre\tTipo\tdefinicion\tderivation")
+        print("Nombre\t\tTipo\tdefinicion\tderivation")
         for name, symbol in self.table.items():
             print(str(symbol))
 
@@ -93,7 +97,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
     def visit(self, tree):
         # Obten el método de visita apropiado para el tipo de nodo.
-        result = self.visitChildren(tree)
+        # result = self.visitChildren(tree)
 
         # Aquí puedes poner código adicional que se ejecuta después de visitar el nodo.
         # Segun el tipo de nodo, vamosa llamar a su funcion visit
@@ -143,7 +147,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         inherits_from = None
         if ctx.INHERITS():
             inherits_from = ctx.TYPE_ID()[1].getText()  # El segundo TYPE_ID debe ser la clase de la que se hereda
-        definition = Symbol(class_name, 'Class','ClassDef' ,f"{class_name} -> {inherits_from}")
+        definition = Symbol(class_name, 'Class','ClassDef' ,f"{class_name} -> {inherits_from}",f"{inherits_from}.{class_name}")
 
         #symbol = Symbol(class_name, 'Class')
         self.symbol_table.add(definition)
@@ -160,8 +164,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         class_context = ctx.parentCtx
         class_name = class_context.TYPE_ID()[0].getText()
+        dev = f"{class_name}.{name}"
 
-        symbol = Symbol(name, type, 'FeatureDef', f"{class_name}.{name} -> {type}")
+        symbol = Symbol(name, type, 'FeatureDef', f"{dev} -> {type}",f"{dev}.{name}")
 
         #symbol = Symbol(name, type)
         self.symbol_table.add(symbol)
@@ -169,7 +174,15 @@ class SemanticAnalyzer(ParseTreeVisitor):
     
     def visitFormalDef(self, ctx: YAPLParser.FormalDefContext):
         name = ctx.ID().getText()
+        print(ctx.ID())
         type = ctx.TYPE_ID().getText()
+
+
+        # Verificar de que featureDef proviene
+        feature_context = ctx.parentCtx
+        feature_name = feature_context.ID().getText()
+        print(feature_name)
+
         # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
         if self.symbol_table.lookup(name) is not None:
             pass
@@ -177,7 +190,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         else:
             # Si el nombre del símbolo no está en la tabla, agregarlo como nuevo símbolo.
 
-            symbol = Symbol(name, type, 'FormalDef', f"{name} -> {type}")
+            symbol = Symbol(name, type, 'FormalDef', f"{feature_name}.{name} -> {type}",f"{feature_name}.{name}")
             self.symbol_table.add(symbol)
 
         return self.visitChildren(ctx)
@@ -189,8 +202,16 @@ class SemanticAnalyzer(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
     def visitExpr(self, ctx: YAPLParser.ExprContext):
-        #print(ctx)
-        #print(f"Visitando expresión: {ctx.getText()}")
+        print(ctx)
+        print(f"Visitando expresión: {ctx.getText()}")
+
+        print(ctx.start.type, YAPLParser.TRUE, YAPLParser.STRING,ctx.MULT(),ctx.TRUE())
+        #symbol = self.symbol_table.lookup(ctx.ID().getText())
+
+       #print(symbol)
+        
+            
+
         # if ctx.PLUS():
         #     self.verify_operation(ctx, ctx.PLUS().getText())
         # elif ctx.MINUS():
