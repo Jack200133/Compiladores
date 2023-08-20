@@ -47,30 +47,84 @@ class Symbol:
         else:
             return f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}"
 
-class SymboTable:
-    def __init__(self):
-        self.table = {}
+class Scope:
+    def __init__(self, parent=None, number=0):
+        self.number = number
+        self.symbols = {}
+        self.parent = parent
+        self.children = []
+
+    def add_child(self, child):
+        self.children.append(child)
 
     def add(self, symbol):
-        self.table[symbol.scope] = symbol
+        self.symbols[symbol.name] = symbol
 
     def lookup(self, name):
-        if name in self.table:
-            return self.table[name]
-        else:
-            return None
-        
-    def replace(self, symbol):
-        self.table[symbol.scope] = symbol
+        return self.symbols.get(name, None)
 
-    def delete(self, name):
-        del self.table[name]
+    def display(self):
+        print(f"\nAlcance: {self.number}")
+        for symbol in self.symbols.values():
+            print(str(symbol))
+        for child in self.children:
+            child.display()
+
+    def __str__(self):    
+        return ', '.join(str(symbol) for symbol in self.symbols.values())
+
+
+class SymboTable:
+    def __init__(self):
+        self.root = Scope()
+        self.current_scope = self.root
+        self.scope_counter = 0
+
+    def open_scope(self):
+        self.scope_counter += 1
+        new_scope = Scope(parent=self.current_scope, number=self.scope_counter)
+        self.current_scope.add_child(new_scope)
+        self.current_scope = new_scope
+
+    def close_scope(self):
+        self.current_scope = self.current_scope.parent
+        
+
+    def add(self, symbol):
+        self.current_scope.add(symbol)
+
+    def lookup(self, name):
+        scope = self.current_scope
+        while scope:
+            symbol = scope.lookup(name)
+            if symbol:
+                return symbol
+            scope = scope.parent
+        return None
+
+    def replace(self, symbol, scope=None):
+        scope_to_replace = scope if scope else self.current_scope
+        if scope_to_replace in self.table:
+            for i, existing_symbol in enumerate(self.table[scope_to_replace]):
+                if existing_symbol.name == symbol.name:
+                    self.table[scope_to_replace][i] = symbol
+                    return
+        raise Exception("Símbolo no encontrado. No se puede reemplazar.")
+
+    def delete(self, name, scope=None):
+        scope_to_delete = scope if scope else self.current_scope
+        if scope_to_delete in self.table:
+            self.table[scope_to_delete] = [symbol for symbol in self.table[scope_to_delete] if symbol.name != name]
 
     def display(self):
         print("Tabla de Símbolos:")
         print("Nombre\t\tTipo\tdefinicion\tderivation")
-        for name, symbol in self.table.items():
-            print(str(symbol))
+        self.root.display()
+        print(self.root)
+        # for scope, symbols in self.table.items():
+        #     print(f"\nAlcance: {scope}")
+        #     for symbol in symbols:
+        #         print(str(symbol))
 
 class TypeSystem:
     def __init__(self):
@@ -137,40 +191,40 @@ class SemanticAnalyzer(ParseTreeVisitor):
     def visitProgram(self, ctx: YAPLParser.ProgramContext):
         #print("Programa analizado correctamente.")
         self.symbol_table = SymboTable()
-        return self.visitChildren(ctx)
+        self.symbol_table.open_scope()
+        self.visitChildren(ctx)
+        self.symbol_table.close_scope()
+        return 
     
     def visitClassDef(self, ctx: YAPLParser.ClassDefContext):
-        #print(f"Visitando clase:")
         class_name = ctx.TYPE_ID()[0].getText()
-
-            # Comprobando si la clase hereda de otra
         inherits_from = None
         if ctx.INHERITS():
-            inherits_from = ctx.TYPE_ID()[1].getText()  # El segundo TYPE_ID debe ser la clase de la que se hereda
-        definition = Symbol(class_name, 'Class','ClassDef' ,f"{class_name} -> {inherits_from}",f"{inherits_from}.{class_name}")
-
-        #symbol = Symbol(class_name, 'Class')
+            inherits_from = ctx.TYPE_ID()[1].getText()
+        definition = Symbol(class_name, 'Class', 'ClassDef', f"{class_name} -> {inherits_from}", f"{inherits_from}.{class_name}")
         self.symbol_table.add(definition)
-        return self.visitChildren(ctx)
+        self.symbol_table.open_scope()
+        result = self.visitChildren(ctx)
+        self.symbol_table.close_scope()
+        return result
     
     # featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
     #       | ID DOBLE TYPE_ID (LEFT_ARROW expr)?
     #       ;
 
     def visitFeatureDef(self, ctx: YAPLParser.FeatureDefContext):
-        # #print(f"Visitando función: {ctx.ID().getText()}")
         name = ctx.ID().getText()
         type = ctx.TYPE_ID().getText()
-
         class_context = ctx.parentCtx
         class_name = class_context.TYPE_ID()[0].getText()
         dev = f"{class_name}.{name}"
-
-        symbol = Symbol(name, type, 'FeatureDef', f"{dev} -> {type}",f"{dev}.{name}")
-
-        #symbol = Symbol(name, type)
+        symbol = Symbol(name, type, 'FeatureDef', f"{dev} -> {type}", f"{dev}.{name}")
+        #self.symbol_table.open_scope()
         self.symbol_table.add(symbol)
-        return self.visitChildren(ctx)
+        result = self.visitChildren(ctx)
+        #self.symbol_table.close_scope()
+        return result
+
     
     def visitFormalDef(self, ctx: YAPLParser.FormalDefContext):
         name = ctx.ID().getText()
@@ -182,6 +236,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
         feature_context = ctx.parentCtx
         feature_name = feature_context.ID().getText()
         print(feature_name)
+        class_context = feature_context.parentCtx
+        class_name = class_context.TYPE_ID()[0].getText()
 
         # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
         if self.symbol_table.lookup(name) is not None:
@@ -189,12 +245,15 @@ class SemanticAnalyzer(ParseTreeVisitor):
             #print(f"Error semántico: el símbolo '{name}' ya ha sido declarado en el ámbito actual.")
         else:
             # Si el nombre del símbolo no está en la tabla, agregarlo como nuevo símbolo.
-
-            symbol = Symbol(name, type, 'FormalDef', f"{feature_name}.{name} -> {type}",f"{feature_name}.{name}")
+            dev = f"{feature_name}.{name}"
+            symbol = Symbol(name, type, 'FormalDef', f"{dev} -> {type}",dev)
+            self.symbol_table.open_scope()
             self.symbol_table.add(symbol)
+            self.symbol_table.close_scope()
 
         return self.visitChildren(ctx)
     def visitReturnFunc(self, ctx: YAPLParser.ReturnFuncContext):
+        print("SI ENTRE")
         expr_type = self.visit(ctx.expr())
         if not self.type_system.check(expr_type, 'Int'):  # Reemplazar 'Int' con el tipo de retorno esperado
             pass
@@ -288,8 +347,8 @@ def main():
         semantic_analyzer.visit(tree)
         print("\nTabla de Símbolos:")
         print("Nombre\t\tTipo")
-        for symbol, value in semantic_analyzer.symbol_table.table.items():
-            print(f"{symbol}\t\t{value.type}")
+        #for symbol, value in semantic_analyzer.symbol_table.table.items():
+            #print(f"{symbol}\t\t{value.type}")
 
         print("\n\nTipos:")
         semantic_analyzer.symbol_table.display()
