@@ -138,6 +138,43 @@ class TypeSystem:
             return True
         else:
             return False
+        
+    def checkNumeric(self, type1, type2):
+        type1 = type1["type"]
+        type2 = type2["type"]
+        if type1 in self.table['Int'] and type2 in self.table['Int']:
+            return True
+        # Buscar si es heredado de Int
+        elif self.is_inherited_from(type1, 'Int') and self.is_inherited_from(type2, 'Int'):
+            return True
+        else:
+            return False
+        
+    def checkAssigment(self, id_type, expr_type):
+        # Comprobar si el tipo de la expresión coincide con el tipo declarado para el ID o es de un tipo heredado.
+        if expr_type == id_type or expr_type in self.table[id_type]:
+            return True
+        
+        if self.is_inherited_from(expr_type, id_type):
+            return True
+        
+        return False
+
+    def is_inherited_from(self, childe_type, parent_type):
+        if childe_type in self.table[parent_type]:
+            return True
+        
+        for inherited_type in self.table[parent_type]:
+            if self.is_inherited_from(childe_type, inherited_type):
+                return True
+        
+        return False
+    
+    def add_type(self, type_name, parent_type):
+        if type_name not in self.table:
+            self.table[type_name] = []
+        self.table[type_name].append(parent_type)
+
 
     def __str__(self):
         return str(self.table)
@@ -148,6 +185,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
     def __init__(self):
         self.symbol_table = SymboTable()
         self.type_system = TypeSystem()
+        self.nodes = {}
 
     def visit(self, tree):
         # Obten el método de visita apropiado para el tipo de nodo.
@@ -180,6 +218,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         # Si es terminal regresar el tipo
         if isinstance(node, TerminalNode):
+            visitTerminal = self.visitTerminal(node)
+            
+            result = visitTerminal
             pass
             # result = node.getSymbol().type
         # Aquí puedes poner código adicional que se ejecuta después de visitar todos los hijos del nodo.
@@ -187,6 +228,23 @@ class SemanticAnalyzer(ParseTreeVisitor):
         return result
 
     
+    def visitTerminal(self, ctx: TerminalNode):
+        symbol_type = ctx.getSymbol().type
+        if symbol_type == YAPLParser.INT:
+            return {"type":'Int', "hasError": False}
+        elif symbol_type == YAPLParser.TRUE or symbol_type == YAPLParser.FALSE:
+            return {"type":'Bool', "hasError": False}
+        elif symbol_type == YAPLParser.STRING:
+            return {"type":'String', "hasError": False}
+        else:
+            # Buscar su tipo en la tabla de símbolos
+            symbol = self.symbol_table.lookup(ctx.getText())
+            if symbol is not None:
+                return {"type":symbol.type, "hasError": False}
+            else:
+                return {"type":None, "hasError": True}
+
+
 
     def visitProgram(self, ctx: YAPLParser.ProgramContext):
         #print("Programa analizado correctamente.")
@@ -201,6 +259,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         inherits_from = None
         if ctx.INHERITS():
             inherits_from = ctx.TYPE_ID()[1].getText()
+            self.type_system.add_type(class_name, inherits_from)
         definition = Symbol(class_name, 'Class', 'ClassDef', f"{class_name} -> {inherits_from}", f"{inherits_from}.{class_name}")
         self.symbol_table.add(definition)
         self.symbol_table.open_scope()
@@ -264,6 +323,55 @@ class SemanticAnalyzer(ParseTreeVisitor):
         print(ctx)
         print(f"Visitando expresión: {ctx.getText()}")
 
+        if ctx in self.nodes:
+            return self.nodes[ctx]
+        
+        if ctx is None:
+            return
+        
+        children_types = []
+        for child in ctx.children:
+            if child in self.nodes:
+                children_types.append(self.nodes[child])
+            else:
+                children_types.append(self.visit(child))
+                node_data = {"type": children_types[-1]["type"], "hasError": False}
+                self.nodes[child] = node_data
+        
+        # Expresiones de Asignacion <id> <- <expr>  
+        if (ctx.ID() and ctx.LEFT_ARROW()):
+            symbol = children_types[0]
+            if symbol["type"] is None:
+                pass
+                print(f"Error semántico: el símbolo '{ctx.ID().getText()}' no ha sido declarado.")
+                node_data = {"type": children_types[-1]["type"], "hasError": True}
+                self.nodes[ctx] = node_data
+            else:
+                if not self.type_system.checkAssigment(symbol['type'],children_types[-1]["type"]):
+                    pass
+                    print(f"Error semántico: el tipo de la expresión no coincide con el tipo del símbolo '{ctx.ID().getText()}'. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                    node_data = {"type": children_types[-1]["type"], "hasError": True}
+                    self.nodes[ctx] = node_data
+                else:
+                    node_data = {"type": children_types[-1]["type"], "hasError": False}
+                    self.nodes[ctx] = node_data
+
+        # Expresiones de Comparacion <expr> <op> <expr>
+        elif (ctx.PLUS() or ctx.MINUS() or ctx.MULT() or ctx.DIV()):
+            if not self.type_system.checkNumeric(children_types[0], children_types[2]):
+                pass
+                operador = ctx.PLUS().getText() if ctx.PLUS() else ctx.MINUS().getText() if ctx.MINUS() else ctx.MULT().getText() if ctx.MULT() else ctx.DIV().getText()
+                print(f"Error semántico: los tipos de las expresiones no coinciden. En la linea {ctx.start.line}, columna {ctx.start.column}. No se puede operar ({operador}) entre {children_types[0]['type']} y {children_types[2]['type']}.")
+                node_data = {"type": children_types[-1]["type"], "hasError": True}
+                self.nodes[ctx] = node_data
+            else:
+                node_data = {"type": children_types[-1]["type"], "hasError": False}
+                self.nodes[ctx] = node_data
+
+
+
+        print(children_types)
+
         print(ctx.start.type, YAPLParser.TRUE, YAPLParser.STRING,ctx.MULT(),ctx.TRUE())
         #symbol = self.symbol_table.lookup(ctx.ID().getText())
 
@@ -279,12 +387,6 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         return self.visitChildren(ctx)
     
-    def verify_operation(self, ctx, operator):
-        type1 = self.visit(ctx.expr(0))  # obtener el tipo de la primera expresión
-        type2 = self.visit(ctx.expr(1))  # obtener el tipo de la segunda expresión
-
-        if not self.type_system.check(type1, type2):
-            print(f"Operación inválida: {operator} no se puede aplicar a {type1} y {type2}.")
 
 
 def build_tree(dot, node, parser, parent=None):
