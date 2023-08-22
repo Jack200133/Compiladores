@@ -281,8 +281,18 @@ class SemanticAnalyzer(ParseTreeVisitor):
         #self.symbol_table.open_scope()
         self.symbol_table.add(symbol)
         result = self.visitChildren(ctx)
-        #self.symbol_table.close_scope()
-        return result
+
+        
+        if result["type"] != type:
+            print("ERROR ALV")
+            node_data = {"type": type, "hasError": True}
+            self.nodes[ctx] = node_data
+            return node_data
+        else:
+            node_data = {"type": type, "hasError": False}
+            self.nodes[ctx] = node_data
+            return node_data
+
 
     
     def visitFormalDef(self, ctx: YAPLParser.FormalDefContext):
@@ -320,7 +330,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
     def visitExpr(self, ctx: YAPLParser.ExprContext):
-        print(ctx)
+
         print(f"Visitando expresión: {ctx.getText()}")
 
         if ctx in self.nodes:
@@ -370,7 +380,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
 
 
-        print(children_types)
+        print(children_types,"\n")
 
         print(ctx.start.type, YAPLParser.TRUE, YAPLParser.STRING,ctx.MULT(),ctx.TRUE())
         #symbol = self.symbol_table.lookup(ctx.ID().getText())
