@@ -22,13 +22,13 @@ class MyErrorListener(ErrorListener):
         else:
             print(f"Error de sintaxis en la línea {line}, posición {column}: {msg}")
 
-    
+
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
         print("Error de ambigüedad entre tokens.")
-    
+
     def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs):
         print("Error al intentar contexto completo.")
-    
+
     def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
         print("Error de sensibilidad de contexto.")
 
@@ -70,7 +70,7 @@ class Scope:
         for child in self.children:
             child.display()
 
-    def __str__(self):    
+    def __str__(self):
         return ', '.join(str(symbol) for symbol in self.symbols.values())
 
 
@@ -88,7 +88,7 @@ class SymboTable:
 
     def close_scope(self):
         self.current_scope = self.current_scope.parent
-        
+
 
     def add(self, symbol):
         self.current_scope.add(symbol)
@@ -132,13 +132,13 @@ class TypeSystem:
         self.table['Int'] = ['Int']
         self.table['Bool'] = ['Bool']
         self.table['String'] = ['String']
-    
+
     def check(self, type1, type2):
         if type1 in self.table[type2]:
             return True
         else:
             return False
-        
+
     def checkNumeric(self, type1, type2):
         type1 = type1["type"]
         type2 = type2["type"]
@@ -149,31 +149,33 @@ class TypeSystem:
             return True
         else:
             return False
-        
+
     def checkAssigment(self, id_type, expr_type):
         # Comprobar si el tipo de la expresión coincide con el tipo declarado para el ID o es de un tipo heredado.
         if expr_type == id_type or expr_type in self.table[id_type]:
             return True
-        
+
         if self.is_inherited_from(expr_type, id_type):
             return True
-        
+
         return False
 
     def is_inherited_from(self, childe_type, parent_type):
         if childe_type in self.table[parent_type]:
             return True
-        
+
         for inherited_type in self.table[parent_type]:
             if self.is_inherited_from(childe_type, inherited_type):
                 return True
-        
+
         return False
-    
+
     def add_type(self, type_name, parent_type):
-        if type_name not in self.table:
-            self.table[type_name] = []
-        self.table[type_name].append(parent_type)
+        # Solo se pueden agregar a tipos que ya existen
+        if parent_type in self.table:
+            self.table[type_name] = [parent_type]
+        else:
+            print(f"Error semántico: el tipo '{parent_type}' no existe. No se puede heredar de un tipo inexistente & la herencia múltiple no es soportada.")
 
 
     def __str__(self):
@@ -219,7 +221,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Si es terminal regresar el tipo
         if isinstance(node, TerminalNode):
             visitTerminal = self.visitTerminal(node)
-            
+
             result = visitTerminal
             pass
             # result = node.getSymbol().type
@@ -227,7 +229,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         return result
 
-    
+
     def visitTerminal(self, ctx: TerminalNode):
         symbol_type = ctx.getSymbol().type
         if symbol_type == YAPLParser.INT:
@@ -252,8 +254,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
         self.symbol_table.open_scope()
         self.visitChildren(ctx)
         self.symbol_table.close_scope()
-        return 
-    
+        return
+
     def visitClassDef(self, ctx: YAPLParser.ClassDefContext):
         class_name = ctx.TYPE_ID()[0].getText()
         inherits_from = None
@@ -266,23 +268,54 @@ class SemanticAnalyzer(ParseTreeVisitor):
         result = self.visitChildren(ctx)
         self.symbol_table.close_scope()
         return result
-    
+
     # featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
     #       | ID DOBLE TYPE_ID (LEFT_ARROW expr)?
     #       ;
 
     def visitFeatureDef(self, ctx: YAPLParser.FeatureDefContext):
+        node_data = {"type": None, "hasError": False}
         name = ctx.ID().getText()
         type = ctx.TYPE_ID().getText()
+
         class_context = ctx.parentCtx
         class_name = class_context.TYPE_ID()[0].getText()
         dev = f"{class_name}.{name}"
-        symbol = Symbol(name, type, 'FeatureDef', f"{dev} -> {type}", f"{dev}.{name}")
-        #self.symbol_table.open_scope()
+
+        # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
+        if self.symbol_table.lookup(name) is not None:
+            pass
+            print(f"Error semántico: el símbolo '{name}' ya ha sido declarado en el ámbito actual.")
+
+        symbol = Symbol(name, type, 'FeatureDef', f"{dev} -> {type}", dev)
         self.symbol_table.add(symbol)
         result = self.visitChildren(ctx)
 
-        
+
+        # Si es una funcion
+        #ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
+        if ctx.LPAREN():
+            pass
+
+
+
+        # Si es una asignacion
+        # ID DOBLE TYPE_ID (LEFT_ARROW expr)?
+        else:
+            if type == result["type"]:
+                
+                node_data = {"type": type, "hasError": False}
+                self.nodes[ctx] = node_data
+                return node_data
+            else:
+                print(f"Error semántico: el tipo de la expresión no coincide con el tipo del símbolo '{type}' <- '{result['type']}'. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                node_data = {"type": type, "hasError": True}
+                self.nodes[ctx] = node_data
+                return node_data
+
+        return node_data
+    
+
         if result["type"] != type:
             print("ERROR ALV")
             node_data = {"type": type, "hasError": True}
@@ -292,12 +325,13 @@ class SemanticAnalyzer(ParseTreeVisitor):
             node_data = {"type": type, "hasError": False}
             self.nodes[ctx] = node_data
             return node_data
+        
 
 
-    
+
     def visitFormalDef(self, ctx: YAPLParser.FormalDefContext):
         name = ctx.ID().getText()
-        print(ctx.ID())
+        # print(ctx.ID())
         type = ctx.TYPE_ID().getText()
 
 
@@ -321,24 +355,26 @@ class SemanticAnalyzer(ParseTreeVisitor):
             self.symbol_table.close_scope()
 
         return self.visitChildren(ctx)
+    
+
     def visitReturnFunc(self, ctx: YAPLParser.ReturnFuncContext):
-        print("SI ENTRE")
         expr_type = self.visit(ctx.expr())
         if not self.type_system.check(expr_type, 'Int'):  # Reemplazar 'Int' con el tipo de retorno esperado
             pass
             #print(f"Error semántico: tipo de retorno incorrecto para función, esperado Int pero se obtuvo {expr_type}")
         return self.visitChildren(ctx)
+    
 
     def visitExpr(self, ctx: YAPLParser.ExprContext):
-
+        node_data = {"type": None, "hasError": False}
         print(f"Visitando expresión: {ctx.getText()}")
-
+        
         if ctx in self.nodes:
             return self.nodes[ctx]
-        
+
         if ctx is None:
             return
-        
+
         children_types = []
         for child in ctx.children:
             if child in self.nodes:
@@ -347,8 +383,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 children_types.append(self.visit(child))
                 node_data = {"type": children_types[-1]["type"], "hasError": False}
                 self.nodes[child] = node_data
-        
-        # Expresiones de Asignacion <id> <- <expr>  
+
+        # Expresiones de Asignacion <id> <- <expr>
+        print(children_types,"\n")
         if (ctx.ID() and ctx.LEFT_ARROW()):
             symbol = children_types[0]
             if symbol["type"] is None:
@@ -356,6 +393,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 print(f"Error semántico: el símbolo '{ctx.ID().getText()}' no ha sido declarado.")
                 node_data = {"type": children_types[-1]["type"], "hasError": True}
                 self.nodes[ctx] = node_data
+                
             else:
                 if not self.type_system.checkAssigment(symbol['type'],children_types[-1]["type"]):
                     pass
@@ -367,7 +405,11 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     self.nodes[ctx] = node_data
 
         # Expresiones de Comparacion <expr> <op> <expr>
+
         elif (ctx.PLUS() or ctx.MINUS() or ctx.MULT() or ctx.DIV()):
+            print("MULTIPLICACION: ")
+            ## Texto de la multiplicacion
+            print(ctx.getText())
             if not self.type_system.checkNumeric(children_types[0], children_types[2]):
                 pass
                 operador = ctx.PLUS().getText() if ctx.PLUS() else ctx.MINUS().getText() if ctx.MINUS() else ctx.MULT().getText() if ctx.MULT() else ctx.DIV().getText()
@@ -379,24 +421,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 self.nodes[ctx] = node_data
 
 
-
-        print(children_types,"\n")
-
-        print(ctx.start.type, YAPLParser.TRUE, YAPLParser.STRING,ctx.MULT(),ctx.TRUE())
-        #symbol = self.symbol_table.lookup(ctx.ID().getText())
-
-       #print(symbol)
-        
-            
-
-        # if ctx.PLUS():
-        #     self.verify_operation(ctx, ctx.PLUS().getText())
-        # elif ctx.MINUS():
-        #     self.verify_operation(ctx, ctx.MINUS().getText())
-        # Agrega aquí más operadores según sea necesario
-
+        return node_data
         return self.visitChildren(ctx)
-    
+
 
 
 def build_tree(dot, node, parser, parent=None):
@@ -407,7 +434,7 @@ def build_tree(dot, node, parser, parent=None):
         dot.node(str(id(node)), name)
     if parent is not None:
         dot.edge(str(id(parent)), str(id(node)))
-    
+
     # Check if the node is not terminal
     if hasattr(node, 'children'):
         for child in node.children:
@@ -421,12 +448,12 @@ def main():
 
     # # # Parse command line arguments
     # args = parser.parse_args()
-    
+
     # Verifica si Graphviz está instalado y agregado al PATH del sistema
     # Si no lo está, agrega la ubicación correcta del ejecutable "dot"
     # if "C:\\Program Files\\Graphviz\\bin" not in os.environ['PATH']:
     #     os.environ['PATH'] += os.pathsep + "C:\\Program Files\\Graphviz\\bin"
-        
+
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
     input_stream = FileStream('./shapes.txt')
@@ -442,7 +469,7 @@ def main():
     # Remove the default error listener and add the custom one
     parser.removeErrorListeners()
     parser.addErrorListener(MyErrorListener())
-    
+
     # Parse the input
     tree = parser.program()
 

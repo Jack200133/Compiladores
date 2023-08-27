@@ -62,7 +62,7 @@ ERROR: . ;
 
 program: (classDef SEMI)+ EOF;
 classDef : CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (featureDef SEMI)* RBRACE ;
-featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
+featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr SEMI)* (returnFunc)? RBRACE
            | ID DOBLE TYPE_ID (LEFT_ARROW expr)?
            ;
 formalDef: ID DOBLE TYPE_ID ;
