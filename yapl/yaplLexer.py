@@ -154,7 +154,7 @@ def serializedATN():
         return buf.getvalue()
 
 
-class YAPLLexer(Lexer):
+class yaplLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 

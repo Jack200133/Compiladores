@@ -1,6 +1,6 @@
-# Generated from YAPL.g4 by ANTLR 4.13.0
+# Generated from YAPL.g4 by ANTLR 4.7.2
 from antlr4 import *
-if "." in __name__:
+if __name__ is not None and "." in __name__:
     from .YAPLParser import YAPLParser
 else:
     from YAPLParser import YAPLParser
@@ -44,15 +44,6 @@ class YAPLListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by YAPLParser#returnFunc.
-    def enterReturnFunc(self, ctx:YAPLParser.ReturnFuncContext):
-        pass
-
-    # Exit a parse tree produced by YAPLParser#returnFunc.
-    def exitReturnFunc(self, ctx:YAPLParser.ReturnFuncContext):
-        pass
-
-
     # Enter a parse tree produced by YAPLParser#expr.
     def enterExpr(self, ctx:YAPLParser.ExprContext):
         pass
@@ -62,5 +53,3 @@ class YAPLListener(ParseTreeListener):
         pass
 
 
-
-del YAPLParser
