@@ -1,0 +1,66 @@
+// SYMBOL TABLE
+digraph {
+	0 [label="Scope: 0
+global
+Object"]
+	0 -> 1
+	1 [label="Scope: 1
+A
+Object"]
+	1 -> 2
+	2 [label="Scope: 2
+value
+Int"]
+	1 -> 3
+	3 [label="Scope: 3
+set_var
+A"]
+	1 -> 4
+	4 [label="Scope: 4
+method1
+A"]
+	1 -> 5
+	5 [label="Scope: 5
+method2
+A"]
+	5 -> 6
+	6 [label="Scope: 6
+x
+Int"]
+	1 -> 7
+	7 [label="Scope: 7
+method3
+A"]
+	7 -> 8
+	8 [label="Scope: 8
+x
+Int"]
+	1 -> 9
+	9 [label="Scope: 9
+method4
+A"]
+	9 -> 10
+	10 [label="Scope: 10
+x
+Int"]
+	9 -> 11
+	11 [label="Scope: 11
+y
+Int"]
+	1 -> 12
+	12 [label="Scope: 12
+method5
+A"]
+	12 -> 13
+	13 [label="Scope: 13
+x
+Int"]
+	13 -> 14
+	14 [label="Scope: 14
+y
+Int"]
+	0 -> 15
+	15 [label="Scope: 15
+B
+A"]
+}
