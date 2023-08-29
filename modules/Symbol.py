@@ -83,6 +83,11 @@ class SymboTable:
             symbol = scope.lookup_scope(name)
             if symbol:
                 return scope
+            
+            if scope and scope.name == 'global':
+                for child in scope.children:
+                    if child.name == name:
+                        return child
             scope = scope.parent
         return None
 

@@ -69,7 +69,7 @@ def main():
             #print(f"{symbol}\t\t{value.type}")
 
         print("\n\nTipos:")
-        semantic_analyzer.symbol_table.display()
+        #semantic_analyzer.symbol_table.display()
 
 
 if __name__ == '__main__':

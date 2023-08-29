@@ -27,4 +27,236 @@ A"]
 	6 [label="Scope: 6
 x
 Int"]
+	1 -> 7
+	7 [label="Scope: 7
+method3
+A"]
+	7 -> 8
+	8 [label="Scope: 8
+x
+Int"]
+	1 -> 9
+	9 [label="Scope: 9
+method4
+A"]
+	9 -> 10
+	10 [label="Scope: 10
+x
+Int"]
+	9 -> 11
+	11 [label="Scope: 11
+y
+Int"]
+	1 -> 12
+	12 [label="Scope: 12
+method5
+A"]
+	12 -> 13
+	13 [label="Scope: 13
+x
+Int"]
+	13 -> 14
+	14 [label="Scope: 14
+y
+Int"]
+	0 -> 15
+	15 [label="Scope: 15
+B
+A"]
+	15 -> 16
+	16 [label="Scope: 16
+value
+Int"]
+	15 -> 17
+	17 [label="Scope: 17
+set_var
+A"]
+	15 -> 18
+	18 [label="Scope: 18
+method1
+A"]
+	15 -> 19
+	19 [label="Scope: 19
+method2
+A"]
+	15 -> 20
+	20 [label="Scope: 20
+method3
+A"]
+	15 -> 21
+	21 [label="Scope: 21
+method4
+A"]
+	15 -> 22
+	22 [label="Scope: 22
+method5
+A"]
+	15 -> 23
+	23 [label="Scope: 23
+method5
+B"]
+	23 -> 24
+	24 [label="Scope: 24
+x
+Int"]
+	0 -> 25
+	25 [label="Scope: 25
+C
+B"]
+	25 -> 26
+	26 [label="Scope: 26
+value
+Int"]
+	25 -> 27
+	27 [label="Scope: 27
+set_var
+A"]
+	25 -> 28
+	28 [label="Scope: 28
+method1
+A"]
+	25 -> 29
+	29 [label="Scope: 29
+method2
+A"]
+	25 -> 30
+	30 [label="Scope: 30
+method3
+A"]
+	25 -> 31
+	31 [label="Scope: 31
+method4
+A"]
+	25 -> 32
+	32 [label="Scope: 32
+method5
+A"]
+	25 -> 33
+	33 [label="Scope: 33
+method5
+B"]
+	25 -> 34
+	34 [label="Scope: 34
+method6
+A"]
+	34 -> 35
+	35 [label="Scope: 35
+x
+Int"]
+	25 -> 36
+	36 [label="Scope: 36
+method5
+B"]
+	36 -> 37
+	37 [label="Scope: 37
+x
+Int"]
+	0 -> 38
+	38 [label="Scope: 38
+D
+B"]
+	38 -> 39
+	39 [label="Scope: 39
+value
+Int"]
+	38 -> 40
+	40 [label="Scope: 40
+set_var
+A"]
+	38 -> 41
+	41 [label="Scope: 41
+method1
+A"]
+	38 -> 42
+	42 [label="Scope: 42
+method2
+A"]
+	38 -> 43
+	43 [label="Scope: 43
+method3
+A"]
+	38 -> 44
+	44 [label="Scope: 44
+method4
+A"]
+	38 -> 45
+	45 [label="Scope: 45
+method5
+A"]
+	38 -> 46
+	46 [label="Scope: 46
+method5
+B"]
+	38 -> 47
+	47 [label="Scope: 47
+method7
+Bool"]
+	47 -> 48
+	48 [label="Scope: 48
+x
+Int"]
+	0 -> 49
+	49 [label="Scope: 49
+E
+D"]
+	49 -> 50
+	50 [label="Scope: 50
+value
+Int"]
+	49 -> 51
+	51 [label="Scope: 51
+set_var
+A"]
+	49 -> 52
+	52 [label="Scope: 52
+method1
+A"]
+	49 -> 53
+	53 [label="Scope: 53
+method2
+A"]
+	49 -> 54
+	54 [label="Scope: 54
+method3
+A"]
+	49 -> 55
+	55 [label="Scope: 55
+method4
+A"]
+	49 -> 56
+	56 [label="Scope: 56
+method5
+A"]
+	49 -> 57
+	57 [label="Scope: 57
+method5
+B"]
+	49 -> 58
+	58 [label="Scope: 58
+method7
+Bool"]
+	49 -> 59
+	59 [label="Scope: 59
+method6
+A"]
+	59 -> 60
+	60 [label="Scope: 60
+x
+Int"]
+	0 -> 61
+	61 [label="Scope: 61
+Main
+IO"]
+	61 -> 62
+	62 [label="Scope: 62
+is_even
+Bool"]
+	62 -> 63
+	63 [label="Scope: 63
+x
+Int"]
+	61 -> 64
+	64 [label="Scope: 64
+main
+Object"]
 }

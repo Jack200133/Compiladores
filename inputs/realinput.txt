@@ -18,7 +18,7 @@ class A {
       (let x : Int in
 	 {
             x <- num1 + num2;
-	    (new A).set_var(x,y);
+	    (new A).set_var(x);
 	 }
       )
    };
@@ -44,7 +44,7 @@ class A {
                (let y : Int in
 		  {
 	             y <- num2 - num1;
-	             (new A).set_var(x);
+	             (new A).set_var(y);
 		  }
                )
             fi
