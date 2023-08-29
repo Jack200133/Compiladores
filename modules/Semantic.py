@@ -110,16 +110,26 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
             self.symbol_table.open_scope(class_name,type)  # Abrimos un nuevo alcance en la tabla de símbolos
              # TODO: Si hereda de alguna clase ya definida, copiar los métodos de la clase padre a la clase hija
-            self.symbol_table.displayTree()
+            #self.symbol_table.displayTree()
             if inherits_from is not None:
                 symbol_parent = self.symbol_table.lookup(inherits_from)
                 if symbol_parent is None:
                     print(f"Error semántico: la clase {class_name} hereda de una clase inexistente.")
                 else:
-                    
-                    parent_scope = symbol_parent.myscope
-                    if parent_scope:
-                        
+                    childrealnode = None
+                    for child in symbol_parent.myscope.children:
+                        if child.name == symbol_parent.name:
+                            childrealnode = child
+                            break
+
+                    if childrealnode is not None:
+                        parent_scope = childrealnode
+                        for symbol_name, symbol in parent_scope.symbols.items():
+                            new_symbol = Symbol(name=symbol_name, _type=symbol.type,
+                                                definicion=symbol.definicion, 
+                                                derivation=symbol.derivation,
+                                                scope=self.symbol_table.current_scope)
+                            self.symbol_table.add(new_symbol)
                         for child_scope in parent_scope.children:
                             self.symbol_table.open_scope(name=child_scope.name, type=child_scope.type)
                             print(f"Abriendo alcance {child_scope.name},Scope: {child_scope.number},Current: {self.symbol_table.current_scope.number}")
@@ -172,8 +182,6 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         return node_data
     
-
-
     # featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
     #       | ID DOBLE TYPE_ID (LEFT_ARROW expr)?
     #       ;
@@ -332,8 +340,21 @@ class SemanticAnalyzer(ParseTreeVisitor):
         elif (ctx.DOT() and ctx.OBJECT_ID() and ctx.LPAREN() and ctx.RPAREN()):
             # TODO: Buscar tambien los tipos de los argumentos y ver que esten bien? osea el exp = al que se manda
             # print(self.symbol_table.current_scope.number)
-            self.symbol_table.display()
+            self.symbol_table.displayTree()
             print(ctx.getText())
+            print(children[0].getText())
+            godly_dad = self.symbol_table.lookup_scope(children_types[0]["type"])
+            print(godly_dad)
+
+            functionReveal = None
+            for child in godly_dad.children:
+                if child.name == ctx.OBJECT_ID()[0].getText():
+                    functionReveal = child
+                    print("Encontrado")
+            print(ctx.OBJECT_ID())
+
+            for data in ctx.OBJECT_ID():
+                print("---",data.getText())
             print(ctx.OBJECT_ID()[0].getText())
             print(self.symbol_table.lookup(ctx.OBJECT_ID()[0].getText()))
             #self.symbol_table.displayTree()

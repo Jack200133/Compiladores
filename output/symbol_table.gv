@@ -27,40 +27,4 @@ A"]
 	6 [label="Scope: 6
 x
 Int"]
-	1 -> 7
-	7 [label="Scope: 7
-method3
-A"]
-	7 -> 8
-	8 [label="Scope: 8
-x
-Int"]
-	1 -> 9
-	9 [label="Scope: 9
-method4
-A"]
-	9 -> 10
-	10 [label="Scope: 10
-x
-Int"]
-	9 -> 11
-	11 [label="Scope: 11
-y
-Int"]
-	1 -> 12
-	12 [label="Scope: 12
-method5
-A"]
-	12 -> 13
-	13 [label="Scope: 13
-x
-Int"]
-	13 -> 14
-	14 [label="Scope: 14
-y
-Int"]
-	0 -> 15
-	15 [label="Scope: 15
-B
-A"]
 }

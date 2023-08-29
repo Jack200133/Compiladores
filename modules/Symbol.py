@@ -33,6 +33,10 @@ class Scope:
 
     def lookup(self, name):
         return self.symbols.get(name, None)
+    
+    def lookup_scope(self, name):
+        if self.name == name:
+            return self
 
     def display(self):
         print(f"\nAlcance: {self.number} \t{self.name} \t{self.type}")
@@ -70,6 +74,15 @@ class SymboTable:
             symbol = scope.lookup(name)
             if symbol:
                 return symbol
+            scope = scope.parent
+        return None
+    
+    def lookup_scope(self, name):
+        scope = self.current_scope 
+        while scope:
+            symbol = scope.lookup_scope(name)
+            if symbol:
+                return scope
             scope = scope.parent
         return None
 
