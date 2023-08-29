@@ -47,10 +47,21 @@ class TypeSystem:
             return True
         
         return False
+    
 
     def is_inherited_from(self, child_type, parent_type):
+        if child_type is None or parent_type is None:
+            return False
         if child_type in self.table and parent_type in self.table[child_type]:
             return True
+        
+        looktype = self.table[child_type]
+        while looktype:
+            if parent_type in looktype:
+                return True
+            looktype = self.table[looktype[0]]
+            if looktype == []:
+                return False
 
         for inherited_type in self.table.get(parent_type, []):
             if self.is_inherited_from(child_type, inherited_type):

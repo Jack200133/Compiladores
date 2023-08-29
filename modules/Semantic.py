@@ -157,6 +157,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
         class_context = feature_context.parentCtx
         class_name = class_context.TYPE_ID()[0].getText()
 
+        #TODO: cuando un meto es override, verificar que los parametros sean iguales
+
         # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
         if self.symbol_table.lookup(name) is not None:
             #TODO: Cuando se agregen las clases heredadas se deberia podever cerificar aca el override de una 
@@ -317,7 +319,15 @@ class SemanticAnalyzer(ParseTreeVisitor):
         elif (ctx.DOT() and ctx.OBJECT_ID() and ctx.LPAREN() and ctx.RPAREN()):
         # TODO: Si tiene el @ hacer la busqueda de ese TYPE en especifico
 
-            godly_dad = self.symbol_table.lookup_scope(children_types[0]["type"])
+            class_name = children_types[0]["type"]
+            if ctx.AT():
+                class_name = ctx.TYPE_ID()[0].getText()
+                heredado = self.type_system.is_inherited_from(children_types[0]["type"],class_name)
+                if not heredado:
+                    print(f"Error Semantico: la clase {children_types[0]['type'] } no hereda de {class_name}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                    node_data = {"type": children_types[-1]["type"], "hasError": True}
+
+            godly_dad = self.symbol_table.lookup_scope(class_name)
 
 
             functionReveal = None
@@ -326,22 +336,21 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     functionReveal = child
 
 
+            args = []
+            for index,child in enumerate(children):
+                if isinstance(child,YAPLParser.ExprContext):
+                    
+                    args.append(index)
             if functionReveal:
                 #Vamos a bsucar todos los paramtros de la funcion que seran sus symbolos
                 # Hagarrar todos los expr despues de LPAREN
-                args = []
-                for index,child in enumerate(children):
-                    if isinstance(child,YAPLParser.ExprContext):
-                        
-                        args.append(index)
                 # Ignoramos el primer argumento porque es la clase
                 objID_type_index = args.pop(0)
                 functionargs = functionReveal.symbols
                 
                 if len(args) != len(functionargs):
-                    print(f"Error Semantico: la funcion esperaba {len(functionargs)} y se recibieron {len(args)}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
-                    tipo_funcion = self.symbol_table.lookup(functionReveal.name)
-                    node_data = {"type": tipo_funcion.type, "hasError": True}
+                    print(f"Error Semantico: la funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                    node_data = {"type": functionReveal.type, "hasError": True}
                     self.nodes[ctx] = node_data
                     return node_data
                 else:
@@ -358,16 +367,59 @@ class SemanticAnalyzer(ParseTreeVisitor):
                             node_data = {"type": functionReveal.type, "hasError": True}
                         
 
-            objID_type = children_types[objID_type_index]["type"]
-            # objID_type = self.symbol_table.lookup(ctx.OBJECT_ID()[0].getText()).type
-            node_data = {"type": objID_type, "hasError": False}
-            self.nodes[ctx] = node_data
-            return node_data
+                objID_type = children_types[objID_type_index]["type"]
+                # objID_type = self.symbol_table.lookup(ctx.OBJECT_ID()[0].getText()).type
+                node_data = {"type": objID_type, "hasError": False}
+                self.nodes[ctx] = node_data
+                return node_data
+        
+            else:
+                print(f"Error Semantico: la clase {class_name} no tiene el metodo {ctx.OBJECT_ID()[0].getText()}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                tipos = children_types[args[-1]]["type"]
+                node_data = {"type": tipos, "hasError": True}
         
         #TODO: OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN
         elif (ctx.OBJECT_ID() and ctx.LPAREN() and ctx.RPAREN()):
+            print(ctx.getText())
+            args = []
+            for index,child in enumerate(children):
+                if isinstance(child,YAPLParser.ExprContext):
+                    args.append(index)
+                
+            symbol = self.symbol_table.lookup(ctx.OBJECT_ID()[0].getText())
+            if symbol is None:
+                print(f"Error Semantico: la funcion {ctx.OBJECT_ID()[0].getText()} no esta definida. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                node_data = {"type": children_types[0]["type"], "hasError": True}
+                self.nodes[ctx] = node_data
+                return node_data
+            godly_dad = symbol.myscope
+            functionReveal = None
+            for child in godly_dad.children:
+                if child.name == ctx.OBJECT_ID()[0].getText():
+                    functionReveal = child
+            
+            if functionReveal:
+                functionargs = functionReveal.symbols
+                
+                if len(args) != len(functionargs):
+                    print(f"Error Semantico: la funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                    node_data = {"type": functionReveal.type, "hasError": True}
+                    self.nodes[ctx] = node_data
+                    return node_data
+                else:
+                    list_params = []
+                    node_data = {"type": functionReveal.type, "hasError": False}
+                    for param in functionargs:
+                        list_params.append(param)
+                    for index in range(len(args)):
+                        arg_type = children_types[args[index]]["type"]
+                        param_type = functionargs[list_params[index]].type
+                        if arg_type != param_type:
+                            childLine = children[args[index]].start.column
+                            print(f"Error Semantico: el tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}.")
+                            node_data = {"type": functionReveal.type, "hasError": True}
 
-            node_data = {"type": children_types[-1]["type"], "hasError": False}
+            node_data = {"type": children_types[0]["type"], "hasError": False}
             self.nodes[ctx] = node_data
             return node_data
 
@@ -438,13 +490,23 @@ class SemanticAnalyzer(ParseTreeVisitor):
             type_id = ctx.TYPE_ID()[0].getText()
             node_data = {"type":type_id, "hasError": False}
 
-        #TODO: NEG a int, NOT a Bool
+
         elif ctx.NEG():
             type = children_types[-1]["type"]
-            if type == "Bool" or type == "Int":
+            if type == "Int":
                 node_data = {"type":type, "hasError": False}
             else:
                 print(f"Error semántico: No se puede negar una expresión de tipo {type}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+
+
+        elif ctx.NOT():
+            type = children_types[-1]["type"]
+            if type == "Bool":
+                node_data = {"type":type, "hasError": False}
+            else:
+                print(f"Error semántico: No se puede negar una expresión de tipo {type}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+
+        
  
         #TODO: IF expr THEN expr ELSE expr FI
         elif ctx.IF():
@@ -452,6 +514,12 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
             type = children_types[1]["type"]
 
+        elif ctx.LE() or ctx.LT() or ctx.EQ():
+            type = children_types[0]["type"]
+            if type == children_types[2]["type"]:
+                node_data = {"type":type, "hasError": False}
+            else:
+                print(f"Error semántico: No se puede comparar una expresión de tipo {type} con una expresión de tipo {children_types[2]['type']}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
 
         elif (ctx.INT()):
             return {"type":'Int', "hasError": False}

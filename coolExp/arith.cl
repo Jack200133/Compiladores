@@ -44,7 +44,7 @@ class A {
                (let y : Int in
 		  {
 	             y <- num2 - num1;
-	             (new A).set_var(y);
+	             (new A).set_var(x);
 		  }
                )
             fi
@@ -121,19 +121,6 @@ class D inherits B {
 class E inherits D {
 
    method6(num : Int) : A {  -- division
-      (let x : Int in
-         {
-            x <- num / 8;
-	    (new A).set_var(x);
-         }
-      )
-   };
-
-};
-
-class F{
-
-   method5(num : Int) : A {  -- division
       (let x : Int in
          {
             x <- num / 8;
