@@ -35,7 +35,8 @@ class TypeSystem:
         return False
 
     def checkNumeric(self, type1, type2):
-        if type1 in self.basic_types and type1 == 'Int' and type2 in self.basic_types and type2 == 'Int':
+        acepted = ["Int","Object"]
+        if type1 in acepted and type2 in acepted:
             return True
         return False
 
@@ -48,6 +49,24 @@ class TypeSystem:
         
         return False
     
+    def comperIF(self, type1, type2):
+        if type1 == type2:
+            return type1
+        else:
+            return "Object"
+    
+    def checkNOT(self, type1):
+        if type1 == "Bool" or type1 == "Object":
+            return True
+        return False
+    
+
+    def CheckComp(self, type1, type2):
+        if type1 == type2:
+            return True, "Bool"
+        if type1 == "Object" or type2 == "Object":
+            return True, "Object"
+        return False, "Object"
 
     def is_inherited_from(self, child_type, parent_type):
         if child_type is None or parent_type is None:

@@ -73,7 +73,7 @@ class B inherits A {  -- B is a number squared
    method5(numB : Int) : B { -- square
       (let x : Int in
 	 {
-            x <- num * num;
+            x <- numB * numB;
 	    (new B).set_var(x);
 	 }
       )

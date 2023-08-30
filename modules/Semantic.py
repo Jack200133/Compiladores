@@ -500,7 +500,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
 
         elif ctx.NOT():
-            type = children_types[-1]["type"]
+            type = checkNOT(children_types[-1]["type"])
             if type == "Bool":
                 node_data = {"type":type, "hasError": False}
             else:
@@ -510,16 +510,51 @@ class SemanticAnalyzer(ParseTreeVisitor):
  
         #TODO: IF expr THEN expr ELSE expr FI
         elif ctx.IF():
-            print(ctx.getText())
+            args = []
+            for index,child in enumerate(children):
+                if isinstance(child,YAPLParser.ExprContext):
+                    args.append(index)
+            comparador = args.pop(0)
+            if children_types[comparador]["type"] != "Bool":
+                print(f"Error semantico: la condicion del if debe ser de tipo Bool. En la linea {ctx.start.line}, columna {ctx.start.column}. ")
 
-            type = children_types[1]["type"]
+            
+            typeif = self.type_system.comperIF(children_types[args[0]]["type"],children_types[args[1]]["type"])
+
+            node_data = {"type": typeif, "hasError": False}
+            self.nodes[ctx] = node_data
+            return node_data
+        
+        elif ctx.WHILE():
+            #print(ctx.getText())
+            args = []
+            for index,child in enumerate(children):
+                if isinstance(child,YAPLParser.ExprContext):
+                    args.append(index)
+            comparador = args.pop(0)
+
+            tipo_comparador = children_types[comparador]["type"]
+            if tipo_comparador != "Bool":
+                print(f"Error semantico: la condicion del if debe ser de tipo Bool. En la linea {ctx.start.line}, columna {ctx.start.column}. ")
+            
+            node_data = { "type": "Object","hasError":False}
+            self.nodes[ctx] = node_data
+            return node_data
+
+
+
 
         elif ctx.LE() or ctx.LT() or ctx.EQ():
-            type = children_types[0]["type"]
-            if type == children_types[2]["type"]:
+            posible,type = self.type_system.CheckComp(children_types[0]["type"],children_types[2]["type"])
+            if posible:
                 node_data = {"type":type, "hasError": False}
             else:
                 print(f"Error semántico: No se puede comparar una expresión de tipo {type} con una expresión de tipo {children_types[2]['type']}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                node_data = {"type": "Object", "hasError": True}
+            
+            self.nodes[ctx] = node_data
+            return node_data
+
 
         elif (ctx.INT()):
             return {"type":'Int', "hasError": False}
@@ -530,5 +565,4 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
 
         return node_data
-        return self.visitChildren(ctx)
 
