@@ -189,11 +189,13 @@ class SemanticAnalyzer(ParseTreeVisitor):
     def visitFeatureDef(self, ctx: YAPLParser.FeatureDefContext):
         node_data = {"type": None, "hasError": False}
         name = ctx.OBJECT_ID().getText()
-        type = ctx.TYPE_ID().getText()
 
-        
+        if ctx.TYPE_ID():
+            type = ctx.TYPE_ID().getText()
+        else:
+            type = "Object"
 
-
+            
         class_context = ctx.parentCtx
         class_name = class_context.TYPE_ID()[0].getText()
         dev = f"{class_name}.{name}"
@@ -215,8 +217,12 @@ class SemanticAnalyzer(ParseTreeVisitor):
         
 
         
+        children = []
+        for child in ctx.getChildren():
+            children.append(child)
+
         children_types = []
-        for child in ctx.children:
+        for index,child in enumerate(children):
             if child in self.nodes:
                 children_types.append(self.nodes[child])
             else:
@@ -232,15 +238,32 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         # Si es una funcion
         #OBJECT_ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN COLON TYPE_ID LBRACE expr RBRACE 
+        #TODO: 
         if ctx.LPAREN():
-            pass
-
+            #print(ctx.getText())
+            args = []
+            for index,child in enumerate(children):
+                if isinstance(child,YAPLParser.ExprContext):
+                    args.append(index)
+            #self.symbol_table.display()
+            tipo = children_types[args[0]]["type"]
+            tipo_func = children_types[0]["type"]
+            if self.type_system.checkAssigment(tipo,tipo_func):
+                node_data = {"type": tipo_func, "hasError": False}
+                self.nodes[ctx] = node_data
+                return node_data
+            else:
+                print(f"Error Semantico: el tipo de retorno de la funcion no coincide con el tipo de la clase. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+                node_data = {"type": tipo_func, "hasError": True}
+                self.nodes[ctx] = node_data
+                return node_data
 
 
         # Si es una asignacion
         # OBJECT_ID COLON TYPE_ID (ASSIGN expr)? ;
         else:
-            if type == result["type"]:
+            #print(ctx.getText())
+            if type == result["type"] or ctx.ASSIGN() is None:
                 
                 node_data = {"type": type, "hasError": False}
                 self.nodes[ctx] = node_data
@@ -268,6 +291,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         
 
         #Comprobar si es instance de un LET para crear el simbolo del valor de let
+        #LET OBJECT_ID COLON TYPE_ID (ASSIGN expr)? (COMMA OBJECT_ID COLON TYPE_ID (ASSIGN expr)?)* IN expr
         if ctx.LET():
             name = ctx.OBJECT_ID()[0].getText()
             type = ctx.TYPE_ID()[0].getText()
@@ -280,11 +304,11 @@ class SemanticAnalyzer(ParseTreeVisitor):
             result = self.visitChildren(ctx)
 
             self.symbol_table.close_scope()
+
             # TODO: Comprobar si tiene (ASSIGN expr)? y ver ese error
-            node_data = {"type": type, "hasError": False}
+            node_data = {"type": result["type"], "hasError": False}
             self.nodes[ctx] = node_data
             return node_data
-        # print("Visitando EXPR: ",ctx.getText())
         children = []
         for child in ctx.getChildren():
             children.append(child)
@@ -315,10 +339,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
             self.nodes[ctx] = node_data
             return node_data
         
-        #TODO: expr  (AT TYPE_ID)? DOT OBJECT_ID LPAREN  (expr (COMMA expr)*)? RPAREN
+        #expr  (AT TYPE_ID)? DOT OBJECT_ID LPAREN  (expr (COMMA expr)*)? RPAREN
         elif (ctx.DOT() and ctx.OBJECT_ID() and ctx.LPAREN() and ctx.RPAREN()):
-        # TODO: Si tiene el @ hacer la busqueda de ese TYPE en especifico
-
             class_name = children_types[0]["type"]
             if ctx.AT():
                 class_name = ctx.TYPE_ID()[0].getText()
@@ -378,9 +400,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 tipos = children_types[args[-1]]["type"]
                 node_data = {"type": tipos, "hasError": True}
         
-        #TODO: OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN
+        #OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN
         elif (ctx.OBJECT_ID() and ctx.LPAREN() and ctx.RPAREN()):
-            print(ctx.getText())
+
             args = []
             for index,child in enumerate(children):
                 if isinstance(child,YAPLParser.ExprContext):
@@ -493,29 +515,31 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         elif ctx.NEG():
             type = children_types[-1]["type"]
-            if type == "Int":
+            if type == "Int" or type == "Object":
                 node_data = {"type":type, "hasError": False}
             else:
                 print(f"Error semántico: No se puede negar una expresión de tipo {type}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
 
 
         elif ctx.NOT():
-            type = checkNOT(children_types[-1]["type"])
-            if type == "Bool":
+            type = children_types[-1]["type"]
+            if type == "Bool" or type == "Object":
                 node_data = {"type":type, "hasError": False}
             else:
                 print(f"Error semántico: No se puede negar una expresión de tipo {type}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
 
         
  
-        #TODO: IF expr THEN expr ELSE expr FI
+        #IF expr THEN expr ELSE expr FI
         elif ctx.IF():
             args = []
             for index,child in enumerate(children):
                 if isinstance(child,YAPLParser.ExprContext):
                     args.append(index)
             comparador = args.pop(0)
-            if children_types[comparador]["type"] != "Bool":
+            compType = children_types[comparador]["type"]
+            accep = ["Bool","Object"]
+            if compType not in accep:
                 print(f"Error semantico: la condicion del if debe ser de tipo Bool. En la linea {ctx.start.line}, columna {ctx.start.column}. ")
 
             
@@ -541,6 +565,11 @@ class SemanticAnalyzer(ParseTreeVisitor):
             self.nodes[ctx] = node_data
             return node_data
 
+        
+        elif ctx.ISVOID():
+            node_data = {"type": "Bool", "hasError": False}
+            self.nodes[ctx] = node_data
+            return node_data
 
 
 

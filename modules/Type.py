@@ -5,7 +5,7 @@ class TypeSystem:
         self.special_types = ['IO', 'Object']
         
         for t in self.basic_types:
-            self.table[t] = []
+            self.table[t] = ["Object"]
         
         self.table['IO'] = []  # Puedes añadir aquí los métodos predefinidos de IO
         self.table['Object'] = []  # Clase base para todos los objetos

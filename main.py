@@ -53,23 +53,23 @@ def main():
     tree = parser.program()
 
     # Check for errors before building tree
-    if parser.getNumberOfSyntaxErrors() == 0:  # Añadido para verificar errores sintácticos
-        # Build the graph
-        dot = Digraph()
-        build_tree(dot, tree, parser)
+    
+    # Build the graph
+    dot = Digraph()
+    build_tree(dot, tree, parser)
 
-        # Render the graph
-        dot.render(filename='./output/grafo', format='png', cleanup=True)
-        dot.view()
-        semantic_analyzer = SemanticAnalyzer()
-        semantic_analyzer.visit(tree)
-        print("\nTabla de Símbolos:")
-        print("Nombre\t\tTipo")
-        #for symbol, value in semantic_analyzer.symbol_table.table.items():
-            #print(f"{symbol}\t\t{value.type}")
+    # Render the graph
+    dot.render(filename='./output/grafo', format='png', cleanup=True)
+    dot.view()
+    semantic_analyzer = SemanticAnalyzer()
+    semantic_analyzer.visit(tree)
+    print("\nTabla de Símbolos:")
+    print("Nombre\t\tTipo")
+    #for symbol, value in semantic_analyzer.symbol_table.table.items():
+        #print(f"{symbol}\t\t{value.type}")
 
-        print("\n\nTipos:")
-        #semantic_analyzer.symbol_table.display()
+    print("\n\nTipos:")
+    #semantic_analyzer.symbol_table.display()
 
 
 if __name__ == '__main__':

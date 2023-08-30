@@ -1,6 +1,7 @@
 class A {
 
    var : Int <- 0;
+   var2 : Int <- 0;
    value() : Int { var };
 
    set_var(num : Int) : SELF_TYPE {
@@ -10,7 +11,7 @@ class A {
       }
    };
 
-   method1(num : Int) : SELF_TYPE {  -- same
+   method1(num : Int) : SELF_TYPE{  -- same
       self
    };
 
