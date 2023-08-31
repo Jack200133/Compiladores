@@ -1,6 +1,6 @@
-# Generated from YAPL.g4 by ANTLR 4.7.2
+# Generated from g4/YAPL.g4 by ANTLR 4.13.0
 from antlr4 import *
-if __name__ is not None and "." in __name__:
+if "." in __name__:
     from .YAPLParser import YAPLParser
 else:
     from YAPLParser import YAPLParser
@@ -53,3 +53,5 @@ class YAPLListener(ParseTreeListener):
         pass
 
 
+
+del YAPLParser
