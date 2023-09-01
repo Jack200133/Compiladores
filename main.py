@@ -64,13 +64,10 @@ def main():
     dot.view()
     semantic_analyzer = SemanticAnalyzer()
     semantic_analyzer.visit(tree)
+    symbols = semantic_analyzer.symbol_table.get_all_symbols()
     print("\nTabla de Símbolos:")
-    print("Nombre\t\tTipo")
-    # for symbol, value in semantic_analyzer.symbol_table.table.items():
-    # print(f"{symbol}\t\t{value.type}")
-
-    print("\n\nTipos:")
-    # semantic_analyzer.symbol_table.display()
+    for symbol in symbols:
+        print(symbol)
 
 
 if __name__ == '__main__':

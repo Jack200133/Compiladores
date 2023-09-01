@@ -467,7 +467,6 @@ class SemanticAnalyzer(ParseTreeVisitor):
         elif (ctx.OBJECT_ID() and ctx.ASSIGN()):
             symbol = children_types[0]
             if symbol["type"] is None:
-                pass
                 print(
                     f"Error semántico: el símbolo '{ctx.OBJECT_ID()[0]}' no ha sido declarado. En la linea {ctx.start.line}, columna {ctx.start.column}.")
                 node_data = {
@@ -476,14 +475,20 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
             else:
                 if not self.type_system.checkAssigment(symbol['type'], children_types[-1]["type"]):
-                    # print(ctx.getText())
-                    pass
                     print(
                         f"Error semántico: el tipo de la expresión no coincide con el tipo del símbolo '{ctx.getText()}'. En la linea {ctx.start.line}, columna {ctx.start.column}.")
                     node_data = {
                         "type": children_types[-1]["type"], "hasError": True}
                     self.nodes[ctx] = node_data
                 else:
+                    # Aquí es donde buscarías el símbolo en tu tabla y actualizarías su valor
+                    actual_symbol = self.symbol_table.lookup(
+                        ctx.OBJECT_ID()[0].getText())
+                    if actual_symbol:
+                        # Simplificación para obtener el valor
+                        expression_value = ctx.getText().split('<-')[1].strip()
+                        actual_symbol.initial_value = expression_value
+
                     node_data = {
                         "type": children_types[-1]["type"], "hasError": False}
                     self.nodes[ctx] = node_data
