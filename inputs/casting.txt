@@ -1,0 +1,33 @@
+class A {
+   var : Int <- 0;
+
+   print_var() : SELF_TYPE {
+      {
+         out_string("Valor en A: ");
+         out_int(var);
+         out_string("\n");
+         self;
+      }
+   };
+};
+
+class B inherits A {
+   set_var_to_ten() : SELF_TYPE {
+      {
+         var <- 10;
+         self;
+      }
+   };
+};
+
+class Main {
+   
+   a_obj : A;
+
+   main() : Object {
+      {
+         a_obj <- (new B).set_var_to_ten() as A;
+         a_obj.print_var();  -- Esto debería imprimir "Valor en A: 10"
+      }
+   };
+};

@@ -5,6 +5,7 @@ from modules.Semantic import SemanticAnalyzer
 from yapl.YAPLLexer import YAPLLexer
 from yapl.YAPLParser import YAPLParser
 
+
 def build_tree(dot, node, parser, parent=None):
     if isinstance(node, TerminalNode):
         dot.node(str(id(node)), node.getText())
@@ -35,7 +36,7 @@ def main():
 
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./inputs/realinput.txt')
+    input_stream = FileStream('./inputs/casting.txt', encoding="utf-8")
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()
@@ -53,7 +54,7 @@ def main():
     tree = parser.program()
 
     # Check for errors before building tree
-    
+
     # Build the graph
     dot = Digraph()
     build_tree(dot, tree, parser)
@@ -65,11 +66,11 @@ def main():
     semantic_analyzer.visit(tree)
     print("\nTabla de Símbolos:")
     print("Nombre\t\tTipo")
-    #for symbol, value in semantic_analyzer.symbol_table.table.items():
-        #print(f"{symbol}\t\t{value.type}")
+    # for symbol, value in semantic_analyzer.symbol_table.table.items():
+    # print(f"{symbol}\t\t{value.type}")
 
     print("\n\nTipos:")
-    #semantic_analyzer.symbol_table.display()
+    # semantic_analyzer.symbol_table.display()
 
 
 if __name__ == '__main__':
