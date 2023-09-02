@@ -1,23 +1,26 @@
 from graphviz import Digraph
 
+
 class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None,scope = None,myscope = None):
+    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope=None, initial_value=None):
         self.name = name
         self.type = _type
         self.definicion = definicion
         self.derivation = derivation
         self.scope = scope
         self.myscope = myscope
+        self.initial_value = initial_value
 
     def __str__(self):
+        base_str = f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}\t{self.initial_value}"
         if len(self.name) < 8:
-            return f"{self.name}\t\t{self.type}\t{self.definicion}\t{self.derivation}"
+            return base_str + "\t"
         else:
-            return f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}"
-        
+            return base_str
+
 
 class Scope:
-    def __init__(self, parent=None, number=0,name="global", type="Object"):
+    def __init__(self, parent=None, number=0, name="global", type="Object"):
         self.number = number
         self.symbols = {}
         self.parent = parent
@@ -33,7 +36,7 @@ class Scope:
 
     def lookup(self, name):
         return self.symbols.get(name, None)
-    
+
     def lookup_scope(self, name):
         if self.name == name:
             return self
@@ -55,35 +58,35 @@ class SymboTable:
         self.current_scope = self.root
         self.scope_counter = 0
 
-    def open_scope(self, name,type):
+    def open_scope(self, name, type):
         self.scope_counter += 1
-        new_scope = Scope(parent=self.current_scope, number=self.scope_counter,name=name,type=type)
+        new_scope = Scope(parent=self.current_scope,
+                          number=self.scope_counter, name=name, type=type)
         self.current_scope.add_child(new_scope)
         self.current_scope = new_scope
 
     def close_scope(self):
         self.current_scope = self.current_scope.parent
 
-
     def add(self, symbol):
         self.current_scope.add(symbol)
 
     def lookup(self, name):
-        scope = self.current_scope 
+        scope = self.current_scope
         while scope:
             symbol = scope.lookup(name)
             if symbol:
                 return symbol
             scope = scope.parent
         return None
-    
+
     def lookup_scope(self, name):
-        scope = self.current_scope 
+        scope = self.current_scope
         while scope:
             symbol = scope.lookup_scope(name)
             if symbol:
                 return scope
-            
+
             if scope and scope.name == 'global':
                 for child in scope.children:
                     if child.name == name:
@@ -103,7 +106,8 @@ class SymboTable:
     def delete(self, name, scope=None):
         scope_to_delete = scope if scope else self.current_scope
         if scope_to_delete in self.table:
-            self.table[scope_to_delete] = [symbol for symbol in self.table[scope_to_delete] if symbol.name != name]
+            self.table[scope_to_delete] = [
+                symbol for symbol in self.table[scope_to_delete] if symbol.name != name]
 
     def display(self):
         print("Tabla de Símbolos:")
@@ -113,8 +117,9 @@ class SymboTable:
     def copyTree(self, scope):
         if not scope:
             return None
-        
-        new_scope = Scope(parent=scope.parent, number=scope.number,name=scope.name,type=scope.type)
+
+        new_scope = Scope(parent=scope.parent, number=scope.number,
+                          name=scope.name, type=scope.type)
         for symbol in scope.symbols.values():
             new_scope.add(symbol)
 
@@ -132,7 +137,8 @@ class SymboTable:
         if not node:
             return
 
-        dot.node(f'{node.number}', f'Scope: {node.number}\n{node.name}\n{node.type}')
+        dot.node(f'{node.number}',
+                 f'Scope: {node.number}\n{node.name}\n{node.type}')
 
         for child in node.children:
             dot.edge(f'{node.number}', f'{child.number}')
@@ -142,3 +148,15 @@ class SymboTable:
         #     print(f"\nAlcance: {scope}")
         #     for symbol in symbols:
         #         print(str(symbol))
+
+    def get_all_symbols(self):
+        symbols = []
+
+        def collect_symbols(scope):
+            for symbol in scope.symbols.values():
+                symbols.append(symbol)
+            for child in scope.children:
+                collect_symbols(child)
+
+        collect_symbols(self.root)
+        return symbols
