@@ -1,98 +1,87 @@
-# Generated from YAPL.g4 by ANTLR 4.7.2
+# Generated from YAPL.g4 by ANTLR 4.13.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
-from typing.io import TextIO
 import sys
+if sys.version_info[1] > 5:
+	from typing import TextIO
+else:
+	from typing.io import TextIO
 
 def serializedATN():
-    with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\66")
-        buf.write("\u00c7\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2")
-        buf.write("\3\2\6\2\20\n\2\r\2\16\2\21\3\2\3\2\3\3\3\3\3\3\3\3\5")
-        buf.write("\3\32\n\3\3\3\3\3\3\3\3\3\7\3 \n\3\f\3\16\3#\13\3\3\3")
-        buf.write("\3\3\3\4\3\4\3\4\3\4\3\4\7\4,\n\4\f\4\16\4/\13\4\5\4\61")
-        buf.write("\n\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5")
-        buf.write("\4?\n\4\5\4A\n\4\3\5\3\5\3\5\3\5\3\6\3\6\3\6\3\6\3\6\3")
-        buf.write("\6\7\6M\n\6\f\6\16\6P\13\6\5\6R\n\6\3\6\3\6\3\6\3\6\3")
-        buf.write("\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6")
-        buf.write("\3\6\6\6g\n\6\r\6\16\6h\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3")
-        buf.write("\6\5\6s\n\6\3\6\3\6\3\6\3\6\3\6\3\6\5\6{\n\6\7\6}\n\6")
-        buf.write("\f\6\16\6\u0080\13\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3")
-        buf.write("\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6")
-        buf.write("\5\6\u0098\n\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6")
-        buf.write("\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3\6\3")
-        buf.write("\6\5\6\u00b2\n\6\3\6\3\6\3\6\3\6\3\6\3\6\7\6\u00ba\n\6")
-        buf.write("\f\6\16\6\u00bd\13\6\5\6\u00bf\n\6\3\6\7\6\u00c2\n\6\f")
-        buf.write("\6\16\6\u00c5\13\6\3\6\2\3\n\7\2\4\6\b\n\2\2\2\u00e8\2")
-        buf.write("\17\3\2\2\2\4\25\3\2\2\2\6@\3\2\2\2\bB\3\2\2\2\n\u0097")
-        buf.write("\3\2\2\2\f\r\5\4\3\2\r\16\7\36\2\2\16\20\3\2\2\2\17\f")
-        buf.write("\3\2\2\2\20\21\3\2\2\2\21\17\3\2\2\2\21\22\3\2\2\2\22")
-        buf.write("\23\3\2\2\2\23\24\7\2\2\3\24\3\3\2\2\2\25\26\7\3\2\2\26")
-        buf.write("\31\7\23\2\2\27\30\7\t\2\2\30\32\7\23\2\2\31\27\3\2\2")
-        buf.write("\2\31\32\3\2\2\2\32\33\3\2\2\2\33!\7\31\2\2\34\35\5\6")
-        buf.write("\4\2\35\36\7\36\2\2\36 \3\2\2\2\37\34\3\2\2\2 #\3\2\2")
-        buf.write("\2!\37\3\2\2\2!\"\3\2\2\2\"$\3\2\2\2#!\3\2\2\2$%\7\32")
-        buf.write("\2\2%\5\3\2\2\2&\'\7\24\2\2\'\60\7\27\2\2(-\5\b\5\2)*")
-        buf.write("\7\37\2\2*,\5\b\5\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3")
-        buf.write("\2\2\2.\61\3\2\2\2/-\3\2\2\2\60(\3\2\2\2\60\61\3\2\2\2")
-        buf.write("\61\62\3\2\2\2\62\63\7\30\2\2\63\64\7\35\2\2\64\65\7\23")
-        buf.write("\2\2\65\66\7\31\2\2\66\67\5\n\6\2\678\7\32\2\28A\3\2\2")
-        buf.write("\29:\7\24\2\2:;\7\35\2\2;>\7\23\2\2<=\7\60\2\2=?\5\n\6")
-        buf.write("\2><\3\2\2\2>?\3\2\2\2?A\3\2\2\2@&\3\2\2\2@9\3\2\2\2A")
-        buf.write("\7\3\2\2\2BC\7\24\2\2CD\7\35\2\2DE\7\23\2\2E\t\3\2\2\2")
-        buf.write("FG\b\6\1\2GH\7\24\2\2HQ\7\27\2\2IN\5\n\6\2JK\7\37\2\2")
-        buf.write("KM\5\n\6\2LJ\3\2\2\2MP\3\2\2\2NL\3\2\2\2NO\3\2\2\2OR\3")
-        buf.write("\2\2\2PN\3\2\2\2QI\3\2\2\2QR\3\2\2\2RS\3\2\2\2S\u0098")
-        buf.write("\7\30\2\2TU\7\6\2\2UV\5\n\6\2VW\7\r\2\2WX\5\n\6\2XY\7")
-        buf.write("\4\2\2YZ\5\n\6\2Z[\7\5\2\2[\u0098\3\2\2\2\\]\7\16\2\2")
-        buf.write("]^\5\n\6\2^_\7\13\2\2_`\5\n\6\2`a\7\f\2\2a\u0098\3\2\2")
-        buf.write("\2bf\7\31\2\2cd\5\n\6\2de\7\36\2\2eg\3\2\2\2fc\3\2\2\2")
-        buf.write("gh\3\2\2\2hf\3\2\2\2hi\3\2\2\2ij\3\2\2\2jk\7\32\2\2k\u0098")
-        buf.write("\3\2\2\2lm\7\b\2\2mn\7\24\2\2no\7\35\2\2or\7\23\2\2pq")
-        buf.write("\7\60\2\2qs\5\n\6\2rp\3\2\2\2rs\3\2\2\2s~\3\2\2\2tu\7")
-        buf.write("\37\2\2uv\7\24\2\2vw\7\35\2\2wz\7\23\2\2xy\7\60\2\2y{")
-        buf.write("\5\n\6\2zx\3\2\2\2z{\3\2\2\2{}\3\2\2\2|t\3\2\2\2}\u0080")
-        buf.write("\3\2\2\2~|\3\2\2\2~\177\3\2\2\2\177\u0081\3\2\2\2\u0080")
-        buf.write("~\3\2\2\2\u0081\u0082\7\7\2\2\u0082\u0098\5\n\6\25\u0083")
-        buf.write("\u0084\7\17\2\2\u0084\u0098\7\23\2\2\u0085\u0086\7!\2")
-        buf.write("\2\u0086\u0098\5\n\6\23\u0087\u0088\7\n\2\2\u0088\u0098")
-        buf.write("\5\n\6\22\u0089\u008a\7\20\2\2\u008a\u0098\5\n\6\n\u008b")
-        buf.write("\u008c\7\24\2\2\u008c\u008d\7\60\2\2\u008d\u0098\5\n\6")
-        buf.write("\t\u008e\u008f\7\27\2\2\u008f\u0090\5\n\6\2\u0090\u0091")
-        buf.write("\7\30\2\2\u0091\u0098\3\2\2\2\u0092\u0098\7\24\2\2\u0093")
-        buf.write("\u0098\7\62\2\2\u0094\u0098\7\61\2\2\u0095\u0098\7\21")
-        buf.write("\2\2\u0096\u0098\7\22\2\2\u0097F\3\2\2\2\u0097T\3\2\2")
-        buf.write("\2\u0097\\\3\2\2\2\u0097b\3\2\2\2\u0097l\3\2\2\2\u0097")
-        buf.write("\u0083\3\2\2\2\u0097\u0085\3\2\2\2\u0097\u0087\3\2\2\2")
-        buf.write("\u0097\u0089\3\2\2\2\u0097\u008b\3\2\2\2\u0097\u008e\3")
-        buf.write("\2\2\2\u0097\u0092\3\2\2\2\u0097\u0093\3\2\2\2\u0097\u0094")
-        buf.write("\3\2\2\2\u0097\u0095\3\2\2\2\u0097\u0096\3\2\2\2\u0098")
-        buf.write("\u00c3\3\2\2\2\u0099\u009a\f\21\2\2\u009a\u009b\7#\2\2")
-        buf.write("\u009b\u00c2\5\n\6\22\u009c\u009d\f\20\2\2\u009d\u009e")
-        buf.write("\7$\2\2\u009e\u00c2\5\n\6\21\u009f\u00a0\f\17\2\2\u00a0")
-        buf.write("\u00a1\7%\2\2\u00a1\u00c2\5\n\6\20\u00a2\u00a3\f\16\2")
-        buf.write("\2\u00a3\u00a4\7&\2\2\u00a4\u00c2\5\n\6\17\u00a5\u00a6")
-        buf.write("\f\r\2\2\u00a6\u00a7\7\'\2\2\u00a7\u00c2\5\n\6\16\u00a8")
-        buf.write("\u00a9\f\f\2\2\u00a9\u00aa\7(\2\2\u00aa\u00c2\5\n\6\r")
-        buf.write("\u00ab\u00ac\f\13\2\2\u00ac\u00ad\7)\2\2\u00ad\u00c2\5")
-        buf.write("\n\6\f\u00ae\u00b1\f\32\2\2\u00af\u00b0\7\"\2\2\u00b0")
-        buf.write("\u00b2\7\23\2\2\u00b1\u00af\3\2\2\2\u00b1\u00b2\3\2\2")
-        buf.write("\2\u00b2\u00b3\3\2\2\2\u00b3\u00b4\7 \2\2\u00b4\u00b5")
-        buf.write("\7\24\2\2\u00b5\u00be\7\27\2\2\u00b6\u00bb\5\n\6\2\u00b7")
-        buf.write("\u00b8\7\37\2\2\u00b8\u00ba\5\n\6\2\u00b9\u00b7\3\2\2")
-        buf.write("\2\u00ba\u00bd\3\2\2\2\u00bb\u00b9\3\2\2\2\u00bb\u00bc")
-        buf.write("\3\2\2\2\u00bc\u00bf\3\2\2\2\u00bd\u00bb\3\2\2\2\u00be")
-        buf.write("\u00b6\3\2\2\2\u00be\u00bf\3\2\2\2\u00bf\u00c0\3\2\2\2")
-        buf.write("\u00c0\u00c2\7\30\2\2\u00c1\u0099\3\2\2\2\u00c1\u009c")
-        buf.write("\3\2\2\2\u00c1\u009f\3\2\2\2\u00c1\u00a2\3\2\2\2\u00c1")
-        buf.write("\u00a5\3\2\2\2\u00c1\u00a8\3\2\2\2\u00c1\u00ab\3\2\2\2")
-        buf.write("\u00c1\u00ae\3\2\2\2\u00c2\u00c5\3\2\2\2\u00c3\u00c1\3")
-        buf.write("\2\2\2\u00c3\u00c4\3\2\2\2\u00c4\13\3\2\2\2\u00c5\u00c3")
-        buf.write("\3\2\2\2\25\21\31!-\60>@NQhrz~\u0097\u00b1\u00bb\u00be")
-        buf.write("\u00c1\u00c3")
-        return buf.getvalue()
-
+    return [
+        4,1,52,197,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,1,0,1,0,1,0,4,
+        0,14,8,0,11,0,12,0,15,1,0,1,0,1,1,1,1,1,1,1,1,3,1,24,8,1,1,1,1,1,
+        1,1,1,1,5,1,30,8,1,10,1,12,1,33,9,1,1,1,1,1,1,2,1,2,1,2,1,2,1,2,
+        5,2,42,8,2,10,2,12,2,45,9,2,3,2,47,8,2,1,2,1,2,1,2,1,2,1,2,1,2,1,
+        2,1,2,1,2,1,2,1,2,1,2,3,2,61,8,2,3,2,63,8,2,1,3,1,3,1,3,1,3,1,4,
+        1,4,1,4,1,4,1,4,1,4,5,4,75,8,4,10,4,12,4,78,9,4,3,4,80,8,4,1,4,1,
+        4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,
+        4,1,4,4,4,101,8,4,11,4,12,4,102,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,
+        3,4,113,8,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,121,8,4,5,4,123,8,4,10,4,
+        12,4,126,9,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,
+        1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,150,8,4,1,4,1,4,1,4,1,4,
+        1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,
+        1,4,1,4,1,4,1,4,3,4,176,8,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,184,8,4,
+        10,4,12,4,187,9,4,3,4,189,8,4,1,4,5,4,192,8,4,10,4,12,4,195,9,4,
+        1,4,0,1,8,5,0,2,4,6,8,0,0,230,0,13,1,0,0,0,2,19,1,0,0,0,4,62,1,0,
+        0,0,6,64,1,0,0,0,8,149,1,0,0,0,10,11,3,2,1,0,11,12,5,28,0,0,12,14,
+        1,0,0,0,13,10,1,0,0,0,14,15,1,0,0,0,15,13,1,0,0,0,15,16,1,0,0,0,
+        16,17,1,0,0,0,17,18,5,0,0,1,18,1,1,0,0,0,19,20,5,1,0,0,20,23,5,17,
+        0,0,21,22,5,7,0,0,22,24,5,17,0,0,23,21,1,0,0,0,23,24,1,0,0,0,24,
+        25,1,0,0,0,25,31,5,23,0,0,26,27,3,4,2,0,27,28,5,28,0,0,28,30,1,0,
+        0,0,29,26,1,0,0,0,30,33,1,0,0,0,31,29,1,0,0,0,31,32,1,0,0,0,32,34,
+        1,0,0,0,33,31,1,0,0,0,34,35,5,24,0,0,35,3,1,0,0,0,36,37,5,18,0,0,
+        37,46,5,21,0,0,38,43,3,6,3,0,39,40,5,29,0,0,40,42,3,6,3,0,41,39,
+        1,0,0,0,42,45,1,0,0,0,43,41,1,0,0,0,43,44,1,0,0,0,44,47,1,0,0,0,
+        45,43,1,0,0,0,46,38,1,0,0,0,46,47,1,0,0,0,47,48,1,0,0,0,48,49,5,
+        22,0,0,49,50,5,27,0,0,50,51,5,17,0,0,51,52,5,23,0,0,52,53,3,8,4,
+        0,53,54,5,24,0,0,54,63,1,0,0,0,55,56,5,18,0,0,56,57,5,27,0,0,57,
+        60,5,17,0,0,58,59,5,46,0,0,59,61,3,8,4,0,60,58,1,0,0,0,60,61,1,0,
+        0,0,61,63,1,0,0,0,62,36,1,0,0,0,62,55,1,0,0,0,63,5,1,0,0,0,64,65,
+        5,18,0,0,65,66,5,27,0,0,66,67,5,17,0,0,67,7,1,0,0,0,68,69,6,4,-1,
+        0,69,70,5,18,0,0,70,79,5,21,0,0,71,76,3,8,4,0,72,73,5,29,0,0,73,
+        75,3,8,4,0,74,72,1,0,0,0,75,78,1,0,0,0,76,74,1,0,0,0,76,77,1,0,0,
+        0,77,80,1,0,0,0,78,76,1,0,0,0,79,71,1,0,0,0,79,80,1,0,0,0,80,81,
+        1,0,0,0,81,150,5,22,0,0,82,83,5,4,0,0,83,84,3,8,4,0,84,85,5,11,0,
+        0,85,86,3,8,4,0,86,87,5,2,0,0,87,88,3,8,4,0,88,89,5,3,0,0,89,150,
+        1,0,0,0,90,91,5,12,0,0,91,92,3,8,4,0,92,93,5,9,0,0,93,94,3,8,4,0,
+        94,95,5,10,0,0,95,150,1,0,0,0,96,100,5,23,0,0,97,98,3,8,4,0,98,99,
+        5,28,0,0,99,101,1,0,0,0,100,97,1,0,0,0,101,102,1,0,0,0,102,100,1,
+        0,0,0,102,103,1,0,0,0,103,104,1,0,0,0,104,105,5,24,0,0,105,150,1,
+        0,0,0,106,107,5,6,0,0,107,108,5,18,0,0,108,109,5,27,0,0,109,112,
+        5,17,0,0,110,111,5,46,0,0,111,113,3,8,4,0,112,110,1,0,0,0,112,113,
+        1,0,0,0,113,124,1,0,0,0,114,115,5,29,0,0,115,116,5,18,0,0,116,117,
+        5,27,0,0,117,120,5,17,0,0,118,119,5,46,0,0,119,121,3,8,4,0,120,118,
+        1,0,0,0,120,121,1,0,0,0,121,123,1,0,0,0,122,114,1,0,0,0,123,126,
+        1,0,0,0,124,122,1,0,0,0,124,125,1,0,0,0,125,127,1,0,0,0,126,124,
+        1,0,0,0,127,128,5,5,0,0,128,150,3,8,4,19,129,130,5,13,0,0,130,150,
+        5,17,0,0,131,132,5,31,0,0,132,150,3,8,4,17,133,134,5,8,0,0,134,150,
+        3,8,4,16,135,136,5,14,0,0,136,150,3,8,4,8,137,138,5,18,0,0,138,139,
+        5,46,0,0,139,150,3,8,4,7,140,141,5,21,0,0,141,142,3,8,4,0,142,143,
+        5,22,0,0,143,150,1,0,0,0,144,150,5,18,0,0,145,150,5,48,0,0,146,150,
+        5,47,0,0,147,150,5,15,0,0,148,150,5,16,0,0,149,68,1,0,0,0,149,82,
+        1,0,0,0,149,90,1,0,0,0,149,96,1,0,0,0,149,106,1,0,0,0,149,129,1,
+        0,0,0,149,131,1,0,0,0,149,133,1,0,0,0,149,135,1,0,0,0,149,137,1,
+        0,0,0,149,140,1,0,0,0,149,144,1,0,0,0,149,145,1,0,0,0,149,146,1,
+        0,0,0,149,147,1,0,0,0,149,148,1,0,0,0,150,193,1,0,0,0,151,152,10,
+        15,0,0,152,153,5,33,0,0,153,192,3,8,4,16,154,155,10,14,0,0,155,156,
+        5,34,0,0,156,192,3,8,4,15,157,158,10,13,0,0,158,159,5,35,0,0,159,
+        192,3,8,4,14,160,161,10,12,0,0,161,162,5,36,0,0,162,192,3,8,4,13,
+        163,164,10,11,0,0,164,165,5,37,0,0,165,192,3,8,4,12,166,167,10,10,
+        0,0,167,168,5,38,0,0,168,192,3,8,4,11,169,170,10,9,0,0,170,171,5,
+        39,0,0,171,192,3,8,4,10,172,175,10,24,0,0,173,174,5,32,0,0,174,176,
+        5,17,0,0,175,173,1,0,0,0,175,176,1,0,0,0,176,177,1,0,0,0,177,178,
+        5,30,0,0,178,179,5,18,0,0,179,188,5,21,0,0,180,185,3,8,4,0,181,182,
+        5,29,0,0,182,184,3,8,4,0,183,181,1,0,0,0,184,187,1,0,0,0,185,183,
+        1,0,0,0,185,186,1,0,0,0,186,189,1,0,0,0,187,185,1,0,0,0,188,180,
+        1,0,0,0,188,189,1,0,0,0,189,190,1,0,0,0,190,192,5,22,0,0,191,151,
+        1,0,0,0,191,154,1,0,0,0,191,157,1,0,0,0,191,160,1,0,0,0,191,163,
+        1,0,0,0,191,166,1,0,0,0,191,169,1,0,0,0,191,172,1,0,0,0,192,195,
+        1,0,0,0,193,191,1,0,0,0,193,194,1,0,0,0,194,9,1,0,0,0,195,193,1,
+        0,0,0,19,15,23,31,43,46,60,62,76,79,102,112,120,124,149,175,185,
+        188,191,193
+    ]
 
 class YAPLParser ( Parser ):
 
@@ -189,13 +178,15 @@ class YAPLParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.7.2")
+        self.checkVersion("4.13.0")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
 
 
+
     class ProgramContext(ParserRuleContext):
+        __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -249,7 +240,7 @@ class YAPLParser ( Parser ):
                 self.state = 15 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==YAPLParser.CLASS):
+                if not (_la==1):
                     break
 
             self.state = 17
@@ -262,7 +253,9 @@ class YAPLParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class ClassDefContext(ParserRuleContext):
+        __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -327,7 +320,7 @@ class YAPLParser ( Parser ):
             self.state = 23
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==YAPLParser.INHERITS:
+            if _la==7:
                 self.state = 21
                 self.match(YAPLParser.INHERITS)
                 self.state = 22
@@ -339,7 +332,7 @@ class YAPLParser ( Parser ):
             self.state = 31
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==YAPLParser.OBJECT_ID:
+            while _la==18:
                 self.state = 26
                 self.featureDef()
                 self.state = 27
@@ -358,7 +351,9 @@ class YAPLParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class FeatureDefContext(ParserRuleContext):
+        __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -437,13 +432,13 @@ class YAPLParser ( Parser ):
                 self.state = 46
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==YAPLParser.OBJECT_ID:
+                if _la==18:
                     self.state = 38
                     self.formalDef()
                     self.state = 43
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    while _la==YAPLParser.COMMA:
+                    while _la==29:
                         self.state = 39
                         self.match(YAPLParser.COMMA)
                         self.state = 40
@@ -479,7 +474,7 @@ class YAPLParser ( Parser ):
                 self.state = 60
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==YAPLParser.ASSIGN:
+                if _la==46:
                     self.state = 58
                     self.match(YAPLParser.ASSIGN)
                     self.state = 59
@@ -497,7 +492,9 @@ class YAPLParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class FormalDefContext(ParserRuleContext):
+        __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -546,7 +543,9 @@ class YAPLParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class ExprContext(ParserRuleContext):
+        __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
@@ -719,13 +718,13 @@ class YAPLParser ( Parser ):
                 self.state = 79
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << YAPLParser.IF) | (1 << YAPLParser.LET) | (1 << YAPLParser.ISVOID) | (1 << YAPLParser.WHILE) | (1 << YAPLParser.NEW) | (1 << YAPLParser.NOT) | (1 << YAPLParser.TRUE) | (1 << YAPLParser.FALSE) | (1 << YAPLParser.OBJECT_ID) | (1 << YAPLParser.LPAREN) | (1 << YAPLParser.LBRACE) | (1 << YAPLParser.NEG) | (1 << YAPLParser.STRING) | (1 << YAPLParser.INT))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & 422214623424848) != 0):
                     self.state = 71
                     self.expr(0)
                     self.state = 76
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    while _la==YAPLParser.COMMA:
+                    while _la==29:
                         self.state = 72
                         self.match(YAPLParser.COMMA)
                         self.state = 73
@@ -784,7 +783,7 @@ class YAPLParser ( Parser ):
                     self.state = 102 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << YAPLParser.IF) | (1 << YAPLParser.LET) | (1 << YAPLParser.ISVOID) | (1 << YAPLParser.WHILE) | (1 << YAPLParser.NEW) | (1 << YAPLParser.NOT) | (1 << YAPLParser.TRUE) | (1 << YAPLParser.FALSE) | (1 << YAPLParser.OBJECT_ID) | (1 << YAPLParser.LPAREN) | (1 << YAPLParser.LBRACE) | (1 << YAPLParser.NEG) | (1 << YAPLParser.STRING) | (1 << YAPLParser.INT))) != 0)):
+                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 422214623424848) != 0)):
                         break
 
                 self.state = 104
@@ -803,7 +802,7 @@ class YAPLParser ( Parser ):
                 self.state = 112
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==YAPLParser.ASSIGN:
+                if _la==46:
                     self.state = 110
                     self.match(YAPLParser.ASSIGN)
                     self.state = 111
@@ -813,7 +812,7 @@ class YAPLParser ( Parser ):
                 self.state = 124
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==YAPLParser.COMMA:
+                while _la==29:
                     self.state = 114
                     self.match(YAPLParser.COMMA)
                     self.state = 115
@@ -825,7 +824,7 @@ class YAPLParser ( Parser ):
                     self.state = 120
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==YAPLParser.ASSIGN:
+                    if _la==46:
                         self.state = 118
                         self.match(YAPLParser.ASSIGN)
                         self.state = 119
@@ -1027,7 +1026,7 @@ class YAPLParser ( Parser ):
                         self.state = 175
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if _la==YAPLParser.AT:
+                        if _la==32:
                             self.state = 173
                             self.match(YAPLParser.AT)
                             self.state = 174
@@ -1043,13 +1042,13 @@ class YAPLParser ( Parser ):
                         self.state = 188
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << YAPLParser.IF) | (1 << YAPLParser.LET) | (1 << YAPLParser.ISVOID) | (1 << YAPLParser.WHILE) | (1 << YAPLParser.NEW) | (1 << YAPLParser.NOT) | (1 << YAPLParser.TRUE) | (1 << YAPLParser.FALSE) | (1 << YAPLParser.OBJECT_ID) | (1 << YAPLParser.LPAREN) | (1 << YAPLParser.LBRACE) | (1 << YAPLParser.NEG) | (1 << YAPLParser.STRING) | (1 << YAPLParser.INT))) != 0):
+                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & 422214623424848) != 0):
                             self.state = 180
                             self.expr(0)
                             self.state = 185
                             self._errHandler.sync(self)
                             _la = self._input.LA(1)
-                            while _la==YAPLParser.COMMA:
+                            while _la==29:
                                 self.state = 181
                                 self.match(YAPLParser.COMMA)
                                 self.state = 182

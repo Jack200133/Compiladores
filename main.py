@@ -63,6 +63,7 @@ def main():
     dot.view()
     semantic_analyzer = SemanticAnalyzer()
     semantic_analyzer.visit(tree)
+    semantic_analyzer.symbol_table.displayTree()
     print("\nTabla de Símbolos:")
     print("Nombre\t\tTipo")
     #for symbol, value in semantic_analyzer.symbol_table.table.items():
