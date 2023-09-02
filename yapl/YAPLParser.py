@@ -1,4 +1,4 @@
-# Generated from YAPL.g4 by ANTLR 4.13.0
+# Generated from g4/YAPL.g4 by ANTLR 4.13.0
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
