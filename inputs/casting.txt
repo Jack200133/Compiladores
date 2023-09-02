@@ -1,0 +1,32 @@
+class A {
+   var : Int <- 0;
+   
+   value() : Int { var };
+
+   set_var(num : Int) : SELF_TYPE {
+      var <- num;
+      self;
+   };
+
+   method2(num1 : Int, num2 : Int) : A {
+      var <- num1 + num2;
+      self;
+   };
+};
+
+class Main inherits IO {
+   avar : A;
+   
+   main() : Object {
+      {
+         avar <- (new A);
+         avar.set_var(2);
+         out_int(avar.value());
+         out_string("\n");
+
+         avar.method2(avar.value(), 3);
+         out_int(avar.value());
+         out_string("\n");
+      }
+   };
+};
