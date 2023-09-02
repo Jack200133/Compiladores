@@ -1,5 +1,6 @@
 class Circle inherits Shape {
-    radius: Int <- 10;
+    radius: Int <- true;
+    color: String <- "Red";
     color: String <- "Red";
     
     diameter: Int <- radius * 2;
@@ -9,11 +10,11 @@ class Circle inherits Shape {
             radius <- 8
         else 
             radius <- 4
-        fi
+        fi;
         return 3 * radius * radius;
     };
 
-    getColor(): String {
+    getColor(algo: String): String {
         return color;
     };
 };
@@ -21,11 +22,12 @@ class Circle inherits Shape {
 class Rectangle inherits Shape {
     length: Int <- 5;
     width: Int <- 10;
-    
+    radius: Bool <- true;
+
     getArea(): Int {
         while length < width loop {
             length <- length + 1;
-        } pool
+        } pool;
         return length * width;
     };
 };

@@ -1,95 +1,118 @@
 grammar YAPL;
 
-// Palabras reservadas
-CLASS: 'class'|'CLASS';
-ELSE: 'else'|'ELSE';
-FALSE: 'false';
-TRUE: 'true';
-FI: 'fi'|'FI';
-IF: 'if'|'IF';
-IN: 'in'|'IN';
-INHERITS: 'inherits'|'INHERITS';
-ISVOID: 'isvoid'|'ISVOID';
-LOOP: 'loop'|'LOOP';
-POOL: 'pool'|'POOL';
-THEN: 'then'|'THEN';
-WHILE: 'while'|'WHILE';
-NEW: 'new'|'NEW';
-NOT: 'not'|'NOT';
-AND: 'and'|'AND';
-OR: 'or'|'OR';
-LET: 'let'|'LET';
+// ----------------- Tokens -----------------
 
-// Reglas lexicas
-INT: [0-9]+; // Enteros
-TYPE_ID: [A-Z][a-z0-9_]*; // Identificadores de tipos
-ID: [a-z][a-zA-Z0-9_]*; // Identificadores
-STRING: '"' (~["\r\n\\] | '\\' ["\\/bfnrt])* '"';
+// Palabras reservadas
+CLASS       : [Cc][Ll][Aa][Ss][Ss] ;
+ELSE        : [Ee][Ll][Ss][Ee] ;
+FI          : [Ff][Ii] ;
+IF          : [Ii][Ff] ;
+IN          : [Ii][Nn] ;
+LET         : [Ll][Ee][Tt] ;
+INHERITS    : [Ii][Nn][Hh][Ee][Rr][Ii][Tt][Ss] ;
+ISVOID      : [Ii][Ss][Vv][Oo][Ii][Dd] ;
+LOOP        : [Ll][Oo][Oo][Pp] ;
+POOL        : [Pp][Oo][Oo][Ll] ;
+THEN        : [Tt][Hh][Ee][Nn] ;
+WHILE       : [Ww][Hh][Ii][Ll][Ee] ;
+NEW         : [Nn][Ee][Ww] ;
+NOT         : [Nn][Oo][Tt] ;
+TRUE        : 'true' ;
+FALSE       : 'false' ;
 
 // Identificadores
-SELF: 'self';
-SELF_TYPE: 'SELF_TYPE';
+TYPE_ID     : [A-Z][A-Za-z0-9_]* | SELF_TYPE;
+OBJECT_ID   : [a-z][A-Za-z0-9_]* | SELF;
+SELF        : 'self';
+SELF_TYPE   : 'SELF_TYPE';
 
 // Caracteres especiales
-PLUS: '+';
-MINUS: '-';
-MULT: '*';
-DOBLE: ':';
-DIV: '/';
-EQ: '=';
-LPAREN: '(';
-RPAREN: ')';
-LBRACE: '{';
-RBRACE: '}';
-SEMI: ';';
-COMMA: ',';
-LESS_THAN: '<'; // Menor que
-GREATER_THAN: '>'; // Mayor que
-AT: '@';
-DOT: '.';
-LEFT_ARROW: '<-';
-TILDE: '~'; // Virgulilla
+LPAREN  : '(' ;
+RPAREN  : ')' ;
+LBRACE  : '{' ;
+RBRACE  : '}' ;
+LBRACKET : '[' ;
+RBRACKET : ']' ;
 
-// WhiteSpace
-WS: [ \t\r\n\f]+ -> channel(HIDDEN);
+COLON   : ':' ;
+SEMICOLON : ';' ;
+COMMA   : ',' ;
+
+DOT     : '.' ;
+NEG     : '~' ;
+AT      : '@' ;
+
+MULT    : '*' ;
+DIV     : '/' ;
+PLUS    : '+' ;
+MINUS   : '-' ;
+
+LE      : '<=' ;
+LT      : '<' ;
+EQ      : '=' ;
+
+INCR    : '++' ;
+DECR    : '--' ;
+ASSIGN_MULT : '=*' ;
+ASSIGN_DIV  : '=/' ;
+ASSIGN_PLUS : '=+' ;
+ASSIGN_MINUS : '=-' ;
+ASSIGN  : '<-' ;
+
+// Cadenas
+STRING: '"' ( ESC_SEQ | ~["\\\r\n] )* '"';
+fragment ESC_SEQ: '\\' [btnfr"'\\];
+
+// Enteros
+INT     : [0-9]+ ;
+
+// Whitespaces
+WHITESPACE  : [\u0020\u0009\u000A\u000C\u000D\u000B]+ -> skip ;
 
 // Comentarios
-COMMENT: '--' ~[\n]* '\n' -> skip;
+COMMENT     : '--' .*? [\n\f\r] -> skip;
+COMMENT_BLOCK: '(' .? '*)' -> skip;
 
-// La regla ERROR captura cualquier caracter no reconocido y genera un token ERROR
-ERROR: . ;
+// Token de error
+ERROR : . ;
 
+// ----------------- Gramatica -----------------
 
-program: (classDef SEMI)+ EOF;
-classDef : CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (featureDef SEMI)* RBRACE ;
-featureDef : ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN DOBLE TYPE_ID LBRACE (expr)* (returnFunc)? RBRACE
-           | ID DOBLE TYPE_ID (LEFT_ARROW expr)?
-           ;
-formalDef: ID DOBLE TYPE_ID ;
-returnFunc: 'return' expr SEMI;
+program: (classDef SEMICOLON)+ EOF;
 
-expr : expr (AT TYPE_ID)? DOT ID LPAREN (expr (COMMA expr)*)? RPAREN
-    | ID LPAREN (expr (COMMA expr)*)? RPAREN
-    | IF expr THEN expr ELSE expr FI
-    | WHILE expr LOOP expr POOL
-    | LBRACE (expr SEMI)+ RBRACE
-    | LET ID DOBLE TYPE_ID (LEFT_ARROW expr)? (COMMA ID DOBLE TYPE_ID (LEFT_ARROW expr)?)* IN expr
-    | NEW TYPE_ID
-    | ISVOID expr
-    | expr DIV expr
-    | expr MULT expr
-    | expr MINUS expr
-    | expr PLUS expr
-    | TILDE expr
-    | expr LESS_THAN expr
-    | expr LESS_THAN EQ expr
-    | expr EQ expr
-    | NOT expr
-    | RPAREN expr LPAREN
-    | ID
-    | INT
-    | STRING
-    | TRUE
-    | FALSE   
-    | ID LEFT_ARROW expr
-    ;
+classDef: CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (featureDef SEMICOLON)* RBRACE ;
+
+featureDef : OBJECT_ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN COLON TYPE_ID LBRACE expr RBRACE 
+        | OBJECT_ID COLON TYPE_ID (ASSIGN expr)? ;
+
+formalDef: OBJECT_ID COLON TYPE_ID;
+
+expr    : expr  (AT TYPE_ID)? DOT OBJECT_ID LPAREN  (expr (COMMA expr)*)? RPAREN
+        | OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN
+        | IF expr THEN expr ELSE expr FI
+        | WHILE expr LOOP expr POOL
+        | LBRACE (expr SEMICOLON)+ RBRACE
+        | LET OBJECT_ID COLON TYPE_ID (ASSIGN expr)? (COMMA OBJECT_ID COLON TYPE_ID (ASSIGN expr)?)* IN expr
+        | NEW TYPE_ID 
+
+        | NEG expr
+        | ISVOID expr
+        | expr MULT expr
+        | expr DIV expr
+        | expr PLUS expr
+        | expr MINUS expr
+        | expr LE expr
+        | expr LT expr
+        | expr EQ expr
+        | NOT expr
+
+        | OBJECT_ID ASSIGN expr
+        
+        | LPAREN expr RPAREN
+
+        | OBJECT_ID
+        | INT
+        | STRING
+        | TRUE
+        | FALSE 
+        ;
