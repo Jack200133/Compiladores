@@ -4,5 +4,7 @@ class A inherits Int {
 
 class Main {
 
-	main() : Object { self };
+	main() : Object { 
+        var2
+     };
 };

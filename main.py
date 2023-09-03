@@ -38,8 +38,8 @@ def main():
 
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    #input_stream = FileStream('./inputs/onlymain.txt', encoding="utf-8")
-    input_stream = FileStream('./coolExp/list.cl', encoding="utf-8")
+    input_stream = FileStream('./inputs/onlymain.txt', encoding="utf-8")
+    #input_stream = FileStream('./coolExp/list.cl', encoding="utf-8")
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()

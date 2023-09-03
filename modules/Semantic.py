@@ -787,8 +787,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     variable_type = symbol.type  # Suponiendo que tu símbolo tiene un campo 'type'
                     node_data = {"type": variable_type, "hasError": False}
                 else:
-                    print(
-                        f"Error: la variable {object_id} no está definida.")
+                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: la variable {object_id} no está definida."
+                    print(sms)
+                    self.add_error(f"Error: la variable {object_id} no está definida.",ctx.start.line,ctx.start.column,sms)
                     # Manejar el error como prefieras
 
         # NEW TYPE_ID
