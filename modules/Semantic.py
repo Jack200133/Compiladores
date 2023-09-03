@@ -170,10 +170,10 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Buscar la clase Main si no existe, error
         main_symbol = self.symbol_table.lookup('Main')
         if main_symbol is None:
-            sms = f"Error Semántico. En la línea {ctx.end.line}, columna {ctx.start.column}. No se encontró la clase Main."
+            sms = f"Error Semántico. En la línea {ctx.stop.line}, columna {ctx.start.column}. No se encontró la clase Main."
             # print(sms)
             self.add_error("No se encontró la clase Main",
-                           ctx.start.line, ctx.start.column, sms)
+                           ctx.stop.line, ctx.stop.column, sms)
             return
 
         main_real_scope = None
@@ -410,6 +410,21 @@ class SemanticAnalyzer(ParseTreeVisitor):
             self.symbol_table.close_scope()
 
         result = children_types[-1]
+
+
+        # Error si main tiene params
+        bandera_ = False
+        for child_ in children:
+            if isinstance(child_,YAPLParser.FormalDefContext):
+                bandera_ = True
+                break
+
+        if bandera_:
+            sms = f"Error Sémantico. En la línea {ctx.start.line}, columna {ctx.start.column}: La funcion Main no debe tener parametros"
+            #print(sms)
+            self.add_error(f"La funcion Main no debe tener parametros",
+                               ctx.start.line, ctx.start.column, sms)
+
 
         # Si es una funcion
         # OBJECT_ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN COLON TYPE_ID LBRACE expr RBRACE
@@ -714,7 +729,6 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     self.nodes[ctx] = node_data
 
         # Expresiones de Comparacion <expr> <op> <expr>
-
         elif (ctx.PLUS() or ctx.MINUS() or ctx.MULT() or ctx.DIV()):
             # self.symbol_table.display()
             isnum = self.type_system.checkNumeric(

@@ -2,7 +2,7 @@ class Cons inherits List {
 	xcar : Int;
 	ccar : Int;
 	ycar : Bool;
-	xcdr : List;
+	Xcdr : List;
 	isNil() : Bool { false };
 	init(hd : Int, tl : List) : Cons {
 		{
