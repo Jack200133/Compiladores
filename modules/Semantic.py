@@ -413,17 +413,19 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
 
         # Error si main tiene params
-        bandera_ = False
-        for child_ in children:
-            if isinstance(child_,YAPLParser.FormalDefContext):
-                bandera_ = True
-                break
 
-        if bandera_:
-            sms = f"Error Sémantico. En la línea {ctx.start.line}, columna {ctx.start.column}: La funcion Main no debe tener parametros"
-            #print(sms)
-            self.add_error(f"La funcion Main no debe tener parametros",
-                               ctx.start.line, ctx.start.column, sms)
+        if name == "main" and symbol.scope == "Main.main":
+            bandera_ = False
+            for child_ in children:
+                if isinstance(child_,YAPLParser.FormalDefContext):
+                    bandera_ = True
+                    break
+
+            if bandera_:
+                sms = f"Error Sémantico. En la línea {ctx.start.line}, columna {ctx.start.column}: La funcion Main no debe tener parametros"
+                #print(sms)
+                self.add_error(f"La funcion Main no debe tener parametros",
+                                ctx.start.line, ctx.start.column, sms)
 
 
         # Si es una funcion
