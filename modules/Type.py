@@ -1,3 +1,5 @@
+from modules.Symbol import Symbol
+
 class TypeSystem:
     def __init__(self):
         self.table = {}
@@ -88,14 +90,20 @@ class TypeSystem:
         
         return False
     
-    def checkMethodSignature(self, method_A, method_B):
-        # Asumiendo que los métodos son diccionarios con claves "return_type" y "arg_types"
+    def checkMethodSignature(self, method_A:Symbol, method_B:Symbol,params_A, params_B,ctx):
         # Verifica que los métodos A y B tengan la misma firma
-        if method_A['return_type'] != method_B['return_type']:
-            return False
-        if method_A['arg_types'] != method_B['arg_types']:
-            return False
-        return True
+        firma = True
+        if self.is_inherited_from(method_A.type, method_B.type) == False and method_A.type != method_B.type:
+            print(f"Error semántico: El tipo de retorno del método {method_A.derivation} no coincide con el tipo de retorno del método {method_B.derivation}. En la línea {ctx.start.line}, columna {ctx.start.column}")
+            firma= False
+        if len(params_A) != len(params_B):
+            print(f"Error semántico: El número de parámetros del método {method_A.name} no coincide con el número de parámetros del método {method_B.name}. En la línea {ctx.start.line}, columna {ctx.start.column}")
+            firma= False
+        for i in range(len(params_A)):
+            if params_A[i] != params_B[i]:
+                print(f"Error semántico: El tipo del parámetro {params_A[i]} del método {method_A.name} no coincide con el tipo del parámetro {params_B[i]} del método {method_B.name}. En la línea {ctx.start.line}, columna {ctx.start.column}")
+                firma= False
+        return firma
 
     def __str__(self):
         return str(self.table)

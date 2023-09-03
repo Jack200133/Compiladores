@@ -145,6 +145,19 @@ class F{
 
 };
 
+class H inherits IO{
+
+   method5(num : Int) : A {  -- division
+      (let x : Int in
+         {
+            x <- num / 8;
+	    (new A).set_var(x);
+         }
+      )
+   };
+
+};
+
 
 class Main inherits IO {
    
@@ -178,7 +191,7 @@ class Main inherits IO {
 	     fi;
 	     
          a_var <- (new A).set_var(3);
-	     avar <- (new B).method2(avar.value(), a_var.value());
+	      avar <- (new B).method2(avar.value(), a_var.value());
          out_int(avar.value());
          out_string("\n");
          

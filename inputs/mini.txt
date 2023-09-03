@@ -1,0 +1,33 @@
+class A {
+    radius: Int <- true;
+    color: String <- "Red";
+    color: String <- "Red";
+    
+    diameter: Int <- radius * 2;
+
+    getDarea(diameter:Int): Int {
+        if true then 
+            radius <- 8
+        else 
+            radius <- 4
+        fi;
+        return 3 * radius * radius;
+    };
+
+    getColor(algo: String): String {
+        return color;
+    };
+};
+
+class B inherits A {
+    length: Int <- 5;
+    width: Int <- 10;
+    radius: Bool <- true;
+
+    getArea(): Int {
+        while length < width loop {
+            length <- length + 1;
+        } pool;
+        return length * width;
+    };
+};

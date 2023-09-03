@@ -83,6 +83,39 @@ class SemanticAnalyzer(ParseTreeVisitor):
             print("Error semántico: No se encontró la clase Main.")
             return
         return
+    
+    def recursiveCompi(self, parent_scope, current_scope):
+        # Copiamos los símbolos del alcance padre al alcance actual
+        for symbol_name, symbol in parent_scope.symbols.items():
+            new_symbol = Symbol(
+                name=symbol_name,
+                _type=symbol.type,
+                definicion=symbol.definicion,
+                derivation=symbol.derivation,
+                myscope=current_scope,
+                is_heredado=True
+            )
+            current_scope.add(new_symbol)
+
+        # Copiamos los hijos del alcance padre (si los tiene)
+        for child_scope in parent_scope.children:
+            # Abrimos un nuevo alcance
+            self.symbol_table.open_scope(name=child_scope.name, type=child_scope.type)
+
+            # Copiamos los símbolos y alcances del hijo del alcance padre al nuevo alcance
+            self.recursiveCompi(child_scope, self.symbol_table.current_scope)
+
+            # Cerramos el alcance
+            self.symbol_table.close_scope()
+
+
+    def addIO(self):
+        self.symbol_table.open_scope("IO", "Object")
+        self.symbol_table.add(Symbol("out_string", "String", "FeatureDef", "out_string -> SELF_TYPE", "IO.out_string"))
+        self.symbol_table.add(Symbol("out_int", "Int", "FeatureDef", "out_int -> SELF_TYPE", "IO.out_int"))
+        self.symbol_table.add(Symbol("in_string", "String", "FeatureDef", "in_string -> String", "IO.in_string"))
+        self.symbol_table.add(Symbol("in_int", "Int", "FeatureDef", "in_int -> Int", "IO.in_int"))
+        self.symbol_table.close_scope()
 
     def visitClassDef(self, ctx: YAPLParser.ClassDefContext):
         class_name = ctx.TYPE_ID()[0].getText()
@@ -112,35 +145,24 @@ class SemanticAnalyzer(ParseTreeVisitor):
             if inherits_from is not None:
                 symbol_parent = self.symbol_table.lookup(inherits_from)
                 if symbol_parent is None:
-                    print(
+                    if inherits_from == "IO":
+                        self.addIO()
+                    else:
+                        print(
                         f"Error semántico: la clase {class_name} hereda de una clase inexistente. En la linea {ctx.start.line}, columna {ctx.start.column}.")
                 else:
-                    childrealnode = None
+                    #self.recursiveCompi(symbol_parent)
+                    parent_scope = None
                     for child in symbol_parent.myscope.children:
                         if child.name == symbol_parent.name:
-                            childrealnode = child
+                            parent_scope = child
                             break
 
-                    if childrealnode is not None:
-                        parent_scope = childrealnode
-                        for symbol_name, symbol in parent_scope.symbols.items():
-                            new_symbol = Symbol(name=symbol_name, _type=symbol.type,
-                                                definicion=symbol.definicion,
-                                                derivation=symbol.derivation,
-                                                scope=self.symbol_table.current_scope)
-                            self.symbol_table.add(new_symbol)
-                        for child_scope in parent_scope.children:
-                            self.symbol_table.open_scope(
-                                name=child_scope.name, type=child_scope.type)
-                            # print(f"Abriendo alcance {child_scope.name},Scope: {child_scope.number},Current: {self.symbol_table.current_scope.number}")
-                            for symbol_name, symbol in child_scope.symbols.items():
-                                new_symbol = Symbol(name=symbol_name, _type=symbol.type,
-                                                    definicion=symbol.definicion,
-                                                    derivation=symbol.derivation,
-                                                    scope=self.symbol_table.current_scope)
-                                self.symbol_table.add(new_symbol)
-                            self.symbol_table.close_scope()
+                    if parent_scope is not None:
+                        self.recursiveCompi(parent_scope, self.symbol_table.current_scope)
+
             # Visitamos los hijos del nodo actual
+            self.symbol_table.displayTree()
             result = self.visitChildren(ctx)
             self.symbol_table.close_scope()  # Cerramos el alcance en la tabla de símbolos
             return result  # Retornamos el resultado
@@ -194,7 +216,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
     def visitFeatureDef(self, ctx: YAPLParser.FeatureDefContext):
         node_data = {"type": None, "hasError": False}
         name = ctx.OBJECT_ID().getText()
-
+        obj = ctx.getText()
         if ctx.TYPE_ID():
             type = ctx.TYPE_ID().getText()
         else:
@@ -208,15 +230,26 @@ class SemanticAnalyzer(ParseTreeVisitor):
             type = class_name
 
         # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
-        if self.symbol_table.lookup(name) is not None:
+        sym = self.symbol_table.lookup(name)
+        if sym is not None and sym.is_heredado == False:
             pass
             print(
                 f"Error semántico: el símbolo '{name}' ya ha sido declarado en el ámbito actual. En la linea {ctx.start.line}, columna {ctx.start.column}.")
 
         myscope = self.symbol_table.current_scope
+        
+        
+
+                
         symbol = Symbol(name, type, 'FeatureDef',
                         f"{dev} -> {type}", dev, myscope=myscope)
         self.symbol_table.add(symbol)
+
+        buscarFirma = False
+        if sym is not None and sym.is_heredado == True:
+            buscarFirma = True
+
+        
 
         if ctx.LPAREN():
             self.symbol_table.open_scope(name, type)
@@ -245,14 +278,40 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # TODO:
         if ctx.LPAREN():
             # print(ctx.getText())
+            returns = []
             args = []
             for index, child in enumerate(children):
                 if isinstance(child, YAPLParser.ExprContext):
+                    returns.append(index)
+                if isinstance(child, YAPLParser.FormalDefContext):
                     args.append(index)
             # self.symbol_table.display()
-            tipo = children_types[args[0]]["type"]
+            tipo = children_types[returns[0]]["type"]
             tipo_func = children_types[0]["type"]
-            if self.type_system.checkAssigment(tipo, tipo_func):
+
+            if buscarFirma:
+                # verificar la firma
+                # params de sym
+                old_params = []
+                real_scope = None
+                for child in sym.myscope.children:
+                    if child.name == sym.name:
+                        real_scope = child
+                        break
+                for param in real_scope.symbols:
+                    old_params.append(real_scope.symbols[param].type)
+
+                # params de ctx
+                new_params = []
+                for index in args:
+                    new_params.append(children_types[index]["type"])
+
+                signature = self.type_system.checkMethodSignature(symbol,sym, old_params, new_params, ctx)
+            else:
+                signature = True
+
+            retunr_tip = self.type_system.checkAssigment(tipo, tipo_func)
+            if  retunr_tip and signature:
                 node_data = {"type": tipo_func, "hasError": False}
                 self.nodes[ctx] = node_data
                 return node_data
