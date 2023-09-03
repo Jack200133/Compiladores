@@ -75,6 +75,30 @@ class SemanticAnalyzer(ParseTreeVisitor):
     def visitProgram(self, ctx: YAPLParser.ProgramContext):
         self.symbol_table = SymboTable()
         # self.symbol_table.open_scope()
+        # CREAR LA CLASE IO
+        
+        self.symbol_table.add(Symbol("IO", "Object", "SpecialClass", "IO -> Object", "IO",myscope=self.symbol_table.current_scope))
+
+        self.symbol_table.open_scope("IO", "Object")
+        self.symbol_table.add(Symbol("out_string", "String", "FeatureDef", "out_string -> SELF_TYPE", "IO.out_string"))
+        self.symbol_table.open_scope("out_string", "String")
+        self.symbol_table.add(Symbol("x", "String", "FormalDef", "x -> String", "IO.out_string.x"))
+        self.symbol_table.close_scope()
+
+        self.symbol_table.add(Symbol("out_int", "Int", "FeatureDef", "out_int -> SELF_TYPE", "IO.out_int"))
+        self.symbol_table.open_scope("out_int", "Int")
+        self.symbol_table.add(Symbol("x", "Int", "FormalDef", "x -> Int", "IO.out_int.x"))
+        self.symbol_table.close_scope()
+
+        self.symbol_table.add(Symbol("in_string", "String", "FeatureDef", "in_string -> String", "IO.in_string"))
+        self.symbol_table.open_scope("in_string", "String")
+        self.symbol_table.close_scope()
+
+        self.symbol_table.add(Symbol("in_int", "Int", "FeatureDef", "in_int -> Int", "IO.in_int"))
+        self.symbol_table.open_scope("in_int", "Int")
+        self.symbol_table.close_scope()
+        self.symbol_table.close_scope()
+
         self.visitChildren(ctx)
         # self.symbol_table.close_scope()
         # Buscar la clase Main si no existe, error
@@ -111,10 +135,25 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
     def addIO(self):
         self.symbol_table.open_scope("IO", "Object")
+        
         self.symbol_table.add(Symbol("out_string", "String", "FeatureDef", "out_string -> SELF_TYPE", "IO.out_string"))
+        self.symbol_table.open_scope("out_string", "String")
+        self.symbol_table.add(Symbol("x", "String", "FormalDef", "x -> String", "IO.out_string.x"))
+        self.symbol_table.close_scope()
+
         self.symbol_table.add(Symbol("out_int", "Int", "FeatureDef", "out_int -> SELF_TYPE", "IO.out_int"))
+        self.symbol_table.open_scope("out_int", "Int")
+        self.symbol_table.add(Symbol("x", "Int", "FormalDef", "x -> Int", "IO.out_int.x"))
+        self.symbol_table.close_scope()
+
         self.symbol_table.add(Symbol("in_string", "String", "FeatureDef", "in_string -> String", "IO.in_string"))
+        self.symbol_table.open_scope("in_string", "String")
+        self.symbol_table.close_scope()
+
         self.symbol_table.add(Symbol("in_int", "Int", "FeatureDef", "in_int -> Int", "IO.in_int"))
+        self.symbol_table.open_scope("in_int", "Int")
+        self.symbol_table.close_scope()
+        
         self.symbol_table.close_scope()
 
     def visitClassDef(self, ctx: YAPLParser.ClassDefContext):
@@ -162,13 +201,16 @@ class SemanticAnalyzer(ParseTreeVisitor):
                         self.recursiveCompi(parent_scope, self.symbol_table.current_scope)
 
             # Visitamos los hijos del nodo actual
-            self.symbol_table.displayTree()
+
             result = self.visitChildren(ctx)
             self.symbol_table.close_scope()  # Cerramos el alcance en la tabla de símbolos
             return result  # Retornamos el resultado
 
         else:  # Si add_type retorna False, hubo un error semántico y no procedemos
-            print(
+            if (class_name == "IO"):
+                print(f"Error Semántico: No se puede redefinir la clase IO. En la linea {ctx.start.line}, columna {ctx.start.column}.")
+            else:
+                print(
                 f"Error semántico: No se pudo añadir la clase {class_name}. En la linea {ctx.start.line}, columna {ctx.start.column}.")
             return None  # Podrías manejar el error como mejor te parezca
 
@@ -351,6 +393,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
             return
 
         node_data = {"type": None, "hasError": False}
+        obj = ctx.getText()
 
         # Comprobar si es instance de un LET para crear el simbolo del valor de let
         # LET OBJECT_ID COLON TYPE_ID (ASSIGN expr)? (COMMA OBJECT_ID COLON TYPE_ID (ASSIGN expr)?)* IN expr
@@ -461,7 +504,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
                 objID_type = children_types[objID_type_index]["type"]
                 # objID_type = self.symbol_table.lookup(ctx.OBJECT_ID()[0].getText()).type
-                node_data = {"type": objID_type, "hasError": False}
+                #node_data = {"type": objID_type, "hasError": False}
                 self.nodes[ctx] = node_data
                 return node_data
 
@@ -515,8 +558,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
                             childLine = children[args[index]].start.column
                             print(
                                 f"Error Semantico: el tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}.")
-                            node_data = {
-                                "type": functionReveal.type, "hasError": True}
+
 
             node_data = {"type": children_types[0]["type"], "hasError": False}
             self.nodes[ctx] = node_data

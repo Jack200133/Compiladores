@@ -13,6 +13,13 @@ class TypeSystem:
         self.table['Object'] = []  # Clase base para todos los objetos
         
     def add_type(self, type_name, parent_type=None):
+        if type_name in self.special_types:
+            print(f"Error semántico: No se puede definir el tipo {type_name} porque es un tipo especial. ")
+            return False
+
+        if type_name in self.basic_types:
+            print(f"Error semántico: No se puede definir el tipo {type_name} porque es un tipo básico.")
+            return False
         if type_name in self.table:
             print(f"Error semántico: El tipo {type_name} ya existe.")
             return False

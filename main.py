@@ -65,7 +65,7 @@ def main():
     semantic_analyzer = SemanticAnalyzer()
     semantic_analyzer.visit(tree)
     semantic_analyzer.symbol_table.displayTree()
-    semantic_analyzer.symbol_table.display()
+    #semantic_analyzer.symbol_table.display()
     # symbols = semantic_analyzer.symbol_table.get_all_symbols()
     # print("\nTabla de Símbolos:")
     # for symbol in symbols:
