@@ -36,7 +36,7 @@ def main():
 
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./inputs/realinput.txt', encoding="utf-8")
+    input_stream = FileStream('./inputs/mini.txt', encoding="utf-8")
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()
@@ -65,11 +65,14 @@ def main():
     semantic_analyzer = SemanticAnalyzer()
     semantic_analyzer.visit(tree)
     semantic_analyzer.symbol_table.displayTree()
-
-    symbols = semantic_analyzer.symbol_table.get_all_symbols()
-    print("\nTabla de Símbolos:")
-    for symbol in symbols:
-        print(symbol)
+    print(len(semantic_analyzer.ErrorList))
+    for Error in semantic_analyzer.ErrorList:
+        print(Error['full_error'])
+    #semantic_analyzer.symbol_table.display()
+    # symbols = semantic_analyzer.symbol_table.get_all_symbols()
+    # print("\nTabla de Símbolos:")
+    # for symbol in symbols:
+    #     print(symbol)
 
 
 if __name__ == '__main__':

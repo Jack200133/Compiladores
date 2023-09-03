@@ -1,24 +1,5 @@
 from graphviz import Digraph
 
-
-class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope=None, initial_value=None):
-        self.name = name
-        self.type = _type
-        self.definicion = definicion
-        self.derivation = derivation
-        self.scope = scope
-        self.myscope = myscope
-        self.initial_value = initial_value
-
-    def __str__(self):
-        base_str = f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}\t{self.initial_value}"
-        if len(self.name) < 8:
-            return base_str + "\t"
-        else:
-            return base_str
-
-
 class Scope:
     def __init__(self, parent=None, number=0, name="global", type="Object"):
         self.number = number
@@ -50,6 +31,27 @@ class Scope:
 
     def __str__(self):
         return ', '.join(str(symbol) for symbol in self.symbols.values())
+    
+class Symbol:
+    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope:Scope = None, initial_value=None, is_heredado = False):
+        self.name = name
+        self.type = _type
+        self.definicion = definicion
+        self.derivation = derivation
+        self.scope = scope
+        self.myscope = myscope
+        self.initial_value = initial_value
+        self.is_heredado = is_heredado
+
+    def __str__(self):
+        base_str = f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}\t{self.initial_value}"
+        if len(self.name) < 8:
+            return base_str + "\t"
+        else:
+            return base_str
+
+
+
 
 
 class SymboTable:
