@@ -1,4 +1,4 @@
-class A {
+class A inherits String {
 
    var : Int <- 0;
    var2 : Int <- 0;
@@ -69,13 +69,14 @@ class A {
 
 };
 
-class Main inherits IO {
+class Main{
    
    char : String;
    avar : A; 
    a_var : A;
    flag : Bool <- true;
    input_line : String;
+   iodef : IO;
 
    is_even(num : Int) : Bool {
       (let x : Int <- num in
@@ -90,8 +91,9 @@ class Main inherits IO {
    main() : Object {
       {
          avar <- (new A);
+         iodef <- (new IO);
          avar.set_var(2);
-         out_int(avar.value());
+         iodef.out_int(avar.value());
 
          input_line <- (new IO).in_string();
          

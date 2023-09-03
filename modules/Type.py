@@ -16,23 +16,23 @@ class TypeSystem:
         if type_name in self.special_types:
             print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede definir el tipo {type_name} porque es un tipo especial. ")
 
-            return False
+            return True
 
         if type_name in self.basic_types:
             print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede definir el tipo {type_name} porque es un tipo básico.")
-            return False
+            return True
         if type_name in self.table:
             print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo {type_name} ya existe.")
-            return False
+            return True
 
         if parent_type:
             if parent_type in self.basic_types:
-                print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede heredar de un tipo básico.")
-                return False
+                print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede heredar de un tipo básico. ({parent_type})")
+                return True
 
             if parent_type not in self.table:
                 print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo '{parent_type}' no existe. No se puede heredar de un tipo inexistente.")
-                return False
+                return True
         else:
             parent_type = 'Object'  # Si no se especifica un tipo padre, se hereda de Object
 

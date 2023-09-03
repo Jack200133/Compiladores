@@ -25,426 +25,118 @@ in_int
 Int"]
 	0 -> 6
 	6 [label="Scope: 6
-A
+Object
 Object"]
 	6 -> 7
 	7 [label="Scope: 7
-value
-Int"]
+abort
+Object"]
 	6 -> 8
 	8 [label="Scope: 8
-set_var
-A"]
+type_name
+String"]
 	6 -> 9
 	9 [label="Scope: 9
-method1
-A"]
-	6 -> 10
+copy
+SELF_TYPE"]
+	0 -> 10
 	10 [label="Scope: 10
-method2
-A"]
+String
+Object"]
 	10 -> 11
 	11 [label="Scope: 11
-x
+length
 Int"]
-	6 -> 12
+	10 -> 12
 	12 [label="Scope: 12
-method3
-A"]
-	12 -> 13
+concat
+String"]
+	10 -> 13
 	13 [label="Scope: 13
-x
-Int"]
-	6 -> 14
+substr
+String"]
+	0 -> 14
 	14 [label="Scope: 14
-method4
-A"]
+A
+String"]
 	14 -> 15
 	15 [label="Scope: 15
-x
+length
 Int"]
 	14 -> 16
 	16 [label="Scope: 16
-y
-Int"]
-	6 -> 17
+concat
+String"]
+	14 -> 17
 	17 [label="Scope: 17
-method5
-A"]
-	17 -> 18
+substr
+String"]
+	14 -> 18
 	18 [label="Scope: 18
-x
-Int"]
-	18 -> 19
-	19 [label="Scope: 19
-y
-Int"]
-	0 -> 20
-	20 [label="Scope: 20
-B
-A"]
-	20 -> 21
-	21 [label="Scope: 21
 value
 Int"]
-	20 -> 22
-	22 [label="Scope: 22
+	14 -> 19
+	19 [label="Scope: 19
 set_var
 A"]
-	20 -> 23
-	23 [label="Scope: 23
+	14 -> 20
+	20 [label="Scope: 20
 method1
 A"]
-	20 -> 24
-	24 [label="Scope: 24
+	14 -> 21
+	21 [label="Scope: 21
 method2
 A"]
-	24 -> 25
-	25 [label="Scope: 25
+	21 -> 22
+	22 [label="Scope: 22
 x
 Int"]
-	20 -> 26
-	26 [label="Scope: 26
+	14 -> 23
+	23 [label="Scope: 23
 method3
 A"]
-	26 -> 27
-	27 [label="Scope: 27
+	23 -> 24
+	24 [label="Scope: 24
 x
 Int"]
-	20 -> 28
-	28 [label="Scope: 28
+	14 -> 25
+	25 [label="Scope: 25
 method4
+A"]
+	25 -> 26
+	26 [label="Scope: 26
+x
+Int"]
+	25 -> 27
+	27 [label="Scope: 27
+y
+Int"]
+	14 -> 28
+	28 [label="Scope: 28
+method5
 A"]
 	28 -> 29
 	29 [label="Scope: 29
 x
 Int"]
-	28 -> 30
+	29 -> 30
 	30 [label="Scope: 30
 y
 Int"]
-	20 -> 31
+	0 -> 31
 	31 [label="Scope: 31
-method5
-A"]
+Main
+Object"]
 	31 -> 32
 	32 [label="Scope: 32
-x
-Int"]
-	32 -> 33
-	33 [label="Scope: 33
-y
-Int"]
-	20 -> 34
-	34 [label="Scope: 34
-method5
-B"]
-	34 -> 35
-	35 [label="Scope: 35
-x
-Int"]
-	0 -> 36
-	36 [label="Scope: 36
-C
-B"]
-	36 -> 37
-	37 [label="Scope: 37
-value
-Int"]
-	36 -> 38
-	38 [label="Scope: 38
-set_var
-A"]
-	36 -> 39
-	39 [label="Scope: 39
-method1
-A"]
-	36 -> 40
-	40 [label="Scope: 40
-method2
-A"]
-	40 -> 41
-	41 [label="Scope: 41
-x
-Int"]
-	36 -> 42
-	42 [label="Scope: 42
-method3
-A"]
-	42 -> 43
-	43 [label="Scope: 43
-x
-Int"]
-	36 -> 44
-	44 [label="Scope: 44
-method4
-A"]
-	44 -> 45
-	45 [label="Scope: 45
-x
-Int"]
-	44 -> 46
-	46 [label="Scope: 46
-y
-Int"]
-	36 -> 47
-	47 [label="Scope: 47
-method5
-A"]
-	47 -> 48
-	48 [label="Scope: 48
-x
-Int"]
-	48 -> 49
-	49 [label="Scope: 49
-y
-Int"]
-	36 -> 50
-	50 [label="Scope: 50
-method5
-B"]
-	50 -> 51
-	51 [label="Scope: 51
-x
-Int"]
-	36 -> 52
-	52 [label="Scope: 52
-method6
-A"]
-	52 -> 53
-	53 [label="Scope: 53
-x
-Int"]
-	36 -> 54
-	54 [label="Scope: 54
-method5
-B"]
-	54 -> 55
-	55 [label="Scope: 55
-x
-Int"]
-	0 -> 56
-	56 [label="Scope: 56
-D
-B"]
-	56 -> 57
-	57 [label="Scope: 57
-value
-Int"]
-	56 -> 58
-	58 [label="Scope: 58
-set_var
-A"]
-	56 -> 59
-	59 [label="Scope: 59
-method1
-A"]
-	56 -> 60
-	60 [label="Scope: 60
-method2
-A"]
-	60 -> 61
-	61 [label="Scope: 61
-x
-Int"]
-	56 -> 62
-	62 [label="Scope: 62
-method3
-A"]
-	62 -> 63
-	63 [label="Scope: 63
-x
-Int"]
-	56 -> 64
-	64 [label="Scope: 64
-method4
-A"]
-	64 -> 65
-	65 [label="Scope: 65
-x
-Int"]
-	64 -> 66
-	66 [label="Scope: 66
-y
-Int"]
-	56 -> 67
-	67 [label="Scope: 67
-method5
-A"]
-	67 -> 68
-	68 [label="Scope: 68
-x
-Int"]
-	68 -> 69
-	69 [label="Scope: 69
-y
-Int"]
-	56 -> 70
-	70 [label="Scope: 70
-method5
-B"]
-	70 -> 71
-	71 [label="Scope: 71
-x
-Int"]
-	56 -> 72
-	72 [label="Scope: 72
-method7
-Bool"]
-	72 -> 73
-	73 [label="Scope: 73
-x
-Int"]
-	0 -> 74
-	74 [label="Scope: 74
-E
-D"]
-	74 -> 75
-	75 [label="Scope: 75
-value
-Int"]
-	74 -> 76
-	76 [label="Scope: 76
-set_var
-A"]
-	74 -> 77
-	77 [label="Scope: 77
-method1
-A"]
-	74 -> 78
-	78 [label="Scope: 78
-method2
-A"]
-	78 -> 79
-	79 [label="Scope: 79
-x
-Int"]
-	74 -> 80
-	80 [label="Scope: 80
-method3
-A"]
-	80 -> 81
-	81 [label="Scope: 81
-x
-Int"]
-	74 -> 82
-	82 [label="Scope: 82
-method4
-A"]
-	82 -> 83
-	83 [label="Scope: 83
-x
-Int"]
-	82 -> 84
-	84 [label="Scope: 84
-y
-Int"]
-	74 -> 85
-	85 [label="Scope: 85
-method5
-A"]
-	85 -> 86
-	86 [label="Scope: 86
-x
-Int"]
-	86 -> 87
-	87 [label="Scope: 87
-y
-Int"]
-	74 -> 88
-	88 [label="Scope: 88
-method5
-B"]
-	88 -> 89
-	89 [label="Scope: 89
-x
-Int"]
-	74 -> 90
-	90 [label="Scope: 90
-method7
-Bool"]
-	90 -> 91
-	91 [label="Scope: 91
-x
-Int"]
-	74 -> 92
-	92 [label="Scope: 92
-method6
-A"]
-	92 -> 93
-	93 [label="Scope: 93
-x
-Int"]
-	0 -> 94
-	94 [label="Scope: 94
-F
-Object"]
-	94 -> 95
-	95 [label="Scope: 95
-method5
-A"]
-	95 -> 96
-	96 [label="Scope: 96
-x
-Int"]
-	0 -> 97
-	97 [label="Scope: 97
-H
-IO"]
-	97 -> 98
-	98 [label="Scope: 98
-out_string
-String"]
-	97 -> 99
-	99 [label="Scope: 99
-out_int
-Int"]
-	97 -> 100
-	100 [label="Scope: 100
-in_string
-String"]
-	97 -> 101
-	101 [label="Scope: 101
-in_int
-Int"]
-	97 -> 102
-	102 [label="Scope: 102
-method5
-A"]
-	102 -> 103
-	103 [label="Scope: 103
-x
-Int"]
-	0 -> 104
-	104 [label="Scope: 104
-Main
-IO"]
-	104 -> 105
-	105 [label="Scope: 105
-out_string
-String"]
-	104 -> 106
-	106 [label="Scope: 106
-out_int
-Int"]
-	104 -> 107
-	107 [label="Scope: 107
-in_string
-String"]
-	104 -> 108
-	108 [label="Scope: 108
-in_int
-Int"]
-	104 -> 109
-	109 [label="Scope: 109
 is_even
 Bool"]
-	109 -> 110
-	110 [label="Scope: 110
+	32 -> 33
+	33 [label="Scope: 33
 x
 Int"]
-	104 -> 111
-	111 [label="Scope: 111
+	31 -> 34
+	34 [label="Scope: 34
 main
 Object"]
 }

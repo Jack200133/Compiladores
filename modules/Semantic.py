@@ -99,6 +99,46 @@ class SemanticAnalyzer(ParseTreeVisitor):
         self.symbol_table.close_scope()
         self.symbol_table.close_scope()
 
+        # Crear la clase Object
+        self.symbol_table.add(Symbol("Object", "Object", "SpecialClass", "Object -> Object", "Object",myscope=self.symbol_table.current_scope))
+
+        self.symbol_table.open_scope("Object", "Object")
+        self.symbol_table.add(Symbol("abort", "Object", "FeatureDef", "abort -> Object", "Object.abort"))
+        self.symbol_table.open_scope("abort", "Object")
+        self.symbol_table.close_scope()
+
+        self.symbol_table.add(Symbol("type_name", "String", "FeatureDef", "type_name -> String", "Object.type_name"))
+        self.symbol_table.open_scope("type_name", "String")
+        self.symbol_table.close_scope()
+
+        self.symbol_table.add(Symbol("copy", "SELF_TYPE", "FeatureDef", "copy -> SELF_TYPE", "Object.copy"))
+        self.symbol_table.open_scope("copy", "SELF_TYPE")
+        self.symbol_table.close_scope()
+
+        self.symbol_table.close_scope()
+
+        # Crear la clase String
+        self.symbol_table.add(Symbol("String", "Object", "SpecialClass", "String -> Object", "String",myscope=self.symbol_table.current_scope))
+
+        self.symbol_table.open_scope("String", "Object")
+        self.symbol_table.add(Symbol("length", "Int", "FeatureDef", "length -> Int", "String.length"))
+        self.symbol_table.open_scope("length", "Int")  
+        self.symbol_table.close_scope()
+
+        self.symbol_table.add(Symbol("concat", "String", "FeatureDef", "concat -> String", "String.concat"))
+        self.symbol_table.open_scope("concat", "String")
+        self.symbol_table.add(Symbol("s", "String", "FormalDef", "s -> String", "String.concat.s"))
+        self.symbol_table.close_scope()
+
+        self.symbol_table.add(Symbol("substr", "String", "FeatureDef", "substr -> String", "String.substr"))
+        self.symbol_table.open_scope("substr", "String")
+        self.symbol_table.add(Symbol("i", "Int", "FormalDef", "i -> Int", "String.substr.i"))
+        self.symbol_table.add(Symbol("l", "Int", "FormalDef", "l -> Int", "String.substr.l"))
+        self.symbol_table.close_scope()
+
+        self.symbol_table.close_scope()
+
+
         self.visitChildren(ctx)
         # self.symbol_table.close_scope()
         # Buscar la clase Main si no existe, error
@@ -187,8 +227,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     if inherits_from == "IO":
                         self.addIO()
                     else:
-                        print(
-                        f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La clase {class_name} hereda de una clase inexistente.")
+                        pass
+                        #print(
+                        #f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La clase {class_name} hereda de una clase inexistente.")
                 else:
                     #self.recursiveCompi(symbol_parent)
                     parent_scope = None
