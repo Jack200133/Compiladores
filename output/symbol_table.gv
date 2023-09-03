@@ -58,85 +58,81 @@ String"]
 	0 -> 14
 	14 [label="Scope: 14
 A
-String"]
+Object"]
 	14 -> 15
 	15 [label="Scope: 15
-length
+value
 Int"]
 	14 -> 16
 	16 [label="Scope: 16
-concat
-String"]
-	14 -> 17
-	17 [label="Scope: 17
-substr
-String"]
-	14 -> 18
-	18 [label="Scope: 18
-value
-Int"]
-	14 -> 19
-	19 [label="Scope: 19
 set_var
 A"]
-	14 -> 20
-	20 [label="Scope: 20
+	14 -> 17
+	17 [label="Scope: 17
 method1
 A"]
-	14 -> 21
-	21 [label="Scope: 21
+	14 -> 18
+	18 [label="Scope: 18
 method2
 A"]
-	21 -> 22
-	22 [label="Scope: 22
+	18 -> 19
+	19 [label="Scope: 19
 x
 Int"]
-	14 -> 23
-	23 [label="Scope: 23
+	14 -> 20
+	20 [label="Scope: 20
 method3
 A"]
-	23 -> 24
-	24 [label="Scope: 24
+	20 -> 21
+	21 [label="Scope: 21
 x
+Int"]
+	14 -> 22
+	22 [label="Scope: 22
+method4
+A"]
+	22 -> 23
+	23 [label="Scope: 23
+x
+Int"]
+	22 -> 24
+	24 [label="Scope: 24
+y
 Int"]
 	14 -> 25
 	25 [label="Scope: 25
-method4
+method5
 A"]
 	25 -> 26
 	26 [label="Scope: 26
 x
 Int"]
-	25 -> 27
+	26 -> 27
 	27 [label="Scope: 27
 y
 Int"]
-	14 -> 28
+	0 -> 28
 	28 [label="Scope: 28
-method5
-A"]
+B
+H"]
 	28 -> 29
 	29 [label="Scope: 29
-x
+nonvalue
 Int"]
-	29 -> 30
+	0 -> 30
 	30 [label="Scope: 30
-y
-Int"]
-	0 -> 31
-	31 [label="Scope: 31
 Main
 Object"]
-	31 -> 32
-	32 [label="Scope: 32
+	30 -> 31
+	31 [label="Scope: 31
 is_even
 Bool"]
-	32 -> 33
-	33 [label="Scope: 33
+	31 -> 32
+	32 [label="Scope: 32
 x
 Int"]
-	31 -> 34
-	34 [label="Scope: 34
+	30 -> 33
+	33 [label="Scope: 33
 main
 Object"]
 }

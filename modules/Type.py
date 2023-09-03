@@ -12,26 +12,42 @@ class TypeSystem:
         self.table['IO'] = []  # Puedes añadir aquí los métodos predefinidos de IO
         self.table['Object'] = []  # Clase base para todos los objetos
         
-    def add_type(self, ctx,type_name, parent_type=None):
+    def add_type(self, type_name, parent_type,ctx,adError):
         if type_name in self.special_types:
-            print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede definir el tipo {type_name} porque es un tipo especial. ")
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede definir el tipo {type_name} porque es un tipo especial. "
+            #print(sms)
+            adError(f"No se puede definir el tipo {type_name} porque es un tipo especial.",ctx.start.line,ctx.start.column,sms)
 
             return True
-
-        if type_name in self.basic_types:
-            print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede definir el tipo {type_name} porque es un tipo básico.")
-            return True
-        if type_name in self.table:
-            print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo {type_name} ya existe.")
+        elif type_name == parent_type:
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede heredar de sí mismo ni herencia recursiva."
+            #print(sms)
+            adError(f"No se puede heredar de sí mismo ni herencia recursiva.",ctx.start.line,ctx.start.column,sms)
             return True
 
-        if parent_type:
+        elif type_name in self.basic_types:
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede definir el tipo {type_name} porque es un tipo básico."
+            #print(sms)
+            adError(f"No se puede definir el tipo {type_name} porque es un tipo básico.",ctx.start.line,ctx.start.column,sms)
+            return True
+        
+        elif type_name in self.table:
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo {type_name} ya existe."
+            #print(sms)
+            adError(f"El tipo {type_name} ya existe.",ctx.start.line,ctx.start.column,sms)
+            return True
+
+        elif parent_type:
             if parent_type in self.basic_types:
-                print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede heredar de un tipo básico. ({parent_type})")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede heredar de un tipo básico. ({parent_type})"
+                #print(sms)
+                adError(f"No se puede heredar de un tipo básico. ({parent_type})",ctx.start.line,ctx.start.column,sms)
                 return True
 
             if parent_type not in self.table:
-                print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo '{parent_type}' no existe. No se puede heredar de un tipo inexistente.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo '{parent_type}' no existe. No se puede heredar de un tipo inexistente."
+                #print(sms)
+                adError(f"El tipo '{parent_type}' no existe. No se puede heredar de un tipo inexistente.",ctx.start.line,ctx.start.column,sms)
                 return True
         else:
             parent_type = 'Object'  # Si no se especifica un tipo padre, se hereda de Object
@@ -50,11 +66,11 @@ class TypeSystem:
             return True
         return False
 
-    def checkAssigment(self, id_type, expr_type):
+    def checkAssigment(self, id_type, expr_type,ctx,adError):
         if expr_type == id_type:
             return True
 
-        if self.is_inherited_from(expr_type, id_type):
+        if self.is_inherited_from(expr_type, id_type,ctx,adError):
             return True
         
         return False
@@ -78,13 +94,18 @@ class TypeSystem:
             return True, "Object"
         return False, "Object"
 
-    def is_inherited_from(self, child_type, parent_type):
+    def is_inherited_from(self, child_type, parent_type,ctx,adError):
         if child_type is None or parent_type is None:
             return False
         if child_type in self.table and parent_type in self.table[child_type]:
             return True
-        
-        looktype = self.table[child_type]
+        try:
+            looktype = self.table[child_type]
+        except KeyError:
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo {child_type} no esta definido."
+            #print(sms)
+            adError(f"El tipo {child_type} no esta definido.",ctx.start.line,ctx.start.column,sms)
+            return False
         while looktype:
             if parent_type in looktype:
                 return True
@@ -93,23 +114,29 @@ class TypeSystem:
                 return False
 
         for inherited_type in self.table.get(parent_type, []):
-            if self.is_inherited_from(child_type, inherited_type):
+            if self.is_inherited_from(child_type, inherited_type,ctx,adError):
                 return True
         
         return False
     
-    def checkMethodSignature(self, method_A:Symbol, method_B:Symbol,params_A, params_B,ctx):
+    def checkMethodSignature(self, method_A:Symbol, method_B:Symbol,params_A, params_B,ctx,adError):
         # Verifica que los métodos A y B tengan la misma firma
         firma = True
-        if self.is_inherited_from(method_A.type, method_B.type) == False and method_A.type != method_B.type:
-            print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de retorno del método {method_A.derivation} no coincide con el tipo de retorno del método {method_B.derivation}")
+        if self.is_inherited_from(method_A.type, method_B.type,ctx,adError) == False and method_A.type != method_B.type:
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El método {method_A.name} no está heredando del método {method_B.name}"
+            #print(sms)
+            adError(f"El método {method_A.name} no está heredando del método {method_B.name}",ctx.start.line,ctx.start.column,sms)
             firma= False
         if len(params_A) != len(params_B):
-            print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El número de parámetros del método {method_A.name} no coincide con el número de parámetros del método {method_B.name}")
+            sms =f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El número de parámetros del método {method_A.name} no coincide con el número de parámetros del método {method_B.name}"
+            #print(sms)
+            adError(f"El número de parámetros del método {method_A.name} no coincide con el número de parámetros del método {method_B.name}",ctx.start.line,ctx.start.column,sms)
             firma= False
         for i in range(len(params_A)):
             if params_A[i] != params_B[i]:
-                print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parámetro {params_A[i]} del método {method_A.name} no coincide con el tipo del parámetro {params_B[i]} del método {method_B.name}")
+                sms =f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parámetro {params_A[i]} del método {method_A.name} no coincide con el tipo del parámetro {params_B[i]} del método {method_B.name}"
+                #print(sms)
+                adError(f"El tipo del parámetro {params_A[i]} del método {method_A.name} no coincide con el tipo del parámetro {params_B[i]} del método {method_B.name}",ctx.start.line,ctx.start.column,sms)
                 firma= False
         return firma
 

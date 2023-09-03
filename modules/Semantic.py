@@ -11,6 +11,15 @@ class SemanticAnalyzer(ParseTreeVisitor):
         self.symbol_table = SymboTable()
         self.type_system = TypeSystem()
         self.nodes = {}
+        self.ErrorList = []
+
+    def add_error(self, error_mesagge,line,column,full_error):
+        #Verificar si el error no existe ya en la misma linea
+        for err in self.ErrorList:
+            if err["line"] == line and err["error_mesagge"] == error_mesagge:
+                return
+        self.ErrorList.append({"error_mesagge":error_mesagge,"line":line,"column":column,"full_error":full_error})
+                
 
     def visit(self, tree):
         # Obten el método de visita apropiado para el tipo de nodo.
@@ -144,8 +153,25 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Buscar la clase Main si no existe, error
         main_symbol = self.symbol_table.lookup('Main')
         if main_symbol is None:
-            print("Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. No se encontró la clase Main.")
+            sms=f"Error Semántico. En la línea {ctx.end.line}, columna {ctx.start.column}. No se encontró la clase Main."
+            #print(sms)
+            self.add_error("No se encontró la clase Main",ctx.start.line,ctx.start.column,sms)
             return
+        
+        main_real_scope = None
+        for child in main_symbol.myscope.children:
+            if child.name == main_symbol.name:
+                main_real_scope = child
+                break
+
+        # Buscar la funcion main, si no existe es error
+        main_function = main_real_scope.lookup('main')
+        if main_function is None:
+            sms=f"Error Semántico. En la línea {ctx.end.line}, columna {ctx.start.column}. No se encontró la función main en la Clase Main"
+            #print(sms)
+            self.add_error("No se encontró la función main en la Clase Main",ctx.start.line,ctx.start.column,sms)
+            return
+
         return
     
     def recursiveCompi(self, parent_scope, current_scope):
@@ -207,12 +233,13 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Comprobar el ClassMain
         if class_name == 'Main':
             if inherits_from is not None:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: La clase Main no puede heredar de otra clase.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: La clase Main no puede heredar de otra clase."
+                #print(sms)
+                self.add_error("La clase Main no puede heredar de otra clase",ctx.start.line,ctx.start.column,sms)
 
         type = "Object" if inherits_from is None else inherits_from
         # Añadimos el tipo a la tabla de tipos
-        if self.type_system.add_type(ctx,class_name, inherits_from):
+        if self.type_system.add_type(class_name, inherits_from,ctx,self.add_error):
             myscope = self.symbol_table.current_scope
             definition = Symbol(class_name, type, 'ClassDef', f"{class_name} -> {inherits_from if inherits_from else 'Object'}",
                                 f"{inherits_from if inherits_from else 'Object'}.{class_name}", myscope=myscope)
@@ -249,10 +276,13 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         else:  # Si add_type retorna False, hubo un error semántico y no procedemos
             if (class_name == "IO"):
-                print(f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede redefinir la clase IO.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se puede redefinir la clase IO."
+                #print(sms)
+                self.add_error("No se puede redefinir la clase IO",ctx.start.line,ctx.start.column,sms)
             else:
-                print(
-                f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se pudo añadir la clase {class_name}.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: No se pudo añadir la clase {class_name}."
+                #print(sms)
+                self.add_error(f"No se pudo añadir la clase {class_name}",ctx.start.line,ctx.start.column,sms)
             return None  # Podrías manejar el error como mejor te parezca
 
     def visitFormalDef(self, ctx: YAPLParser.FormalDefContext):
@@ -315,15 +345,13 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Verificar si el nombre del símbolo ya está en la tabla de símbolos actual
         sym = self.symbol_table.lookup(name)
         if sym is not None and sym.is_heredado == False:
-            pass
-            print(
-                f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El símbolo '{name}' ya ha sido declarado en el ámbito actual.")
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El símbolo '{name}' ya ha sido declarado en el ámbito actual."
+            #print(sms)
+            self.add_error(f"El símbolo '{name}' ya ha sido declarado en el ámbito actual.",ctx.start.line,ctx.start.column,sms)
 
         myscope = self.symbol_table.current_scope
         
-        
 
-                
         symbol = Symbol(name, type, 'FeatureDef',
                         f"{dev} -> {type}", dev, myscope=myscope)
         self.symbol_table.add(symbol)
@@ -389,18 +417,19 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 for index in args:
                     new_params.append(children_types[index]["type"])
 
-                signature = self.type_system.checkMethodSignature(symbol,sym, old_params, new_params, ctx)
+                signature = self.type_system.checkMethodSignature(symbol,sym, old_params, new_params, ctx,self.add_error)
             else:
                 signature = True
 
-            retunr_tip = self.type_system.checkAssigment(tipo, tipo_func)
+            retunr_tip = self.type_system.checkAssigment(tipo, tipo_func,ctx,self.add_error)
             if  retunr_tip and signature:
                 node_data = {"type": tipo_func, "hasError": False}
                 self.nodes[ctx] = node_data
                 return node_data
             else:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo de retorno de la funcion no coincide con el tipo de la clase.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo de retorno de la funcion no coincide con el tipo de la clase."
+                #print(sms)
+                self.add_error(f"El tipo de retorno de la funcion no coincide con el tipo de la clase.",ctx.start.line,ctx.start.column,sms)
                 node_data = {"type": tipo_func, "hasError": True}
                 self.nodes[ctx] = node_data
                 return node_data
@@ -415,8 +444,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 self.nodes[ctx] = node_data
                 return node_data
             else:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de la expresión no coincide con el tipo del símbolo '{type}' <- '{result['type']}'.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de la expresión no coincide con el tipo del símbolo '{type}' <- '{result['type']}'."
+                #print(sms)
+                self.add_error(f"El tipo de la expresión no coincide con el tipo del símbolo '{type}' <- '{result['type']}'.",ctx.start.line,ctx.start.column,sms)
                 node_data = {"type": type, "hasError": True}
                 self.nodes[ctx] = node_data
                 return node_data
@@ -494,11 +524,11 @@ class SemanticAnalyzer(ParseTreeVisitor):
             class_name = children_types[0]["type"]
             if ctx.AT():
                 class_name = ctx.TYPE_ID()[0].getText()
-                heredado = self.type_system.is_inherited_from(
-                    children_types[0]["type"], class_name)
+                heredado = self.type_system.is_inherited_from(children_types[0]["type"], class_name,ctx,self.add_error)
                 if not heredado:
-                    print(
-                        f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La clase {children_types[0]['type'] } no hereda de {class_name}.")
+                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La clase {children_types[0]['type'] } no hereda de {class_name}."
+                    #print(sms)
+                    self.add_error(f"La clase {children_types[0]['type'] } no hereda de {class_name}.",ctx.start.line,ctx.start.column,sms)
                     node_data = {
                         "type": children_types[-1]["type"], "hasError": True}
 
@@ -522,8 +552,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 functionargs = functionReveal.symbols
 
                 if len(args) != len(functionargs):
-                    print(
-                        f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}.")
+                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}."
+                    #print(sms)
+                    self.add_error(f"La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}.",ctx.start.line,ctx.start.column,sms)
                     node_data = {"type": functionReveal.type, "hasError": True}
                     self.nodes[ctx] = node_data
                     return node_data
@@ -538,8 +569,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                         param_type = functionargs[list_params[index]].type
                         if arg_type != param_type:
                             childLine = children[args[index]].start.column
-                            print(
-                                f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}.")
+                            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}."
+                            #print(sms)
+                            self.add_error(f"El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}.",ctx.start.line,ctx.start.column,sms)
                             node_data = {
                                 "type": functionReveal.type, "hasError": True}
 
@@ -550,8 +582,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 return node_data
 
             else:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La clase {class_name} no tiene el metodo {ctx.OBJECT_ID()[0].getText()}.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La clase {class_name} no tiene el metodo {ctx.OBJECT_ID()[0].getText()}."
+                #print(sms)
+                self.add_error(f"La clase {class_name} no tiene el metodo {ctx.OBJECT_ID()[0].getText()}.",ctx.start.line,ctx.start.column,sms)
                 tipos = children_types[args[-1]]["type"]
                 node_data = {"type": tipos, "hasError": True}
 
@@ -565,8 +598,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
             symbol = self.symbol_table.lookup(ctx.OBJECT_ID()[0].getText())
             if symbol is None:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {ctx.OBJECT_ID()[0].getText()} no esta definida.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {ctx.OBJECT_ID()[0].getText()} no esta definida."
+                #print(sms)
+                self.add_error(f"La funcion {ctx.OBJECT_ID()[0].getText()} no esta definida.",ctx.start.line,ctx.start.column,sms)
                 node_data = {
                     "type": children_types[0]["type"], "hasError": True}
                 self.nodes[ctx] = node_data
@@ -581,8 +615,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 functionargs = functionReveal.symbols
 
                 if len(args) != len(functionargs):
-                    print(
-                        f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}.")
+                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}."
+                    #print(sms)
+                    self.add_error(f"La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}.",ctx.start.line,ctx.start.column,sms)
                     node_data = {"type": functionReveal.type, "hasError": True}
                     self.nodes[ctx] = node_data
                     return node_data
@@ -597,8 +632,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                         param_type = functionargs[list_params[index]].type
                         if arg_type != param_type:
                             childLine = children[args[index]].start.column
-                            print(
-                                f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}.")
+                            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}."
+                            #print(sms)
+                            self.add_error(f"El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}.",ctx.start.line,ctx.start.column,sms)
 
 
             node_data = {"type": children_types[0]["type"], "hasError": False}
@@ -609,16 +645,18 @@ class SemanticAnalyzer(ParseTreeVisitor):
         elif (ctx.OBJECT_ID() and ctx.ASSIGN()):
             symbol = children_types[0]
             if symbol["type"] is None:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El símbolo '{ctx.OBJECT_ID()[0]}' no ha sido declarado.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El símbolo '{ctx.OBJECT_ID()[0]}' no ha sido declarado."
+                #print(sms)
+                self.add_error(f"El símbolo '{ctx.OBJECT_ID()[0]}' no ha sido declarado.",ctx.start.line,ctx.start.column,sms)
                 node_data = {
                     "type": children_types[-1]["type"], "hasError": True}
                 self.nodes[ctx] = node_data
 
             else:
-                if not self.type_system.checkAssigment(symbol['type'], children_types[-1]["type"]):
-                    print(
-                        f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de la expresión no coincide con el tipo del símbolo '{ctx.getText()}'.")
+                if not self.type_system.checkAssigment(symbol['type'], children_types[-1]["type"],ctx,self.add_error):
+                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de la expresión no coincide con el tipo del símbolo '{ctx.getText()}', {symbol['type']} <- {children_types[-1]['type']}."
+                    #print(sms)
+                    self.add_error(f"El tipo de la expresión no coincide con el tipo del símbolo '{ctx.getText()}', {symbol['type']} <- {children_types[-1]['type']}.",ctx.start.line,ctx.start.column,sms)
                     node_data = {
                         "type": children_types[-1]["type"], "hasError": True}
                     self.nodes[ctx] = node_data
@@ -656,8 +694,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 pass
                 operador = ctx.PLUS().getText() if ctx.PLUS() else ctx.MINUS().getText(
                 ) if ctx.MINUS() else ctx.MULT().getText() if ctx.MULT() else ctx.DIV().getText()
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. Los tipos de las expresiones no coinciden. No se puede operar ({operador}) entre {children_types[0]['type']} y {children_types[2]['type']}.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. Los tipos de las expresiones no coinciden. No se puede operar ({operador}) entre {children_types[0]['type']} y {children_types[2]['type']}."
+                #print(sms)
+                self.add_error(f"Los tipos de las expresiones no coinciden. No se puede operar ({operador}) entre {children_types[0]['type']} y {children_types[2]['type']}.",ctx.start.line,ctx.start.column,sms)
                 node_data = {
                     "type": children_types[-1]["type"], "hasError": True}
                 self.nodes[ctx] = node_data
@@ -705,16 +744,18 @@ class SemanticAnalyzer(ParseTreeVisitor):
             if type == "Int" or type == "Object":
                 node_data = {"type": type, "hasError": False}
             else:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. No se puede negar una expresión de tipo {type}.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. No se puede negar una expresión de tipo {type}."
+                #print(sms)
+                self.add_error(f"No se puede negar una expresión de tipo {type}.",ctx.start.line,ctx.start.column,sms)
 
         elif ctx.NOT():
             type = children_types[-1]["type"]
             if type == "Bool" or type == "Object":
                 node_data = {"type": type, "hasError": False}
             else:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. No se puede negar una expresión de tipo {type}.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. No se puede negar una expresión de tipo {type}."
+                #print(sms)
+                self.add_error(f"No se puede negar una expresión de tipo {type}.",ctx.start.line,ctx.start.column,sms)
 
         # IF expr THEN expr ELSE expr FI
         elif ctx.IF():
@@ -774,8 +815,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
             if posible:
                 node_data = {"type": type, "hasError": False}
             else:
-                print(
-                    f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. No se puede comparar una expresión de tipo {type} con una expresión de tipo {children_types[2]['type']}.")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. No se puede comparar una expresión de tipo {type} con una expresión de tipo {children_types[2]['type']}."
+                #print(sms)
+                self.add_error(f"No se puede comparar una expresión de tipo {type} con una expresión de tipo {children_types[2]['type']}.",ctx.start.line,ctx.start.column,sms)
                 node_data = {"type": "Object", "hasError": True}
 
             self.nodes[ctx] = node_data
