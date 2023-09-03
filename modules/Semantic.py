@@ -714,7 +714,6 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     self.nodes[ctx] = node_data
 
         # Expresiones de Comparacion <expr> <op> <expr>
-
         elif (ctx.PLUS() or ctx.MINUS() or ctx.MULT() or ctx.DIV()):
             # self.symbol_table.display()
             isnum = self.type_system.checkNumeric(

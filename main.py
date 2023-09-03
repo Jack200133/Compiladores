@@ -1,3 +1,5 @@
+import tkinter as tk
+from tkinter import filedialog
 from graphviz import Digraph
 from antlr4 import *
 from modules.ErrorListener import MyErrorListener
@@ -68,7 +70,7 @@ def main():
     print(len(semantic_analyzer.ErrorList))
     for Error in semantic_analyzer.ErrorList:
         print(Error['full_error'])
-    #semantic_analyzer.symbol_table.display()
+    # semantic_analyzer.symbol_table.display()
     # symbols = semantic_analyzer.symbol_table.get_all_symbols()
     # print("\nTabla de Símbolos:")
     # for symbol in symbols:

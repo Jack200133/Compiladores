@@ -1,5 +1,6 @@
 from graphviz import Digraph
 
+
 class Scope:
     def __init__(self, parent=None, number=0, name="global", type="Object"):
         self.number = number
@@ -31,9 +32,10 @@ class Scope:
 
     def __str__(self):
         return ', '.join(str(symbol) for symbol in self.symbols.values())
-    
+
+
 class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope:Scope = None, initial_value=None, is_heredado = False):
+    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False):
         self.name = name
         self.type = _type
         self.definicion = definicion
@@ -49,9 +51,6 @@ class Symbol:
             return base_str + "\t"
         else:
             return base_str
-
-
-
 
 
 class SymboTable:
@@ -133,7 +132,8 @@ class SymboTable:
     def displayTree(self):
         dot = Digraph(comment="SYMBOL TABLE")
         self._buildGraph(dot, self.root)
-        dot.render('./output/symbol_table.gv', view=True)
+        dot.render(filename='./output/symbol_table', format='png',
+                   cleanup=True)  # Guarda como imagen PNG
 
     def _buildGraph(self, dot, node):
         if not node:
