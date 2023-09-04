@@ -31,19 +31,29 @@ class Fibonacci {
   
   };
 
-class Main inherits IO {
+
+class FiboFor inherits Fibonacci{
+
+	fibonacci() : Int { self };
+
+    init() : SELF_TYPE {self};
+};
+
+
+class Main{
     n: Int <- 10;
   	facto: Factorial;
   	fibo: Fibonacci;
-  	fibo: Int;
+	io : IO;	
   
   	main() : SELF_TYPE {
 		{
 			facto <- new Factorial;
 			fibo <- new Fibonacci;
-			out_int(facto.factorial(n));
-			out_string(facto.factorial(n));
-			out_int(fibo.fibonacci(n));
+			io <- new IO;
+			io.out_int(facto.factorial(n));
+			io.out_int(facto.factorial(n));
+			io.out_int(fibo.fibonacci(n));
 			self;
 		}
     };

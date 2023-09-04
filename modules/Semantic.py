@@ -456,7 +456,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
                         real_scope = child
                         break
                 for param in real_scope.symbols:
-                    old_params.append(real_scope.symbols[param].type)
+                    if real_scope.symbols[param].definicion == "FormalDef":
+                        old_params.append(real_scope.symbols[param].type)
 
                 # params de ctx
                 new_params = []
@@ -472,6 +473,14 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 tipo, tipo_func, ctx, self.add_error)
             if retunr_tip and signature:
                 node_data = {"type": tipo_func, "hasError": False}
+                self.nodes[ctx] = node_data
+                return node_data
+            elif retunr_tip and not signature:
+                # sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: La firma de la funcion no coincide con la firma de la clase padre."
+                # # print(sms)
+                # self.add_error(
+                #     f"La firma de la funcion no coincide con la firma de la clase padre.", ctx.start.line, ctx.start.column, sms)
+                node_data = {"type": tipo_func, "hasError": True}
                 self.nodes[ctx] = node_data
                 return node_data
             else:
@@ -585,11 +594,11 @@ class SemanticAnalyzer(ParseTreeVisitor):
                         "type": children_types[-1]["type"], "hasError": True}
 
             godly_dad = self.symbol_table.lookup_scope(class_name)
-
             functionReveal = None
-            for child in godly_dad.children:
-                if child.name == ctx.OBJECT_ID()[0].getText():
-                    functionReveal = child
+            if godly_dad is not None:
+                for child in godly_dad.children:
+                    if child.name == ctx.OBJECT_ID()[0].getText():
+                        functionReveal = child
 
             args = []
             for index, child in enumerate(children):

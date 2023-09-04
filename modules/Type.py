@@ -122,16 +122,18 @@ class TypeSystem:
     def checkMethodSignature(self, method_A:Symbol, method_B:Symbol,params_A, params_B,ctx,adError):
         # Verifica que los métodos A y B tengan la misma firma
         firma = True
+        herencia = self.is_inherited_from(method_A.type, method_B.type,ctx,adError)
         if self.is_inherited_from(method_A.type, method_B.type,ctx,adError) == False and method_A.type != method_B.type:
-            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El método {method_A.name} no está heredando del método {method_B.name}"
+            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El método ({method_A.name}, {method_A.type}) no está usando el retorno del método heredando ({method_B.name},{method_B.type})"
             #print(sms)
-            adError(f"El método {method_A.name} no está heredando del método {method_B.name}",ctx.start.line,ctx.start.column,sms)
+            adError(f"El método ({method_A.name}, {method_A.type}) no está usando el retorno del método heredando ({method_B.name},{method_B.type})",ctx.start.line,ctx.start.column,sms)
             firma= False
         if len(params_A) != len(params_B):
             sms =f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El número de parámetros del método {method_A.name} no coincide con el número de parámetros del método {method_B.name}"
             #print(sms)
             adError(f"El número de parámetros del método {method_A.name} no coincide con el número de parámetros del método {method_B.name}",ctx.start.line,ctx.start.column,sms)
             firma= False
+            return firma
         for i in range(len(params_A)):
             if params_A[i] != params_B[i]:
                 sms =f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parámetro {params_A[i]} del método {method_A.name} no coincide con el tipo del parámetro {params_B[i]} del método {method_B.name}"
