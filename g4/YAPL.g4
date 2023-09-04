@@ -80,10 +80,11 @@ ERROR : . ;
 
 program: (classDef SEMICOLON)+ EOF;
 
-classDef: CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (featureDef SEMICOLON)* RBRACE ;
+classDef: CLASS TYPE_ID (INHERITS TYPE_ID)? LBRACE (featureDef SEMICOLON | ERROR )* RBRACE ;
 
 featureDef : OBJECT_ID LPAREN (formalDef (COMMA formalDef)*)? RPAREN COLON TYPE_ID LBRACE expr RBRACE 
-        | OBJECT_ID COLON TYPE_ID (ASSIGN expr)? ;
+        | OBJECT_ID COLON TYPE_ID (ASSIGN expr)?
+        | ERROR ;
 
 formalDef: OBJECT_ID COLON TYPE_ID;
 
@@ -115,4 +116,5 @@ expr    : expr  (AT TYPE_ID)? DOT OBJECT_ID LPAREN  (expr (COMMA expr)*)? RPAREN
         | STRING
         | TRUE
         | FALSE 
+        | ERROR
         ;

@@ -4,7 +4,7 @@ antlr-4.13.0-complete.jar
 lab0
 
 output/
-yapl/
+yapl
 modules/__pycache__/
 
 ./antlr

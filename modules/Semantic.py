@@ -447,7 +447,14 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 if isinstance(child, YAPLParser.FormalDefContext):
                     args.append(index)
             # self.symbol_table.display()
-            tipo = children_types[returns[0]]["type"]
+            if len(returns) == 0:
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: La función '{name}' tiene un return invalido."
+                # print(sms)
+                self.add_error(
+                    f"La función '{name}' tiene un return invalido.", ctx.start.line, ctx.start.column, sms)
+                tipo = "Object"
+            else:
+                tipo = children_types[returns[0]]["type"]
             tipo_func = children_types[0]["type"]
 
             # EN ESTE PUNTO ARGS TIENE MIS PARA METODOS
