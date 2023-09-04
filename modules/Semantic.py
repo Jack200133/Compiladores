@@ -444,6 +444,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
             tipo = children_types[returns[0]]["type"]
             tipo_func = children_types[0]["type"]
 
+            # EN ESTE PUNTO ARGS TIENE MIS PARA METODOS
+
             if buscarFirma:
                 # verificar la firma
                 # params de sym
@@ -520,7 +522,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
             name = ctx.OBJECT_ID()[0].getText()
             type = ctx.TYPE_ID()[0].getText()
             dev = f"{name}"
-            self.symbol_table.open_scope(name, type)
+            #self.symbol_table.open_scope(name, type)
             myscope = self.symbol_table.current_scope
             symbol = Symbol(name, type, 'Let',
                             f"{dev} -> {type}", f"{dev}", myscope=myscope)
@@ -528,7 +530,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
             self.symbol_table.add(symbol)
             result = self.visitChildren(ctx)
 
-            self.symbol_table.close_scope()
+            #self.symbol_table.close_scope()
 
             # TODO: Comprobar si tiene (ASSIGN expr)? y ver ese error
             node_data = {"type": result["type"], "hasError": False}
@@ -599,13 +601,16 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 # Hagarrar todos los expr despues de LPAREN
                 # Ignoramos el primer argumento porque es la clase
                 objID_type_index = args.pop(0)
-                functionargs = functionReveal.symbols
+                functionargs = {}
+                for minisymbol in functionReveal.symbols:
+                    if functionReveal.symbols[minisymbol].definicion == "FormalDef":
+                        functionargs[minisymbol] = functionReveal.symbols[minisymbol]
 
                 if len(args) != len(functionargs):
-                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}."
+                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {functionReveal.name} esperaba {len(functionargs)} parametros y se recibieron {len(args)}."
                     # print(sms)
                     self.add_error(
-                        f"La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}.", ctx.start.line, ctx.start.column, sms)
+                        f"La funcion {functionReveal.name} esperaba {len(functionargs)} parametros y se recibieron {len(args)}.", ctx.start.line, ctx.start.column, sms)
                     node_data = {"type": functionReveal.type, "hasError": True}
                     self.nodes[ctx] = node_data
                     return node_data
@@ -666,7 +671,10 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     functionReveal = child
 
             if functionReveal:
-                functionargs = functionReveal.symbols
+                functionargs = {}
+                for minisymbol in functionReveal.symbols:
+                    if functionReveal.symbols[minisymbol].definicion == "FormalDef":
+                        functionargs[minisymbol] = functionReveal.symbols[minisymbol]
 
                 if len(args) != len(functionargs):
                     sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La funcion {functionReveal.name} esperaba {len(functionargs)} y se recibieron {len(args)}."
@@ -788,7 +796,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     node_data = {"type": variable_type, "hasError": False}
                 else:
                     sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: la variable {object_id} no está definida."
-                    print(sms)
+                    #print(sms)
                     self.add_error(f"Error: la variable {object_id} no está definida.",ctx.start.line,ctx.start.column,sms)
                     # Manejar el error como prefieras
 
