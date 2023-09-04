@@ -164,7 +164,7 @@ class Main inherits IO {
 	     fi;
 	     
          a_var <- (new A).set_var(3);
-	     avar <- (new B).method2(avar.value(), a_var.value());
+	      avar <- (new B).method2(avar.value(), a_var.value());
          out_int(avar.value());
          out_string("\n");
          

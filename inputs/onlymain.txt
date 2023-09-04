@@ -1,4 +1,10 @@
+class A inherits Int {
+    var : Int <- 0;
+};
+
 class Main {
 
-	main(hd:Int) : Object { self };
+	main() : Object { 
+        var2
+     };
 };
