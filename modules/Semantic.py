@@ -863,10 +863,12 @@ class SemanticAnalyzer(ParseTreeVisitor):
             if compType == "Int":
                 compType = "Bool"
 
-            accep = ["Bool", "Object"]
-            if compType not in accep:
-                print(
-                    f"Error semantico: la condicion del if debe ser de tipo Bool. ")
+            #accep = ["Bool", "Object"]
+            if compType != "Bool":
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La condicion del if debe ser de tipo Bool."
+                #print(sms)
+                self.add_error(
+                    f"La condicion del if debe ser de tipo Bool.", ctx.start.line, ctx.start.column, sms)
 
             typeif = self.type_system.comperIF(
                 children_types[args[0]]["type"], children_types[args[1]]["type"])
@@ -890,8 +892,10 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 tipo_comparador = "Bool"
 
             if tipo_comparador != "Bool":
-                print(
-                    f"Error semantico: la condicion del if debe ser de tipo Bool. ")
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. La condicion del while debe ser de tipo Bool."
+                #print(sms)
+                self.add_error(
+                    f"La condicion del while debe ser de tipo Bool.", ctx.start.line, ctx.start.column, sms)
 
             node_data = {"type": "Object", "hasError": False}
             self.nodes[ctx] = node_data

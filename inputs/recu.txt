@@ -42,7 +42,7 @@ class FiboFor inherits FiboFor Fibonacci{
 class Buena inherits Fibonacci{
     var : Int <- 0;
 
-    
+
 }
 
 class Main{
