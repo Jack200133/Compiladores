@@ -591,7 +591,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
             for item in asignaciones:
                 asignacion_type = children_types[item["expr"]]["type"]
                 simbol_type = children[item["simbol"]].symbol.text
-                
+
                 if asignacion_type != simbol_type:
                     sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de la expresión no coincide con el tipo del símbolo '{simbol_type}' <- '{asignacion_type}'."
                     # print(sms)
@@ -691,10 +691,10 @@ class SemanticAnalyzer(ParseTreeVisitor):
                         param_type = functionargs[list_params[index]].type
                         if arg_type != param_type:
                             childLine = children[args[index]].start.column
-                            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}."
+                            sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}"
                             # print(sms)
                             self.add_error(
-                                f"El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}. En la linea {ctx.start.line}, columna {childLine}.", ctx.start.line, ctx.start.column, sms)
+                                f"El tipo del parametro {list_params[index]} no coincide con el tipo del argumento {list_params[index]} de la funcion {functionReveal.name}", ctx.start.line, ctx.start.column, sms)
                             node_data = {
                                 "type": functionReveal.type, "hasError": True}
 

@@ -288,7 +288,7 @@ line_numbers = tk.Text(frame_left, width=4, padx=3, takefocus=0,
 line_numbers.pack(side=tk.LEFT, fill=tk.Y)
 
 code_text = tk.Text(frame_left, wrap=tk.WORD, height=20,
-                    width=50, bg=colors['dark_background'], fg='white')
+                    width=50, bg=colors['dark_background'], fg='white',insertbackground='red')
 code_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 code_text.tag_configure("highlight", background="yellow", foreground="black")
 
