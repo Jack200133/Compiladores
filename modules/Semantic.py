@@ -185,10 +185,10 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Buscar la funcion main, si no existe es error
         main_function = main_real_scope.lookup('main')
         if main_function is None:
-            sms = f"Error Semántico. En la línea {ctx.end.line}, columna {ctx.start.column}. No se encontró la función main en la Clase Main"
+            sms = f"Error Semántico. En la línea {ctx.stop.line}, columna {ctx.start.column}. No se encontró la función main en la Clase Main"
             # print(sms)
             self.add_error("No se encontró la función main en la Clase Main",
-                           ctx.start.line, ctx.start.column, sms)
+                           ctx.stop.line, ctx.stop.column, sms)
             return
 
         return
@@ -546,23 +546,62 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Comprobar si es instance de un LET para crear el simbolo del valor de let
         # LET OBJECT_ID COLON TYPE_ID (ASSIGN expr)? (COMMA OBJECT_ID COLON TYPE_ID (ASSIGN expr)?)* IN expr
         if ctx.LET():
-            name = ctx.OBJECT_ID()[0].getText()
-            type = ctx.TYPE_ID()[0].getText()
-            dev = f"{name}"
-            #self.symbol_table.open_scope(name, type)
-            myscope = self.symbol_table.current_scope
-            symbol = Symbol(name, type, 'Let',
-                            f"{dev} -> {type}", f"{dev}", myscope=myscope)
-            #print("DEFINO X para la funcion ",self.symbol_table.current_scope.parent.name)
-            self.symbol_table.add(symbol)
-            result = self.visitChildren(ctx)
+            
+            for index,newSimbol in enumerate(ctx.OBJECT_ID()):
+                name = newSimbol.getText()
+                type = ctx.TYPE_ID()[index].getText()
+                dev = f"{name}"
+                myscope = self.symbol_table.current_scope
+                symbol = Symbol(name, type, 'Let',
+                                f"{dev} -> {type}", f"{dev}", myscope=myscope)
+                self.symbol_table.add(symbol)
+
+            children = []
+            for child in ctx.getChildren():
+                children.append(child)
+
+            children_types = []
+            for index, child in enumerate(children):
+                if child in self.nodes:
+                    children_types.append(self.nodes[child])
+                else:
+                    children_types.append(self.visit(child))
+                    node_data2 = {
+                        "type": children_types[-1]["type"], "hasError": False}
+                    self.nodes[child] = node_data2
+
+            asignaciones = []
+            new_simbol = 0
+            for index, child in enumerate(children):
+
+                if isinstance(child, YAPLParser.ExprContext):
+
+                    asignaciones.append({"simbol": index-2, "expr": index})
+
+
+                # buscar el OBJECT_ID anterior en children
+
+
+            lasExpresion = asignaciones.pop(-1)
 
             #self.symbol_table.close_scope()
 
             # TODO: Comprobar si tiene (ASSIGN expr)? y ver ese error
-            node_data = {"type": result["type"], "hasError": False}
+
+            for item in asignaciones:
+                asignacion_type = children_types[item["expr"]]["type"]
+                simbol_type = children[item["simbol"]].symbol.text
+                
+                if asignacion_type != simbol_type:
+                    sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de la expresión no coincide con el tipo del símbolo '{simbol_type}' <- '{asignacion_type}'."
+                    # print(sms)
+                    self.add_error(
+                        f"El tipo de la expresión no coincide con el tipo del símbolo '{simbol_type}' <- '{asignacion_type}'.", ctx.start.line, ctx.start.column, sms)
+
+            node_data = {"type": children_types[lasExpresion["expr"]]["type"], "hasError": False}
             self.nodes[ctx] = node_data
             return node_data
+        
         children = []
         for child in ctx.getChildren():
             children.append(child)

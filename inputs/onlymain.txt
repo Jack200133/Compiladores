@@ -1,19 +1,26 @@
+class B { 
+    var : Int <- 0;
+   set_var(num : Int) : SELF_TYPE {
+      {
+         var <- num;
+         self;
+      }
+   };
+       method5(numB : Int) : B { -- square
+      (let x : Int<- "1",y:String <- "s" in
+	 {
+            x <- numB * numB;
+	    (new B).set_var(x);
+	 }
+      )
+   };
+ };
 
 class Main {
 
 	main() : Object { 
-        var2
+        self
     };
 
-
-        is_even(num : Int) : Bool {
-    (let x : Int <- num in
-        if x < 0 then is_even(~x) else
-        if 0 = x then true else
-    if 1 = x then false else
-            is_even(x - 2)
-    fi fi fi
-    )
-    };
 
 };
