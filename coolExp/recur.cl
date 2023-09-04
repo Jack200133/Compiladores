@@ -41,6 +41,7 @@ class Main inherits IO {
 			facto <- new Factorial;
 			fibo <- new Fibonacci;
 			out_int(facto.factorial(n));
+			out_string(facto.factorial(n));
 			out_int(fibo.fibonacci(n));
 			self;
 		}

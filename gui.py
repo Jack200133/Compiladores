@@ -134,7 +134,9 @@ def perform_analysis():
 
     for error in errors:
         line_number = error.get('line', 'Unknown')
-        formatted_error = f"Error Semántico (Línea {line_number}): {error['full_error']}\n"
+        col_number = error.get('column', 'Unknown')
+        sms = error.get('error_mesagge', 'Unknown')
+        formatted_error = f"Error Semántico (Línea {line_number}, Columna {col_number}): {sms}\n"
 
         end_index = error_text.index(tk.END)
         error_text.insert(tk.END, formatted_error)
