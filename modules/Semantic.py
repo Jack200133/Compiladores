@@ -497,6 +497,11 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 self.nodes[ctx] = node_data
                 return node_data
             else:
+                if tipo is None:
+                    node_data = {"type": tipo_func, "hasError": True}
+                    self.nodes[ctx] = node_data
+                    return node_data
+
                 sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: El tipo de retorno de la funcion no coincide con el tipo de la clase."
                 # print(sms)
                 self.add_error(f"El tipo de retorno de la funcion no coincide con el tipo de la clase.",
