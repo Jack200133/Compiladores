@@ -250,10 +250,16 @@ class SemanticAnalyzer(ParseTreeVisitor):
     def visitClassDef(self, ctx: YAPLParser.ClassDefContext):
         class_name = ctx.TYPE_ID()[0].getText()
         inherits_from = None  # Inicializamos la variable
-
+        obj = ctx.getText()
         if ctx.INHERITS():  # Si hay herencia
             # Obtenemos el tipo padre
             inherits_from = ctx.TYPE_ID()[1].getText()
+            lk = len(ctx.TYPE_ID())
+            if lk >=3:
+                sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: La clase {class_name} no puede heredar de más de una clase."
+                # print(sms)
+                self.add_error("La clase Main no puede heredar de más de una clase",
+                               ctx.start.line, ctx.start.column, sms)
 
         # Comprobar el ClassMain
         if class_name == 'Main':

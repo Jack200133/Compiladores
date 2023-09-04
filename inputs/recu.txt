@@ -32,13 +32,18 @@ class Fibonacci {
   };
 
 
-class FiboFor inherits Fibonacci{
+class FiboFor inherits FiboFor Fibonacci{
 
 	fibonacci() : Int { self };
 
     init() : SELF_TYPE {self};
 };
 
+class Buena inherits Fibonacci{
+    var : Int <- 0;
+
+    
+}
 
 class Main{
     n: Int <- 10;
