@@ -43,7 +43,8 @@ def main():
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()
-    lexer.addErrorListener(MyErrorListener())
+    lexer_listener = MyErrorListener()
+    lexer.addErrorListener(lexer_listener)
 
     # Set up the parser
     stream = CommonTokenStream(lexer)
@@ -51,7 +52,7 @@ def main():
 
     # Remove the default error listener and add the custom one
     parser.removeErrorListeners()
-    parser.addErrorListener(MyErrorListener())
+    parser.addErrorListener(lexer_listener)
 
     # Parse the input
     tree = parser.program()
@@ -69,6 +70,8 @@ def main():
     semantic_analyzer.visit(tree)
     semantic_analyzer.symbol_table.displayTree()
     print(len(semantic_analyzer.ErrorList))
+    for Error in lexer_listener.errors:
+        print(Error)
     for Error in semantic_analyzer.ErrorList:
         print(Error['full_error'])
     # semantic_analyzer.symbol_table.display()

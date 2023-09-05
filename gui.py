@@ -115,13 +115,15 @@ def analyze_code(code):
     global semantic_analyzer  # Usar la variable global
     input_stream = InputStream(code)
     lexer = YAPLLexer(input_stream)
+    # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()
-    lexer.addErrorListener(MyErrorListener())
+    lexer_listener = MyErrorListener()
+    lexer.addErrorListener(lexer_listener)
 
     stream = CommonTokenStream(lexer)
     parser = YAPLParser(stream)
     parser.removeErrorListeners()
-    parser.addErrorListener(MyErrorListener())
+    parser.addErrorListener(lexer_listener)
 
     tree = parser.program()
 
@@ -134,7 +136,7 @@ def analyze_code(code):
     semantic_analyzer.visit(tree)
     semantic_analyzer.symbol_table.displayTree()
 
-    return semantic_analyzer.ErrorList
+    return semantic_analyzer.ErrorList,lexer_listener.ErrorList
 
 
 def show_symbol_table():
@@ -212,12 +214,36 @@ def perform_analysis():
     show_tree_button['state'] = tk.DISABLED
     show_symbol_button['state'] = tk.DISABLED
     code = code_text.get("1.0", tk.END)
-    errors = analyze_code(code)
+    errors,error_lexer = analyze_code(code)
 
     error_text.delete("1.0", tk.END)
     code_text.tag_delete("highlight")  # Clear existing highlights
     # Inicialmente asumimos que no hay error de "clase Main"
     main_class_error_present = False
+
+    for error in error_lexer:
+        line_number = error.get('line', 'Unknown')
+        col_number = error.get('column', 'Unknown')
+        sms = error.get('full_error', 'Unknown')
+        formatted_error = f"{sms}\n"
+
+        end_index = error_text.index(tk.END)
+        error_text.insert(tk.END, formatted_error)
+
+        start_index = f"{end_index.split('.')[0]}.{int(end_index.split('.')[1])}"
+        end_index = error_text.index(tk.END)
+
+        error_text.tag_add(
+            "error", start_index, f"{end_index.split('.')[0]}.{int(end_index.split('.')[1])-1}")
+
+        if line_number != 'Unknown':
+            code_text.tag_add(
+                "highlight", f"{line_number}.0", f"{line_number}.end")
+
+        # Verificar si el mensaje de error contiene la frase sobre la "clase Main"
+        if "No se encontró la clase Main" in sms:
+            main_class_error_present = True
+
     for error in errors:
         line_number = error.get('line', 'Unknown')
         col_number = error.get('column', 'Unknown')
