@@ -46,7 +46,19 @@ class Symbol:
         self.is_heredado = is_heredado
 
     def __str__(self):
-        base_str = f"{self.name}\t{self.type}\t{self.definicion}\t{self.derivation}\t{self.initial_value}"
+        initial_value = None
+        if self.type == "Int":
+            initial_value = 0
+        elif self.type == "String":
+            initial_value = '""'
+        elif self.type == "Bool":
+            initial_value = False
+        elif self.type == "Object":
+            initial_value = None
+        
+        base_str = f"{self.name}\t\t\t{self.type}\t\t\t{self.definicion}\t\t\t{self.derivation}\t\t\t{initial_value}\t\t\t{self.is_heredado}\t\t\t{self.myscope.number}"
+        if len(self.definicion) < 8:
+            base_str = f"{self.name}\t\t\t{self.type}\t\t\t{self.definicion}\t\t\t{self.derivation}\t\t\t{initial_value}\t\t\t{self.is_heredado}\t\t\t{self.myscope.number}"
         if len(self.name) < 8:
             return base_str + "\t"
         else:
@@ -112,7 +124,7 @@ class SymboTable:
 
     def display(self):
         print("Tabla de Símbolos:")
-        print("Nombre\t\tTipo\tdefinicion\tderivation")
+        print("Nombre\t\tTipo\tDefinicion\tDerivation")
         self.root.display()
 
     def copyTree(self, scope):

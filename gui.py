@@ -44,8 +44,6 @@ style.configure("Custom.TButton",
                 )
 
 # Función para actualizar los números de línea
-
-
 def update_line_numbers(event=None):
     line_number_content = ""
     num_lines = code_text.index('end - 1 line').split('.')[0]
@@ -55,6 +53,53 @@ def update_line_numbers(event=None):
     line_numbers.delete('1.0', tk.END)
     line_numbers.insert('1.0', line_number_content)
     line_numbers.config(state=tk.DISABLED)
+
+    code_text.tag_remove("keyword", "1.0", tk.END)
+    code_text.tag_remove("comment", "1.0", tk.END)
+
+    code = code_text.get("1.0", tk.END)
+    keyword_pattern = r"\b(class|else|fi|if|in|inherits|isvoid|let|loop|pool|then|while|case|esac|new|of|not)\b"
+    comment_pattern = r"--[^\n]*"
+    type_pattern = r"\b(Int|Bool|String)\b"
+
+    for match in re.finditer(keyword_pattern, code):
+        start, end = match.span()
+        start_line = code.count("\n", 0, start) + 1
+        start_col = start - code.rfind("\n", 0, start) - 1
+        end_line = code.count("\n", 0, end) + 1
+        end_col = end - code.rfind("\n", 0, end) - 1
+
+        # Para diagnóstico
+        print(f"For keyword, start_col={start_col}, end_col={end_col}")
+
+        code_text.tag_add(
+            "keyword", f"{start_line}.{start_col}", f"{end_line}.{end_col}")
+
+    for match in re.finditer(type_pattern, code):
+        start, end = match.span()
+        start_line = code.count("\n", 0, start) + 1
+        start_col = start - code.rfind("\n", 0, start) - 1
+        end_line = code.count("\n", 0, end) + 1
+        end_col = end - code.rfind("\n", 0, end) - 1
+        code_text.tag_add(
+            "type", f"{start_line}.{start_col}", f"{end_line}.{end_col}")
+
+        # Para diagnóstico
+        #print(f"For keyword, start_col={start_col}, end_col={end_col}")
+
+        # code_text.tag_add(
+        # "keyword", f"{start_line}.{start_col}", f"{end_line}.{end_col}")
+
+    for match in re.finditer(comment_pattern, code):
+        start, end = match.span()
+        start_line = code.count("\n", 0, start) + 1
+        start_col = start - code.rfind("\n", 0, start) - 1  # añadir + 1 aquí
+        end_line = code.count("\n", 0, end) + 1
+        end_col = end - code.rfind("\n", 0, end) + 1  # añadir + 1 aquí también
+        code_text.tag_add(
+            "comment", f"{start_line}.{start_col}", f"{end_line}.{end_col}")
+    
+    line_numbers.yview_moveto(code_text.yview()[0])
 
 
 def abrir_imagen_ruta(ruta):
@@ -80,8 +125,9 @@ def build_tree(dot, node, parser, parent=None):
 
 
 def show_tree():
-    carpeta_output = os.path.join(os.path.dirname(__file__), 'output')
+    carpeta_output = os.path.join("./", 'output')
     ruta_imagen = os.path.join(carpeta_output, 'grafo.png')
+    print(ruta_imagen)
     abrir_imagen_ruta(ruta_imagen)
 
 
@@ -131,6 +177,8 @@ def analyze_code(code):
     build_tree(dot, tree, parser)
     dot.render(filename=os.path.join(dir_path, 'output',
                'grafo'), format='png', cleanup=True)
+    
+    dot.view()
 
     semantic_analyzer = SemanticAnalyzer()
     semantic_analyzer.visit(tree)
@@ -143,13 +191,18 @@ def show_symbol_table():
     # Crear una ventana emergente para la tabla de símbolos
     new_window = tk.Toplevel()
     new_window.title("Tabla de Símbolos")
-    symbol_text = tk.Text(new_window, wrap=tk.WORD, height=20,
-                          width=50, bg='white', fg='black')
+
+    symbol_text = tk.Text(new_window, wrap=tk.WORD, height=60,
+                          width=100, bg='white', fg='black')
     symbol_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
     # Ya que 'semantic_analyzer' es una variable global, podemos acceder a ella aquí
     symbols = semantic_analyzer.symbol_table.get_all_symbols()
     symbol_text.insert(tk.END, "Tabla de Símbolos:\n")
+    headers = "Nombre\t\t\tTipo\t\t\tDefinición\t\t\tDerivación\t\t\tValor\t\t\tHeredado\t\t\tÁmbito"
+    symbol_text.insert(tk.END, f"{headers}\n")
+    symbol_text.insert(tk.END, "="*(len(headers)+21*4) + "\n")  # línea separadora
+
     for symbol in symbols:
         symbol_text.insert(tk.END, f"{symbol}\n")
 
@@ -208,6 +261,10 @@ def highlight_cool_syntax(event):
         end_col = end - code.rfind("\n", 0, end) + 1  # añadir + 1 aquí también
         code_text.tag_add(
             "comment", f"{start_line}.{start_col}", f"{end_line}.{end_col}")
+
+def sync_scroll(event):
+    code_text.yview_moveto(event.y)
+    line_numbers.yview_moveto(event.y)
 
 
 def perform_analysis():
@@ -327,11 +384,14 @@ code_text.tag_configure(
 # Llamar a la función update_line_numbers cuando hay un cambio en code_text
 code_text.bind('<KeyPress>', update_line_numbers)
 code_text.bind('<KeyRelease>', update_line_numbers)
-code_text.bind('<MouseWheel>', update_line_numbers)
+#code_text.bind('<MouseWheel>', update_line_numbers)
+code_text.bind("<MouseWheel>", sync_scroll)
+line_numbers.bind("<MouseWheel>", sync_scroll)
+
 
 # Llamar a la función highlight_cool_syntax cuando hay un cambio en code_text
-code_text.bind('<KeyPress>', highlight_cool_syntax)
-code_text.bind('<KeyRelease>', highlight_cool_syntax)
+#code_text.bind('<KeyPress>', highlight_cool_syntax)
+#code_text.bind('<KeyRelease>', highlight_cool_syntax)
 
 frame_buttons = ttk.Frame(frame_left)
 frame_buttons.pack(fill=tk.X, padx=10, pady=(0, 10))

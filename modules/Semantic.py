@@ -91,26 +91,26 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         self.symbol_table.open_scope("IO", "Object")
         self.symbol_table.add(Symbol(
-            "out_string", "String", "FeatureDef", "out_string -> SELF_TYPE", "IO.out_string"))
+            "out_string", "String", "FeatureDef", "out_string -> SELF_TYPE", "IO.out_string",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("out_string", "String")
         self.symbol_table.add(
-            Symbol("x", "String", "FormalDef", "x -> String", "IO.out_string.x"))
+            Symbol("x", "String", "FormalDef", "x -> String", "IO.out_string.x",myscope=self.symbol_table.current_scope))
         self.symbol_table.close_scope()
 
         self.symbol_table.add(
-            Symbol("out_int", "Int", "FeatureDef", "out_int -> SELF_TYPE", "IO.out_int"))
+            Symbol("out_int", "Int", "FeatureDef", "out_int -> SELF_TYPE", "IO.out_int",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("out_int", "Int")
         self.symbol_table.add(
-            Symbol("x", "Int", "FormalDef", "x -> Int", "IO.out_int.x"))
+            Symbol("x", "Int", "FormalDef", "x -> Int", "IO.out_int.x",myscope=self.symbol_table.current_scope))
         self.symbol_table.close_scope()
 
         self.symbol_table.add(Symbol(
-            "in_string", "String", "FeatureDef", "in_string -> String", "IO.in_string"))
+            "in_string", "String", "FeatureDef", "in_string -> String", "IO.in_string",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("in_string", "String")
         self.symbol_table.close_scope()
 
         self.symbol_table.add(
-            Symbol("in_int", "Int", "FeatureDef", "in_int -> Int", "IO.in_int"))
+            Symbol("in_int", "Int", "FeatureDef", "in_int -> Int", "IO.in_int",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("in_int", "Int")
         self.symbol_table.close_scope()
         self.symbol_table.close_scope()
@@ -121,17 +121,17 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         self.symbol_table.open_scope("Object", "Object")
         self.symbol_table.add(
-            Symbol("abort", "Object", "FeatureDef", "abort -> Object", "Object.abort"))
+            Symbol("abort", "Object", "FeatureDef", "abort -> Object", "Object.abort",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("abort", "Object")
         self.symbol_table.close_scope()
 
         self.symbol_table.add(Symbol(
-            "type_name", "String", "FeatureDef", "type_name -> String", "Object.type_name"))
+            "type_name", "String", "FeatureDef", "type_name -> String", "Object.type_name",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("type_name", "String")
         self.symbol_table.close_scope()
 
         self.symbol_table.add(
-            Symbol("copy", "SELF_TYPE", "FeatureDef", "copy -> SELF_TYPE", "Object.copy"))
+            Symbol("copy", "SELF_TYPE", "FeatureDef", "copy -> SELF_TYPE", "Object.copy",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("copy", "SELF_TYPE")
         self.symbol_table.close_scope()
 
@@ -143,24 +143,24 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         self.symbol_table.open_scope("String", "Object")
         self.symbol_table.add(
-            Symbol("length", "Int", "FeatureDef", "length -> Int", "String.length"))
+            Symbol("length", "Int", "FeatureDef", "length -> Int", "String.length",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("length", "Int")
         self.symbol_table.close_scope()
 
         self.symbol_table.add(
-            Symbol("concat", "String", "FeatureDef", "concat -> String", "String.concat"))
+            Symbol("concat", "String", "FeatureDef", "concat -> String", "String.concat",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("concat", "String")
         self.symbol_table.add(
-            Symbol("s", "String", "FormalDef", "s -> String", "String.concat.s"))
+            Symbol("s", "String", "FormalDef", "s -> String", "String.concat.s",myscope=self.symbol_table.current_scope))
         self.symbol_table.close_scope()
 
         self.symbol_table.add(
-            Symbol("substr", "String", "FeatureDef", "substr -> String", "String.substr"))
+            Symbol("substr", "String", "FeatureDef", "substr -> String", "String.substr",myscope=self.symbol_table.current_scope))
         self.symbol_table.open_scope("substr", "String")
         self.symbol_table.add(
-            Symbol("i", "Int", "FormalDef", "i -> Int", "String.substr.i"))
+            Symbol("i", "Int", "FormalDef", "i -> Int", "String.substr.i",myscope=self.symbol_table.current_scope))
         self.symbol_table.add(
-            Symbol("l", "Int", "FormalDef", "l -> Int", "String.substr.l"))
+            Symbol("l", "Int", "FormalDef", "l -> Int", "String.substr.l",myscope=self.symbol_table.current_scope))
         self.symbol_table.close_scope()
 
         self.symbol_table.close_scope()

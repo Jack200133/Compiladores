@@ -70,15 +70,15 @@ def main():
     semantic_analyzer.visit(tree)
     semantic_analyzer.symbol_table.displayTree()
     print(len(semantic_analyzer.ErrorList))
-    for Error in lexer_listener.errors:
+    for Error in lexer_listener.ErrorList:
         print(Error)
     for Error in semantic_analyzer.ErrorList:
         print(Error['full_error'])
     # semantic_analyzer.symbol_table.display()
-    # symbols = semantic_analyzer.symbol_table.get_all_symbols()
-    # print("\nTabla de Símbolos:")
-    # for symbol in symbols:
-    #     print(symbol)
+    symbols = semantic_analyzer.symbol_table.get_all_symbols()
+    print("\nTabla de Símbolos:")
+    for symbol in symbols:
+        print(symbol)
 
 
 if __name__ == '__main__':

@@ -170,7 +170,7 @@ class Main {
    iodevice : IO;
 
 
-   is_even(num : Int) : "String" {
+   is_even(num : Int) : Bool {
       (let x : Int <- num in
             if x < 0 then is_even(~x) else
             if 0 = x then true else
