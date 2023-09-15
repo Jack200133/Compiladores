@@ -324,6 +324,8 @@ def perform_analysis():
         if "No se encontró la clase Main" in sms:
             main_class_error_present = True
 
+    if len(errors) == 0 and len(error_lexer) == 0:
+        error_text.insert(tk.END, "Análisis terminado sin errores.\n")
     if not main_class_error_present:
         show_tree_button['state'] = tk.NORMAL
         show_symbol_button['state'] = tk.NORMAL

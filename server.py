@@ -1,3 +1,6 @@
+from flask import Flask, request, jsonify
+import base64
+import os
 import tkinter as tk
 from tkinter import filedialog
 from graphviz import Digraph
@@ -22,12 +25,16 @@ def build_tree(dot, node, parser, parent=None):
         for child in node.children:
             build_tree(dot, child, parser, node)
 
+# (importa otras bibliotecas necesarias aquí)
 
-def main():
-    # # Set up the input and lexer
-    # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./inputs/onlymain.txt', encoding="utf-8")
-    #input_stream = FileStream('./coolExp/recur.cl', encoding="utf-8")
+app = Flask(__name__)
+
+@app.route('/has_errors', methods=['POST'])
+def generate_images():
+    # Obtén el código del cuerpo de la solicitud
+    code = request.json['code']
+    print(code)
+    input_stream = InputStream(code)
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
     lexer.removeErrorListeners()
@@ -53,21 +60,33 @@ def main():
 
     # Render the graph
     dot.render(filename='./output/grafo', format='png', cleanup=True)
-    dot.view()
+    #dot.view()
     semantic_analyzer = SemanticAnalyzer()
     semantic_analyzer.visit(tree)
     semantic_analyzer.symbol_table.displayTree()
     print(len(semantic_analyzer.ErrorList))
-    for Error in lexer_listener.ErrorList:
-        print(Error)
-    for Error in semantic_analyzer.ErrorList:
-        print(Error['full_error'])
-    # semantic_analyzer.symbol_table.display()
-    symbols = semantic_analyzer.symbol_table.get_all_symbols()
-    print("\nTabla de Símbolos:")
-    for symbol in symbols:
-        print(symbol)
+    
+    complete_error_list = lexer_listener.ErrorList + semantic_analyzer.ErrorList
 
+    # semantic_analyzer.symbol_table.display()
+    # (Usa el código para generar las imágenes y el array de errores aquí)
+
+    # Convierte las imágenes a base64
+    with open('./output/grafo.png', 'rb') as grafo_image:
+        grafo_base64 = base64.b64encode(grafo_image.read()).decode('utf-8')
+
+    with open('./output/symbol_table.png', 'rb') as symbol_table_image:
+        symbol_table_base64 = base64.b64encode(symbol_table_image.read()).decode('utf-8')
+
+
+    # Devuelve las imágenes en base64 y el array de errores como respuesta JSON
+    response = {
+        'grafo_image': grafo_base64,
+        'symbol_table_image': symbol_table_base64,
+        'errors': complete_error_list
+    }
+    
+    return jsonify(response)
 
 if __name__ == '__main__':
-    main()
+    app.run(debug=True)
