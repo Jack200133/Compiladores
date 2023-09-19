@@ -35,7 +35,7 @@ class Scope:
 
 
 class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False):
+    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False,memory_usage=0):
         self.name = name
         self.type = _type
         self.definicion = definicion
@@ -44,25 +44,37 @@ class Symbol:
         self.myscope = myscope
         self.initial_value = initial_value
         self.is_heredado = is_heredado
+        if self.type == "Int":
+            self.memory_usage = 4
+        elif self.type == "String":
+            self.memory_usage = 256
+        elif self.type == "Bool":
+            self.memory_usage = 1
+        else:
+            self.memory_usage = memory_usage
+        self.memory_position = 0
 
     def __str__(self):
         initial_value = None
         if self.type == "Int":
-            initial_value = 0
+            initial_value = "0"
         elif self.type == "String":
             initial_value = '""'
         elif self.type == "Bool":
-            initial_value = False
+            initial_value = "False"
         elif self.type == "Object":
-            initial_value = None
-        
-        base_str = f"{self.name}\t\t\t{self.type}\t\t\t{self.definicion}\t\t\t{self.derivation}\t\t\t{initial_value}\t\t\t{self.is_heredado}\t\t\t{self.myscope.number}"
-        if len(self.definicion) < 8:
-            base_str = f"{self.name}\t\t\t{self.type}\t\t\t{self.definicion}\t\t\t{self.derivation}\t\t\t{initial_value}\t\t\t{self.is_heredado}\t\t\t{self.myscope.number}"
-        if len(self.name) < 8:
-            return base_str + "\t"
+            initial_value = 'void'
         else:
-            return base_str
+            initial_value = "void"
+        
+        
+        return f"{self.name:15}{self.type:15}{self.definicion:15}{self.derivation:30}{initial_value:10}{self.is_heredado:14}{self.myscope.number:10}{self.memory_position:15}{self.memory_usage:10}"
+
+        base_str = f"{self.name}\t\t{self.type}\t\t\t{self.definicion}\t\t\t{self.derivation}\t\t\t{initial_value}\t\t\t{self.is_heredado}\t\t\t{self.myscope.number}\t\t\t{self.memory_position}\t\t\t{self.memory_usage}"
+        if len(self.name) < 8:
+            base_str = f"{self.name}\t\t\t{self.type}\t\t\t{self.definicion}\t\t\t{self.derivation}\t\t\t{initial_value}\t\t\t{self.is_heredado}\t\t\t{self.myscope.number}\t\t\t{self.memory_position}\t\t\t{self.memory_usage}"
+
+        return base_str
 
 
 class SymboTable:
@@ -70,6 +82,7 @@ class SymboTable:
         self.root = Scope()
         self.current_scope = self.root
         self.scope_counter = 0
+        self.current_memory_position = 0
 
     def open_scope(self, name, type):
         self.scope_counter += 1
@@ -77,12 +90,15 @@ class SymboTable:
                           number=self.scope_counter, name=name, type=type)
         self.current_scope.add_child(new_scope)
         self.current_scope = new_scope
+        self.current_memory_position = 0
 
     def close_scope(self):
         self.current_scope = self.current_scope.parent
 
-    def add(self, symbol):
+    def add(self, symbol:Symbol):
         self.current_scope.add(symbol)
+        symbol.memory_position = self.current_memory_position
+        self.current_memory_position += symbol.memory_usage
 
     def lookup(self, name):
         scope = self.current_scope
@@ -124,7 +140,7 @@ class SymboTable:
 
     def display(self):
         print("Tabla de Símbolos:")
-        print("Nombre\t\tTipo\tDefinicion\tDerivation")
+        print(f"{'Nombre':15}{'Tipo':15}{'Definición':15}{'Derivación':20}{'Valor Inicial':15}{'Heredado':10}{'Alcance':10}{'Pos Memoria':15}{'Uso Memoria':10}")
         self.root.display()
 
     def copyTree(self, scope):

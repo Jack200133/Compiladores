@@ -1,5 +1,9 @@
 class Factorial {
   	var: Int <- 0;
+	var2: Int <- 0;
+	var3: Int <- 0;
+	var4: String <- "0";
+	var5: Int <- 0;
   	
   	factorial(n: Int) : Int {
 		{
@@ -31,19 +35,6 @@ class Fibonacci {
   
   };
 
-
-class FiboFor inherits FiboFor Fibonacci{
-
-	fibonacci() : Int { self };
-
-    init() : SELF_TYPE {self};
-};
-
-class Buena inherits Fibonacci{
-    var : Int <- 0;
-
-
-}
 
 class Main{
     n: Int <- 10;

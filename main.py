@@ -26,7 +26,7 @@ def build_tree(dot, node, parser, parent=None):
 def main():
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./inputs/onlymain.txt', encoding="utf-8")
+    input_stream = FileStream('./inputs/recu.txt', encoding="utf-8")
     #input_stream = FileStream('./coolExp/recur.cl', encoding="utf-8")
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
@@ -62,12 +62,13 @@ def main():
         print(Error)
     for Error in semantic_analyzer.ErrorList:
         print(Error['full_error'])
-    # semantic_analyzer.symbol_table.display()
     symbols = semantic_analyzer.symbol_table.get_all_symbols()
     print("\nTabla de Símbolos:")
+    print(f"{'Nombre':15}{'Tipo':15}{'Definición':15}{'Derivación':30}{'Valor Inicial':15}{'Heredado':10}{'Alcance':10}{'Pos Memoria':15}{'Uso Memoria':10}")
     for symbol in symbols:
         print(symbol)
 
+    semantic_analyzer.symbol_table.display()
 
 if __name__ == '__main__':
     main()
