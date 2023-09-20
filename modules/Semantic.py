@@ -304,6 +304,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
             # Visitamos los hijos del nodo actual
 
             result = self.visitChildren(ctx)
+            #definition.memory_usage = self.symbol_table.current_scope.current_memory_position
+            self.symbol_table.new_usage(class_name, self.symbol_table.current_scope.current_memory_position)
             self.symbol_table.close_scope()  # Cerramos el alcance en la tabla de símbolos
             return result  # Retornamos el resultado
 
@@ -576,7 +578,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
                 if isinstance(child, YAPLParser.ExprContext):
 
-                    asignaciones.append({"simbol": index-2, "expr": index})
+                    asignaciones.append({"name":index-4,"simbol": index-2, "expr": index})
 
 
                 # buscar el OBJECT_ID anterior en children
@@ -591,12 +593,14 @@ class SemanticAnalyzer(ParseTreeVisitor):
             for item in asignaciones:
                 asignacion_type = children_types[item["expr"]]["type"]
                 simbol_type = children[item["simbol"]].symbol.text
+                symbol_name = children[item["name"]].symbol.text
 
                 if asignacion_type != simbol_type:
                     sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}. El tipo de la expresión no coincide con el tipo del símbolo '{simbol_type}' <- '{asignacion_type}'."
                     # print(sms)
                     self.add_error(
                         f"El tipo de la expresión no coincide con el tipo del símbolo '{simbol_type}' <- '{asignacion_type}'.", ctx.start.line, ctx.start.column, sms)
+
 
             node_data = {"type": children_types[lasExpresion["expr"]]["type"], "hasError": False}
             self.nodes[ctx] = node_data

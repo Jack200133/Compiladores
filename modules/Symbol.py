@@ -9,12 +9,20 @@ class Scope:
         self.children = []
         self.name = name
         self.type = type
+        self.current_memory_position = 0
 
     def add_child(self, child):
         self.children.append(child)
 
     def add(self, symbol):
+        symbol.memory_position = self.current_memory_position
+        self.current_memory_position += symbol.memory_usage
         self.symbols[symbol.name] = symbol
+
+    def new_usage(self, symbol, new_usage):
+        
+        self.symbols[symbol.name].memory_usage += new_usage
+        self.current_memory_position += new_usage
 
     def lookup(self, name):
         return self.symbols.get(name, None)
@@ -35,19 +43,19 @@ class Scope:
 
 
 class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False,memory_usage=0):
+    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False,memory_usage=16):
         self.name = name
         self.type = _type
         self.definicion = definicion
         self.derivation = derivation
         self.scope = scope
         self.myscope = myscope
-        self.initial_value = initial_value
+        self.value = initial_value
         self.is_heredado = is_heredado
         if self.type == "Int":
-            self.memory_usage = 4
+            self.memory_usage = 8
         elif self.type == "String":
-            self.memory_usage = 256
+            self.memory_usage = 16
         elif self.type == "Bool":
             self.memory_usage = 1
         else:
@@ -82,7 +90,7 @@ class SymboTable:
         self.root = Scope()
         self.current_scope = self.root
         self.scope_counter = 0
-        self.current_memory_position = 0
+        # self.current_memory_position = 0
 
     def open_scope(self, name, type):
         self.scope_counter += 1
@@ -90,15 +98,15 @@ class SymboTable:
                           number=self.scope_counter, name=name, type=type)
         self.current_scope.add_child(new_scope)
         self.current_scope = new_scope
-        self.current_memory_position = 0
+        #self.current_memory_position = 0
 
     def close_scope(self):
         self.current_scope = self.current_scope.parent
 
     def add(self, symbol:Symbol):
         self.current_scope.add(symbol)
-        symbol.memory_position = self.current_memory_position
-        self.current_memory_position += symbol.memory_usage
+        #symbol.memory_position = self.current_memory_position
+        #self.current_memory_position += symbol.memory_usage
 
     def lookup(self, name):
         scope = self.current_scope
@@ -123,20 +131,33 @@ class SymboTable:
             scope = scope.parent
         return None
 
-    def replace(self, symbol, scope=None):
+    def replace(self, symbol: Symbol, scope: Scope = None):
         scope_to_replace = scope if scope else self.current_scope
-        if scope_to_replace in self.table:
-            for i, existing_symbol in enumerate(self.table[scope_to_replace]):
-                if existing_symbol.name == symbol.name:
-                    self.table[scope_to_replace][i] = symbol
-                    return
-        raise Exception("Símbolo no encontrado. No se puede reemplazar.")
+        if symbol.name in scope_to_replace.symbols:
+            scope_to_replace.symbols[symbol.name] = symbol
+        else:
+            raise Exception(f"Símbolo '{symbol.name}' no encontrado. No se puede reemplazar.")
 
-    def delete(self, name, scope=None):
+    def delete(self, name: str, scope: Scope = None):
         scope_to_delete = scope if scope else self.current_scope
-        if scope_to_delete in self.table:
-            self.table[scope_to_delete] = [
-                symbol for symbol in self.table[scope_to_delete] if symbol.name != name]
+        if name in scope_to_delete.symbols:
+            del scope_to_delete.symbols[name]
+        else:
+            raise Exception(f"Símbolo '{name}' no encontrado. No se puede eliminar.")
+
+    def update_value(self, name: str, new_value):
+        symbol = self.lookup(name)
+        if symbol:
+            symbol.value = new_value
+        else:
+            raise Exception(f"Símbolo '{name}' no encontrado. No se puede actualizar el valor.")
+
+    def new_usage(self, symbol: str, new_usage):
+        symbol = self.lookup(symbol)
+        if symbol:
+            symbol.myscope.new_usage(symbol, new_usage)
+        else:
+            raise Exception(f"Símbolo '{symbol}' no encontrado. No se puede actualizar el valor.")
 
     def display(self):
         print("Tabla de Símbolos:")
