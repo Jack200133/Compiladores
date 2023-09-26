@@ -90,7 +90,9 @@ class TypeSystem:
     def CheckComp(self, type1, type2):
         if type1 == type2:
             return True, "Bool"
-        if type1 == "Object" or type2 == "Object":
+        elif (type1 == "Int" and type2 == "Bool") or (type1 == "Bool" and type2 == "Int"):
+            return True, "Bool"
+        elif type1 == "Object" or type2 == "Object":
             return True, "Object"
         return False, "Object"
 
