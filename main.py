@@ -1,11 +1,10 @@
-import tkinter as tk
-from tkinter import filedialog
 from graphviz import Digraph
 from antlr4 import *
 from modules.ErrorListener import MyErrorListener
+from modules.TreeDirections import TreeDirections
 from modules.Semantic import SemanticAnalyzer
-from yapl.YAPLLexer import YAPLLexer
 from yapl.YAPLParser import YAPLParser
+from yapl.YAPLLexer import YAPLLexer
 
 
 def build_tree(dot, node, parser, parent=None):
@@ -69,6 +68,10 @@ def main():
         print(symbol)
 
     semantic_analyzer.symbol_table.display()
+
+
+    my3D = TreeDirections(semantic_analyzer.symbol_table)
+    my3D.visit(tree)
 
 if __name__ == '__main__':
     main()
