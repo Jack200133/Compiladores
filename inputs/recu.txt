@@ -1,9 +1,6 @@
 class Factorial {
   	var: Int <- 0;
-	var2: Int <- 0;
-	var3: Int <- 0;
-	var4: String <- "0";
-	var5: Int <- 0;
+
   	
   	factorial(n: Int) : Int {
 		{
