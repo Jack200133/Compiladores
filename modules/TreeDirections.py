@@ -136,6 +136,8 @@ class TreeDirections(ParseTreeVisitor):
                 chil = self.visit(child)
                 if chil is not None:
                     children.append(chil)
+            self.write(f"RETURN t{children[-1].number}\n")
+            self.write(f"END FUNCTION {simbol.scope}\n")
 
             self.symbol_table.current_scope = self.symbol_table.current_scope.parent
             self.sp = "_GLOBAL"
@@ -237,9 +239,23 @@ class TreeDirections(ParseTreeVisitor):
         
 
         elif ctx.LBRACE():
-            exptr = ctx.children[1]
-            selfchild = self.visit(exptr)
-            return selfchild
+            children = []
+            for child in ctx.getChildren():
+                children.append(child)
+
+            exprs = []
+            for index, child in enumerate(children):
+                    
+                    if isinstance(child, YAPLParser.ExprContext):
+    
+                        exprs.append({"expr": index})
+            
+            cisitedExprs = []
+            for expr in exprs:
+                visit = self.visit(children[expr["expr"]])
+                cisitedExprs.append(visit)
+
+            return cisitedExprs[-1]
         
         elif ctx.LET():
             children = []
