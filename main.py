@@ -67,9 +67,10 @@ def main():
     for symbol in symbols:
         print(symbol)
 
-    semantic_analyzer.symbol_table.display()
+    #semantic_analyzer.symbol_table.display()
 
-
+    if len(semantic_analyzer.ErrorList) > 0 or len(lexer_listener.ErrorList) > 0:
+        return
     my3D = TreeDirections(semantic_analyzer.symbol_table)
     my3D.visit(tree)
 

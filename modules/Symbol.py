@@ -43,9 +43,10 @@ class Scope:
 
 
 class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False,memory_usage=16):
+    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False,memory_usage=16,isvar=False):
         self.name = name
         self.type = _type
+        self.isvar = isvar
         self.definicion = definicion
         self.derivation = derivation
         self.scope = scope

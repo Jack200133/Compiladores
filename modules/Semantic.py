@@ -273,8 +273,10 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Añadimos el tipo a la tabla de tipos
         if self.type_system.add_type(class_name, inherits_from, ctx, self.add_error):
             myscope = self.symbol_table.current_scope
-            definition = Symbol(class_name, type, 'ClassDef', f"{class_name} -> {inherits_from if inherits_from else 'Object'}",
-                                f"{inherits_from if inherits_from else 'Object'}.{class_name}", myscope=myscope)
+            definition = Symbol(class_name, type, 
+                                'ClassDef', f"{class_name} -> {inherits_from if inherits_from else 'Object'}",
+                                f"{inherits_from if inherits_from else 'Object'}.{class_name}", 
+                                myscope=myscope)
             # Añadimos el símbolo a la tabla de símbolos
             self.symbol_table.add(definition)
 
@@ -347,7 +349,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
             dev = f"{feature_name}.{name}"
             myscope = self.symbol_table.current_scope
             symbol = Symbol(name, type, 'FormalDef',
-                            f"{dev} -> {type}", f"{class_name}.{dev}", myscope=myscope)
+                            f"{dev} -> {type}", f"{class_name}.{dev}", myscope=myscope,isvar=True)
             # self.symbol_table.open_scope()
 
             self.symbol_table.add(symbol)
@@ -515,6 +517,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # Si es una asignacion
         # OBJECT_ID COLON TYPE_ID (ASSIGN expr)? ;
         else:
+            symbol.isvar = True
             # print(ctx.getText())
             if type == result["type"] or ctx.ASSIGN() is None:
 
@@ -555,7 +558,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 dev = f"{name}"
                 myscope = self.symbol_table.current_scope
                 symbol = Symbol(name, type, 'Let',
-                                f"{dev} -> {type}", f"{dev}", myscope=myscope)
+                                f"{dev} -> {type}", f"{dev}", myscope=myscope,isvar=True)
                 self.symbol_table.add(symbol)
 
             children = []

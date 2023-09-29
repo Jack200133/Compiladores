@@ -15,6 +15,7 @@ class TreeDirections(ParseTreeVisitor):
         self.type_system = TypeSystem()
         self.triplets = []
         self.temporals = []
+        self.labels = []
         self.sp = "_GLOBAL"
         self.clean()
 
@@ -73,11 +74,10 @@ class TreeDirections(ParseTreeVisitor):
         else:
             # Buscar su tipo en la tabla de símbolos
             symbol = self.symbol_table.lookup(ctx.getText())
-            if symbol is not None and symbol.definicion is not "ClassDef":
-
+            if symbol is not None and symbol.isvar:
                 temp.datos = f"sp{self.sp}[{symbol.memory_position}]"
-                self.write(f"\tt{temp.number} = {temp.datos}")
-                self.temporals.append(temp)
+                ##self.write(f"\t{symbol.name} t{temp.number} = {temp.datos}")
+                ##self.temporals.append(temp)
                 return temp
             else:
                 return None
@@ -146,10 +146,18 @@ class TreeDirections(ParseTreeVisitor):
                 chil = self.visit(child)
                 if chil is not None:
                     children.append(chil)
-            
+            if len(children) == 1:
+                sms = f"ASSIGN t{children[0].number} {0}"
+                sms = f"{children[0].datos} = {0}"
+                temp = Temporal(len(self.temporals), sms)
+                tempis = f"\t{sms}"
+                self.temporals.append(temp)
+                self.write(sms)
+                return temp
             sms = f"ASSIGN t{children[0].number} t{children[1].number}"
+            sms = f"{children[0].datos} = t{children[1].number}"
             temp = Temporal(len(self.temporals), sms)
-            tempis = f"\tt{temp.number} = {sms}"
+            tempis = f"\t{sms}"
             self.temporals.append(temp)
             self.write(tempis)
 
@@ -165,34 +173,259 @@ class TreeDirections(ParseTreeVisitor):
             return
         obj = ctx.getText()
 
-        children = []
-        for child in ctx.children:
-            chil = self.visit(child)
-            if chil is not None:
-                children.append(chil)
+        # children = []
+        # for child in ctx.children:
+        #     chil = self.visit(child)
+        #     if chil is not None:
+        #         children.append(chil)
 
+        #IF expr THEN expr ELSE expr FI
+        if ctx.IF():    
+            condition = ctx.children[1]
+            condition= self.visit(condition)
 
-        if ctx.PLUS():
-            triplet = f"PLUS "
-            temporal = Temporal(len(self.temporals), obj)
+            trulabel = f"LABEL_L{len(self.labels)}"
+            self.labels.append(trulabel)
+            falselabel = f"LABEL_L{len(self.labels)}"
+            self.labels.append(falselabel)
+            endIfLabel = f"LABEL_L{len(self.labels)}"
+            self.labels.append(endIfLabel)
 
-        if ctx.MINUS():
-            triplet = f"MINUS "
-            temporal = Temporal(len(self.temporals), obj)
-        
-        if ctx.MULT():
-            triplet = f"MULT "
-            temporal = Temporal(len(self.temporals), obj)
-        
-        if ctx.DIV():
-            triplet = f"DIV "
-            temporal = Temporal(len(self.temporals), obj)
+            self.write(f"\tIF t{condition.number} GOTO {trulabel}")
+            self.write(f"\tGOTO {falselabel}")
+            self.write(f"{trulabel}:")
+            trueVisit = self.visit(ctx.children[3])
+            self.write(f"\tGOTO {endIfLabel}")
+            self.write(f"{falselabel}:")
+            falseVisit = self.visit(ctx.children[5])
 
-        if ctx.EQ():
-            triplet = f"EQ t{children[0].number} t{children[1].number}"
-            temporal = Temporal(len(self.temporals), triplet)
-            sms = f"\tt{temporal.number} = t{children[0].number} == t{children[1].number}"
+            self.write(f"{endIfLabel}:")
+
+            pass
+            
+        #OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN
+        elif ctx.OBJECT_ID() and ctx.LPAREN():
+            children = []
+            for child in ctx.getChildren():
+                children.append(child)
+            params = []
+            for index, child in enumerate(children):
+
+                if isinstance(child, YAPLParser.ExprContext):
+
+                    params.append({"expr": index})
+            tempsParams = []
+            for param in params:
+                visit = self.visit(children[param["expr"]])
+                tempsParams.append(visit)
+            
+            for index, param in enumerate(tempsParams):
+                sms = f"\tPARAM t{param.number}"
+                self.write(sms)
+            
+            triplet = f"CALL {ctx.OBJECT_ID()[0].getText()} {len(tempsParams)}"
+            sms = f"\tt{len(self.temporals)} = {triplet}"
             self.write(sms)
+            temporal = Temporal(len(self.temporals), sms)
+            self.temporals.append(temporal)
+            return temporal
+            
+
+
+
+        #WHILE expr LOOP expr POOL
         
-        return children[0]
+
+        elif ctx.LBRACE():
+            exptr = ctx.children[1]
+            selfchild = self.visit(exptr)
+            return selfchild
+        
+        elif ctx.LET():
+            children = []
+            for child in ctx.getChildren():
+                children.append(child)
+
+            asignaciones = []
+            new_simbol = 0
+            for index, child in enumerate(children):
+
+                if isinstance(child, YAPLParser.ExprContext):
+
+                    asignaciones.append({"name":index-4,"simbol": index-2, "expr": index})
+
+            lasExpresion = asignaciones.pop(-1)
+
+            for asignacion in asignaciones:
+                visitname = self.visit(children[asignacion["name"]])
+                visitexpr = self.visit(children[asignacion["expr"]])
+
+                ##triplet = f"ASSIGN t{ visitname.number} t{visitexpr.number}"
+                sms = f"{visitname.datos} = t{visitexpr.number}"
+                temporal = Temporal(len(self.temporals), sms)
+                ##sms = f"\tt{temporal.number} = {triplet}"
+                self.write(f"\t{sms}")
+                self.temporals.append(temporal)
+
+            vistLastExp = self.visit(children[lasExpresion["expr"]]) 
+            return vistLastExp
+
+
+            visit = [] 
+            for child in children:
+                visitedChild = self.visit(child)
+                if visitedChild is not None:
+                    visit.append(visitedChild)
+            pass
+            
+
+
+
+
+        elif ctx.PLUS():
+            left = ctx.children[0]
+            right = ctx.children[2]
+            children = []
+            visitLeft = self.visit(left)
+            visitRight = self.visit(right)
+
+
+            triplet = f"PLUS t{visitLeft.number} t{visitRight.number}"
+            temporal = Temporal(len(self.temporals), triplet)
+            sms = f"\tt{temporal.number} = PLUS t{visitLeft.number} t{visitRight.number}"
+            self.write(sms)
+            self.temporals.append(temporal)
+            return temporal
+
+        elif ctx.MINUS():
+            left = ctx.children[0]
+            right = ctx.children[2]
+            children = []
+            visitLeft = self.visit(left)
+            visitRight = self.visit(right)
+
+            triplet = f"MINUS t{visitLeft.number} t{visitRight.number}"
+            temporal = Temporal(len(self.temporals), triplet)
+            sms = f"\tt{temporal.number} = MINUS t{visitLeft.number} t{visitRight.number}"
+            self.write(sms)
+            self.temporals.append(temporal)
+            return temporal
+        
+        elif ctx.MULT():
+            left = ctx.children[0]
+            right = ctx.children[2]
+            children = []
+            visitLeft = self.visit(left)
+            visitRight = self.visit(right)
+
+            triplet = f"MULT t{visitLeft.number} t{visitRight.number}"
+            temporal = Temporal(len(self.temporals), triplet)
+            sms = f"\tt{temporal.number} = MULT t{visitLeft.number} t{visitRight.number}"
+            self.write(sms)
+            self.temporals.append(temporal)
+            return temporal
+        
+        elif ctx.DIV():
+            left = ctx.children[0]
+            right = ctx.children[2]
+            children = []
+            visitLeft = self.visit(left)
+            visitRight = self.visit(right)
+
+            triplet = f"DIV t{visitLeft.number} t{visitRight.number}"
+            temporal = Temporal(len(self.temporals), triplet)
+            sms = f"\tt{temporal.number} = DIV t{visitLeft.number} t{visitRight.number}"
+            self.write(sms)
+            self.temporals.append(temporal)
+            return temporal
+
+        elif ctx.EQ():
+            left = ctx.children[0]
+            right = ctx.children[2]
+            children = []
+            visitLeft = self.visit(left)
+            visitRight = self.visit(right)
+            
+            triplet = f"EQ t{visitLeft.number} t{visitRight.number}"
+            temporal = Temporal(len(self.temporals), triplet)
+            sms = f"\tt{temporal.number} = EQ t{visitLeft.number} t{visitRight.number}"
+            self.write(sms)
+            return temporal
+        
+        elif ctx.ASSIGN():
+            left = ctx.children[0]
+            right = ctx.children[2]
+            children = []
+            visitLeft = self.visit(left)
+            visitRight = self.visit(right)
+
+            ## triplet = f"ASSIGN t{visitLeft.number} t{visitRight.number}"
+            triplet = f"{visitLeft.datos} = t{visitRight.number}"
+            temporal = Temporal(len(self.temporals), triplet)
+            sms = f"\t{triplet}"
+            self.write(sms)
+            return temporal
+
+
+
+        elif ctx.LPAREN():
+            expr = ctx.children[1]
+            return self.visit(expr)
+
+
+        elif ctx.FALSE():
+            temporal = Temporal(len(self.temporals), "false")
+            self.temporals.append(temporal)
+
+            triplet = f"t{temporal.number} = false"
+            sms = f"\tt{temporal.number} = false"
+            self.write(sms)
+            return temporal
+    
+        elif ctx.TRUE():
+            temporal = Temporal(len(self.temporals), "true")
+            self.temporals.append(temporal)
+
+            triplet = f"t{temporal.number} = true"
+            sms = f"\tt{temporal.number} = true"
+            self.write(sms)
+            return temporal
+        
+        elif ctx.INT():
+            number = ctx.INT().getText()
+            temporal = Temporal(len(self.temporals), number)
+            self.temporals.append(temporal)
+
+            triplet = f"t{temporal.number} = {number}"
+            sms = f"\tt{temporal.number} = {number}"
+            self.write(sms)
+            return temporal
+        
+        elif ctx.STRING():
+            string = ctx.STRING().getText()
+            temporal = Temporal(len(self.temporals), string)
+            self.temporals.append(temporal)
+
+            triplet = f"t{temporal.number} = {string}"
+            sms = f"\tt{temporal.number} = {string}"
+            self.write(sms)
+            return temporal
+        
+        elif ctx.OBJECT_ID():
+            name = ctx.OBJECT_ID()[0].getText()
+            symbol = self.symbol_table.lookup(name)
+            smm = f"sp{self.sp}[{symbol.memory_position}]"
+            if symbol is not None:
+                temporal = Temporal(len(self.temporals), smm)
+                self.temporals.append(temporal)
+
+                triplet = f"t{temporal.number} = {smm}"
+                sms = f"\tt{temporal.number} = {smm}"
+                self.write(sms)
+                return temporal
+            
+        
+
+
+        return None
 
