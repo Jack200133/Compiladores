@@ -175,11 +175,35 @@ class TreeDirections(ParseTreeVisitor):
             return
         obj = ctx.getText()
 
-        # children = []
-        # for child in ctx.children:
-        #     chil = self.visit(child)
-        #     if chil is not None:
-        #         children.append(chil)
+        #expr  (AT TYPE_ID)? DOT OBJECT_ID LPAREN  (expr (COMMA expr)*)? RPAREN
+        if ctx.DOT():
+            children = []
+            for child in ctx.getChildren():
+                children.append(child)
+            params = []
+            for index, child in enumerate(children):
+
+                if isinstance(child, YAPLParser.ExprContext):
+
+                    params.append({"expr": index})
+
+            
+            
+            tempsParams = []
+            for param in params:
+                visit = self.visit(children[param["expr"]])
+                tempsParams.append(visit)
+            
+            for index, param in enumerate(tempsParams):
+                sms = f"\tPARAM t{param.number}"
+                self.write(sms)
+            
+            triplet = f"CALL {ctx.OBJECT_ID()[0].getText()} {len(tempsParams)}"
+            sms = f"\tt{len(self.temporals)} = {triplet}"
+            self.write(sms)
+            temporal = Temporal(len(self.temporals), sms)
+            self.temporals.append(temporal)
+            return temporal
 
         #IF expr THEN expr ELSE expr FI
         if ctx.IF():    

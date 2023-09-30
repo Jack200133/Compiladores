@@ -391,8 +391,17 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         myscope = self.symbol_table.current_scope
 
-        symbol = Symbol(name, type, 'FeatureDef',
-                        f"{dev} -> {type}", dev, myscope=myscope)
+        if type not in ["Bool", "Int", "String", "SELF_TYPE", "Object"]:
+            funcSymbol = self.symbol_table.lookup(type)
+            mem_usage = funcSymbol.memory_usage
+            symbol = Symbol(name, type, 'FeatureDef',
+                        f"{dev} -> {type}", 
+                        dev,
+                        myscope=myscope,
+                        memory_usage=mem_usage)
+        else: 
+            symbol = Symbol(name, type, 'FeatureDef',
+                            f"{dev} -> {type}", dev, myscope=myscope)
         self.symbol_table.add(symbol)
 
         buscarFirma = False
