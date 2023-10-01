@@ -97,6 +97,8 @@ class TypeSystem:
         return False, "Object"
 
     def is_inherited_from(self, child_type, parent_type,ctx,adError):
+        if child_type == parent_type:
+            return True
         if child_type is None or parent_type is None:
             return False
         if child_type in self.table and parent_type in self.table[child_type]:
