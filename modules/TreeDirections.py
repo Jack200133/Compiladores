@@ -250,18 +250,26 @@ class TreeDirections(ParseTreeVisitor):
             endIfLabel = f"LABEL_L{len(self.labels)}"
             self.labels.append(endIfLabel)
 
+            temporal = Temporal(len(self.temporals), "Object")
+            self.temporals.append(temporal)
+
             self.write(f"\tIF t{condition.number} GOTO {trulabel}")
             self.write(f"\tGOTO {falselabel}")
             self.write(f"{trulabel}:")
             trueVisit = self.visit(ctx.children[3])
+            sms = f"\tt{temporal.number} = t{trueVisit.number}"
+            self.write(sms)
+
+
             self.write(f"\tGOTO {endIfLabel}")
             self.write(f"{falselabel}:")
             falseVisit = self.visit(ctx.children[5])
-
+            sms = f"\tt{temporal.number} = t{falseVisit.number}"
+            self.write(sms)
             self.write(f"{endIfLabel}:")
 
-            pass
-            
+            return temporal
+
         #OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN
         elif ctx.OBJECT_ID() and ctx.LPAREN():
             children = []
@@ -291,7 +299,30 @@ class TreeDirections(ParseTreeVisitor):
             
 
         #WHILE expr LOOP expr POOL
-        
+        elif ctx.WHILE():
+            condition = ctx.children[1]
+            condition= self.visit(condition)
+
+            labelstart = f"LABEL_L{len(self.labels)}"
+            self.labels.append(labelstart)
+            labelend = f"LABEL_L{len(self.labels)}"
+            self.labels.append(labelend)
+
+            looplabel = f"LABEL_L{len(self.labels)}"
+            self.labels.append(looplabel)
+
+            self.write(f"{labelstart}:")
+            self.write(f"\tIF t{condition.number} GOTO {looplabel}")
+            self.write(f"\tGOTO {labelend}")
+            self.write(f"{looplabel}:")
+            trueVisit = self.visit(ctx.children[3])
+            self.write(f"\tGOTO {labelstart}")
+            self.write(f"{labelend}:")
+
+            temporal = Temporal(len(self.temporals), "Object")
+            self.temporals.append(temporal)
+            return temporal
+
 
         elif ctx.LBRACE():
             children = []
