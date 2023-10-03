@@ -1,16 +1,13 @@
+import base64
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import base64
-import os
-import tkinter as tk
-from tkinter import filedialog
 from graphviz import Digraph
 from antlr4 import *
+from modules.TreeDirections import TreeDirections
 from modules.ErrorListener import MyErrorListener
 from modules.Semantic import SemanticAnalyzer
-from yapl.YAPLLexer import YAPLLexer
 from yapl.YAPLParser import YAPLParser
-
+from yapl.YAPLLexer import YAPLLexer
 
 def build_tree(dot, node, parser, parent=None):
     if isinstance(node, TerminalNode):
@@ -80,13 +77,29 @@ def generate_images():
     with open('./output/symbol_table.png', 'rb') as symbol_table_image:
         symbol_table_base64 = base64.b64encode(symbol_table_image.read()).decode('utf-8')
 
-
-    # Devuelve las imágenes en base64 y el array de errores como respuesta JSON
-    response = {
+    if len(semantic_analyzer.ErrorList) > 0 or len(lexer_listener.ErrorList) > 0:
+        response = {
         'grafo_image': grafo_base64,
         'symbol_table_image': symbol_table_base64,
         'errors': complete_error_list
-    }
+        }
+    else:
+        my3D = TreeDirections(semantic_analyzer.symbol_table)
+        my3D.visit(tree)
+
+        treedirectionsInfoPath = "./output/3D/tripletas.txt"
+        treedirectionsInfo = ""
+
+        with open(treedirectionsInfoPath, 'r') as file:
+            treedirectionsInfo = file.read()
+
+        # Devuelve las imágenes en base64 y el array de errores como respuesta JSON
+        response = {
+            'grafo_image': grafo_base64,
+            'symbol_table_image': symbol_table_base64,
+            'errors': complete_error_list,
+            '3D': treedirectionsInfo
+        }
     
     return jsonify(response)
 
