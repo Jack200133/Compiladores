@@ -10,21 +10,22 @@ from yapl.YAPLParser import YAPLParser
 
 
 class TreeDirections(ParseTreeVisitor):
-    def __init__(self,symbol_table : SymboTable):
+    def __init__(self,symbol_table : SymboTable,output = './output/3D/tripletas.txt'):
         self.symbol_table = symbol_table
         self.type_system = TypeSystem()
         self.triplets = []
         self.temporals = []
         self.labels = []
         self.sp = "_GLOBAL"
+        self.output = output
         self.clean()
 
     def clean(self):
-        with open('./output/3D/tripletas.txt', 'w') as file:
+        with open(self.output, 'w') as file:
             pass
 
     def write(self,triplet):
-        with open('./output/3D/tripletas.txt', 'a') as file:
+        with open(self.output, 'a') as file:
             file.write(str(triplet) + '\n')
 
     def visit(self, tree):
@@ -63,11 +64,12 @@ class TreeDirections(ParseTreeVisitor):
         symbol_type = ctx.getSymbol().type
         obj = ctx.getText()
 
-        temp = Temporal(len(self.temporals), obj)
+        
         if symbol_type == YAPLParser.INT \
         or symbol_type == YAPLParser.TRUE \
         or symbol_type == YAPLParser.FALSE \
         or symbol_type == YAPLParser.STRING:
+            temp = Temporal(self.getNextTemp(), obj)
             self.temporals.append(temp)
             self.write(f"\tt{temp.number} = {temp.datos}")
             return temp
@@ -75,10 +77,10 @@ class TreeDirections(ParseTreeVisitor):
             # Buscar su tipo en la tabla de símbolos
             symbol = self.symbol_table.lookup(ctx.getText())
             if symbol is not None and symbol.isvar:
-                temp.datos = f"sp{self.sp}[{symbol.memory_position}]"
+                res = f"sp{self.sp}[{symbol.memory_position}]"
                 ##self.write(f"\t{symbol.name} t{temp.number} = {temp.datos}")
                 ##self.temporals.append(temp)
-                return temp
+                return res
             else:
                 return None
             
@@ -141,6 +143,7 @@ class TreeDirections(ParseTreeVisitor):
 
             self.write(f"RETURN {retunr_srt}\n")
             self.write(f"END FUNCTION {simbol.scope}\n")
+            self.temporals = []
 
             self.symbol_table.current_scope = self.symbol_table.current_scope.parent
             self.sp = "_GLOBAL"
@@ -151,10 +154,11 @@ class TreeDirections(ParseTreeVisitor):
                 name = ctx.OBJECT_ID().getText()
                 simbol: Symbol = self.symbol_table.lookup(name)
                 if isinstance(visitexpr, Temporal):
+                    temp = self.temporals.pop()
                     triplet = f"ASSIGN sp{self.sp}[{simbol.memory_position}] t{visitexpr.number}"
                 else:
                     triplet = f"ASSIGN sp{self.sp}[{simbol.memory_position}] {visitexpr}"
-                # temp = Temporal(len(self.temporals), triplet)
+                # temp = Temporal(self.getNextTemp(), triplet)
                 # tempis = f"\t{triplet}"
                 # self.temporals.append(temp)
                 self.write(f"\t{triplet}")
@@ -162,48 +166,36 @@ class TreeDirections(ParseTreeVisitor):
 
             else:
                 return
-
-
-            for child in ctx.children:
-                chil = self.visit(child)
-                if chil is not None:
-                    children.append(chil)
-            if len(children) == 1:
-                return
-                sms = f"ASSIGN t{children[0].number} {0}"
-                sms = f"{children[0].datos} = {0}"
-                temp = Temporal(len(self.temporals), sms)
-                tempis = f"\t{sms}"
-                self.temporals.append(temp)
-                self.write(sms)
-                return temp
-            
-            if isinstance(children[0], Temporal) and isinstance(children[1], Temporal):
-                triplet = f"ASSIGN t{children[0].number} t{children[1].number}"
-            elif isinstance(children[0], Temporal) and isinstance(children[1], str):
-                triplet = f"ASSIGN t{children[0].number} {children[1]}"
-            elif isinstance(children[0], str) and isinstance(children[1], Temporal):
-                triplet = f"ASSIGN {children[0]} t{children[1].number}"
-            else:
-                triplet = f"ASSIGN {children[0]} {children[1]}"
-            
-            #sms = f"{children[0].datos} = t{children[1].number}"
-            temp = Temporal(len(self.temporals), triplet)
-            tempis = f"\t{triplet}"
-            self.temporals.append(temp)
-            self.write(tempis)
-
-
             
         return None
+    
+    def getNextTemp(self):
+        numbers_of_temps = []
+        for temp in self.temporals:
+            numbers_of_temps.append(temp.number)
+        
+        conjunto = set(numbers_of_temps)
+
+        # Empezamos buscando desde el 0 en adelante
+        numero = 0
+        while True:
+            if numero not in conjunto:
+                return numero
+            numero += 1
+
+
     
     def dobleinstance(self,izq,der):
 
         if isinstance(izq, Temporal) and isinstance(der, Temporal):
+            #tizq = self.temporals.pop()
+            #tder = self.temporals.pop()
             triplet = f"t{izq.number} t{der.number}"
         elif isinstance(izq, Temporal) and isinstance(der, str):
+            #tizq = self.temporals.pop()
             triplet = f"t{izq.number} {der}"
         elif isinstance(izq, str) and isinstance(der, Temporal):
+            #tder = self.temporals.pop()
             triplet = f"{izq} t{der.number}"
         else:
             triplet = f"{izq} {der}"
@@ -232,11 +224,13 @@ class TreeDirections(ParseTreeVisitor):
 
             funcChild = params.pop(0)
             visitFunc = self.visit(children[funcChild["expr"]])
+            #funcTemp = self.temporals.pop()
             
             tempsParams = []
             for param in params:
                 visit = self.visit(children[param["expr"]])
                 tempsParams.append(visit)
+                #paramsTemp = self.temporals.pop()
             
             for index, param in enumerate(tempsParams):
                 param_str = self.dobleinstance(param,"")
@@ -252,11 +246,20 @@ class TreeDirections(ParseTreeVisitor):
                 func_str = f"t{visitFunc.number}"
             else:
                 func_str = visitFunc
+            #funcTemp = self.temporals.pop()
 
             triplet = f"CALL {func_str}{isAtt}{ctx.OBJECT_ID()[0].getText()} {len(tempsParams)}"
-            sms = f"\tt{len(self.temporals)} = {triplet}"
+            sms = f"\tt{self.getNextTemp()} = {triplet}"
             self.write(sms)
-            temporal = Temporal(len(self.temporals), sms)
+            temporal = Temporal(self.getNextTemp(), sms)
+
+            for param in tempsParams:
+                if isinstance(param, Temporal):
+                    paramTemp = self.temporals.pop()
+            
+            if isinstance(visitFunc,Temporal):
+                funcTemp = self.temporals.pop()
+
             self.temporals.append(temporal)
             return temporal
 
@@ -275,6 +278,7 @@ class TreeDirections(ParseTreeVisitor):
             for param in params:
                 visit = self.visit(children[param["expr"]])
                 tempsParams.append(visit)
+                #paramsTemp = self.temporals.pop()
             
             for index, param in enumerate(tempsParams):
                 pram_str = self.dobleinstance(param,"")
@@ -282,9 +286,13 @@ class TreeDirections(ParseTreeVisitor):
                 self.write(sms)
             
             triplet = f"CALL {ctx.OBJECT_ID()[0].getText()} {len(tempsParams)}"
-            sms = f"\tt{len(self.temporals)} = {triplet}"
+            sms = f"\tt{self.getNextTemp()} = {triplet}"
             self.write(sms)
-            temporal = Temporal(len(self.temporals), sms)
+            temporal = Temporal(self.getNextTemp(), sms)
+
+            for param in tempsParams:
+                if isinstance(param, Temporal):
+                    paramTemp = self.temporals.pop()
             self.temporals.append(temporal)
             return temporal
 
@@ -293,7 +301,9 @@ class TreeDirections(ParseTreeVisitor):
             condition = ctx.children[1]
             condition= self.visit(condition)
             
+            
             if isinstance(condition, Temporal):
+                conditionTemp = self.temporals.pop()
                 condition_str = f"t{condition.number}"
             else:
                 condition_str = condition
@@ -305,7 +315,7 @@ class TreeDirections(ParseTreeVisitor):
             endIfLabel = f"LABEL_L{len(self.labels)}"
             self.labels.append(endIfLabel)
 
-            temporal = Temporal(len(self.temporals), "Object")
+            temporal = Temporal(self.getNextTemp(), "TEMPIF")
             self.temporals.append(temporal)
 
             self.write(f"\tIF {condition_str} GOTO {trulabel}")
@@ -327,44 +337,23 @@ class TreeDirections(ParseTreeVisitor):
             falseVisit = self.visit(ctx.children[5])
 
             if isinstance(falseVisit, Temporal):
+                if len(self.temporals) > 0:
+                    
+                    falseVisitTe = self.temporals.pop()
                 triplet = f"t{temporal.number} = t{falseVisit.number}"
             else:
                 triplet = f"t{temporal.number} = {falseVisit}"
-
+            if isinstance(trueVisit, Temporal):
+                if len(self.temporals) > 0:
+                    trueVisitTe = self.temporals.pop()
+                    
             sms = f"\t{triplet}"
             self.write(sms)
             self.write(f"{endIfLabel}:")
 
+            #TempIF = self.temporals.pop()
+
             return temporal
-
-        #OBJECT_ID LPAREN (expr (COMMA expr)*)? RPAREN
-        elif ctx.OBJECT_ID() and ctx.LPAREN():
-            children = []
-            for child in ctx.getChildren():
-                children.append(child)
-            params = []
-            for index, child in enumerate(children):
-
-                if isinstance(child, YAPLParser.ExprContext):
-
-                    params.append({"expr": index})
-            tempsParams = []
-            for param in params:
-                visit = self.visit(children[param["expr"]])
-                tempsParams.append(visit)
-            
-            for index, param in enumerate(tempsParams):
-                param_str = self.dobleinstance(param,"")
-                sms = f"\tPARAM {param_str}"
-                self.write(sms)
-            
-            triplet = f"CALL {ctx.OBJECT_ID()[0].getText()} {len(tempsParams)}"
-            sms = f"\tt{len(self.temporals)} = {triplet}"
-            self.write(sms)
-            temporal = Temporal(len(self.temporals), sms)
-            self.temporals.append(temporal)
-            return temporal
-            
 
         #WHILE expr LOOP expr POOL
         elif ctx.WHILE():
@@ -372,6 +361,7 @@ class TreeDirections(ParseTreeVisitor):
             condition= self.visit(condition)
 
             if isinstance(condition, Temporal):
+                conditionTemp = self.temporals.pop()
                 condition_str = f"t{condition.number}"
             else:
                 condition_str = condition
@@ -392,7 +382,10 @@ class TreeDirections(ParseTreeVisitor):
             self.write(f"\tGOTO {labelstart}")
             self.write(f"{labelend}:")
 
-            temporal = Temporal(len(self.temporals), "Object")
+            if isinstance(trueVisit, Temporal):
+                triplet = f"t{temporal.number} = t{trueVisit.number}"
+
+            temporal = Temporal(self.getNextTemp(), "Object")
             self.temporals.append(temporal)
             return temporal
 
@@ -412,6 +405,10 @@ class TreeDirections(ParseTreeVisitor):
             cisitedExprs = []
             for expr in exprs:
                 visit = self.visit(children[expr["expr"]])
+                if isinstance(visit, Temporal):
+                    if len(self.temporals) > 0:
+                        visitTemp = self.temporals.pop()
+                    #visitedTemp = self.temporals.pop()
                 cisitedExprs.append(visit)
 
             return cisitedExprs[-1]
@@ -447,21 +444,31 @@ class TreeDirections(ParseTreeVisitor):
 
                 asign_str = self.dobleinstance(smm,visitexpr)
 
+                if isinstance(visitexpr, Temporal):
+                    #visitexpr = self.temporals.pop()
+                    asing_Temp = self.temporals.pop()
+
                 ##triplet = f"ASSIGN t{ visitname.number} t{visitexpr.number}"
                 sms = f"ASSIGN {asign_str}"
-                temporal = Temporal(len(self.temporals), sms)
+                #temporal = Temporal(self.getNextTemp(), sms)
                 ##sms = f"\tt{temporal.number} = {triplet}"
                 self.write(f"\t{sms}")
-                self.temporals.append(temporal)
+                #self.temporals.append(temporal)
 
             vistLastExp = self.visit(children[lasExpresion["expr"]]) 
+            if isinstance(vistLastExp, Temporal):
+                #lastTemp = self.temporals.pop()
+                if len(self.temporals) > 0:
+                    lastTemp = self.temporals.pop()
+                #vistLastExp = self.temporals.pop()
             return vistLastExp
 
         elif ctx.NEW():
             triplet = f"NEW {ctx.TYPE_ID()[0].getText()}"
-            sms = f"\tt{len(self.temporals)} = {triplet}"
+            return triplet
+            sms = f"\tt{self.getNextTemp()} = {triplet}"
             self.write(sms)
-            temporal = Temporal(len(self.temporals), sms)
+            temporal = Temporal(self.getNextTemp(), sms)
             self.temporals.append(temporal)
             return temporal
 
@@ -472,9 +479,12 @@ class TreeDirections(ParseTreeVisitor):
 
             neg_str = self.dobleinstance(visit,"")
             triplet = f"NOT {neg_str}"
-            sms = f"\tt{len(self.temporals)} = {triplet}"
+            if isinstance(visit, Temporal):
+                visitTemp = self.temporals.pop()
+            sms = f"\tt{self.getNextTemp()} = {triplet}"
             self.write(sms)
-            temporal = Temporal(len(self.temporals), sms)
+            
+            temporal = Temporal(self.getNextTemp(), sms)
             self.temporals.append(temporal)
             return temporal
         
@@ -485,9 +495,11 @@ class TreeDirections(ParseTreeVisitor):
             neg_str = self.dobleinstance(visit,"")
 
             triplet = f"NEG {neg_str}"
-            sms = f"\tt{len(self.temporals)} = {triplet}"
+            if isinstance(visit, Temporal):
+                visitTemp = self.temporals.pop()
+            sms = f"\tt{self.getNextTemp()} = {triplet}"
             self.write(sms)
-            temporal = Temporal(len(self.temporals), sms)
+            temporal = Temporal(self.getNextTemp(), sms)
             self.temporals.append(temporal)
             return temporal
         
@@ -498,9 +510,11 @@ class TreeDirections(ParseTreeVisitor):
             neg_str = self.dobleinstance(visit,"")
 
             triplet = f"ISVOID {neg_str}"
-            sms = f"\tt{len(self.temporals)} = {triplet}"
             self.write(sms)
-            temporal = Temporal(len(self.temporals), sms)
+            if isinstance(visit, Temporal):
+                visitTemp = self.temporals.pop()
+            sms = f"\tt{self.getNextTemp()} = {triplet}"
+            temporal = Temporal(self.getNextTemp(), sms)
             self.temporals.append(temporal)
             return temporal
 
@@ -513,9 +527,14 @@ class TreeDirections(ParseTreeVisitor):
             asing = self.dobleinstance(visitLeft,visitRight)
 
             triplet = f"PLUS {asing}"
-            temporal = Temporal(len(self.temporals), triplet)
+            if isinstance(visitLeft, Temporal):
+                visitTemp = self.temporals.pop()
+            if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
+            temporal = Temporal(self.getNextTemp(), triplet)
             sms = f"\tt{temporal.number} = {triplet}"
             self.write(sms)
+
             self.temporals.append(temporal)
             return temporal
 
@@ -529,9 +548,14 @@ class TreeDirections(ParseTreeVisitor):
             asing = self.dobleinstance(visitLeft,visitRight)
 
             triplet = f"MINUS {asing}"
-            temporal = Temporal(len(self.temporals), triplet)
+            if isinstance(visitLeft, Temporal):
+                visitTemp = self.temporals.pop()
+            if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
+            temporal = Temporal(self.getNextTemp(), triplet)
             sms = f"\tt{temporal.number} = {triplet}"
             self.write(sms)
+
             self.temporals.append(temporal)
             return temporal
         
@@ -544,9 +568,14 @@ class TreeDirections(ParseTreeVisitor):
             asing = self.dobleinstance(visitLeft,visitRight)
 
             triplet = f"MULT {asing}"
-            temporal = Temporal(len(self.temporals), triplet)
+            if isinstance(visitLeft, Temporal):
+                visitTemp = self.temporals.pop()
+            if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
+            temporal = Temporal(self.getNextTemp(), triplet)
             sms = f"\tt{temporal.number} = MULT {asing}"
             self.write(sms)
+
             self.temporals.append(temporal)
             return temporal
         
@@ -559,9 +588,14 @@ class TreeDirections(ParseTreeVisitor):
             asing = self.dobleinstance(visitLeft,visitRight)
 
             triplet = f"DIV {asing}"
-            temporal = Temporal(len(self.temporals), triplet)
+            if isinstance(visitLeft, Temporal):
+                visitTemp = self.temporals.pop()
+            if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
+            temporal = Temporal(self.getNextTemp(), triplet)
             sms = f"\tt{temporal.number} = DIV {asing}"
             self.write(sms)
+
             self.temporals.append(temporal)
             return temporal
 
@@ -574,9 +608,14 @@ class TreeDirections(ParseTreeVisitor):
             asing = self.dobleinstance(visitLeft,visitRight)
 
             triplet = f"LE {asing}"
-            temporal = Temporal(len(self.temporals), triplet)
+            if isinstance(visitLeft, Temporal):
+                visitTemp = self.temporals.pop()
+            if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
+            temporal = Temporal(self.getNextTemp(), triplet)
             sms = f"\tt{temporal.number} = LE {asing}"
             self.write(sms)
+
             self.temporals.append(temporal)
             return temporal
         
@@ -589,9 +628,14 @@ class TreeDirections(ParseTreeVisitor):
             asing = self.dobleinstance(visitLeft,visitRight)
 
             triplet = f"LT {asing}"
-            temporal = Temporal(len(self.temporals), triplet)
+            if isinstance(visitLeft, Temporal):
+                visitTemp = self.temporals.pop()
+            if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
+            temporal = Temporal(self.getNextTemp(), triplet)
             sms = f"\tt{temporal.number} = LT {asing}"
             self.write(sms)
+
             self.temporals.append(temporal)
             return temporal
         
@@ -604,10 +648,15 @@ class TreeDirections(ParseTreeVisitor):
             asing = self.dobleinstance(visitLeft,visitRight)
 
             triplet = f"EQ {asing}"
-            temporal = Temporal(len(self.temporals), triplet)
+            if isinstance(visitLeft, Temporal):
+                visitTemp = self.temporals.pop()
+            if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
+            temporal = Temporal(self.getNextTemp(), triplet)
             self.temporals.append(temporal)
             sms = f"\tt{temporal.number} = {triplet}"
             self.write(sms)
+            
             return temporal
 
 
@@ -629,12 +678,13 @@ class TreeDirections(ParseTreeVisitor):
 
             visitRight = self.visit(right)
             if isinstance(visitRight, Temporal):
+                visitTemp = self.temporals.pop()
                 triplet = f"ASSIGN {smm} t{visitRight.number}"
             else:
                 triplet = f"ASSIGN {smm} {visitRight}"
             ## triplet = f"ASSIGN t{visitLeft.number} t{visitRight.number}"
             #triplet = f"{smm} = t{visitRight.number}"
-            #temporal = Temporal(len(self.temporals), triplet)
+            #temporal = Temporal(self.getNextTemp(), triplet)
             sms = f"\t{triplet}"
             self.write(sms)
             return smm
@@ -647,7 +697,7 @@ class TreeDirections(ParseTreeVisitor):
 
         elif ctx.FALSE():
             return "false"
-            temporal = Temporal(len(self.temporals), "false")
+            temporal = Temporal(self.getNextTemp(), "false")
             self.temporals.append(temporal)
 
             triplet = f"t{temporal.number} = false"
@@ -657,7 +707,7 @@ class TreeDirections(ParseTreeVisitor):
     
         elif ctx.TRUE():
             return "true"
-            temporal = Temporal(len(self.temporals), "true")
+            temporal = Temporal(self.getNextTemp(), "true")
             self.temporals.append(temporal)
 
             triplet = f"t{temporal.number} = true"
@@ -668,7 +718,7 @@ class TreeDirections(ParseTreeVisitor):
         elif ctx.INT():
             number = ctx.INT().getText()
             return number
-            temporal = Temporal(len(self.temporals), number)
+            temporal = Temporal(self.getNextTemp(), number)
             self.temporals.append(temporal)
 
             triplet = f"t{temporal.number} = {number}"
@@ -679,7 +729,7 @@ class TreeDirections(ParseTreeVisitor):
         elif ctx.STRING():
             string = ctx.STRING().getText()
             return string
-            temporal = Temporal(len(self.temporals), string)
+            temporal = Temporal(self.getNextTemp(), string)
             self.temporals.append(temporal)
 
             triplet = f"t{temporal.number} = {string}"
@@ -691,7 +741,7 @@ class TreeDirections(ParseTreeVisitor):
             name = ctx.OBJECT_ID()[0].getText()
 
             if name == "self":
-                temporal = Temporal(len(self.temporals), "self")
+                temporal = Temporal(self.getNextTemp(), "self")
                 self.temporals.append(temporal)
 
                 triplet = f"t{temporal.number} = self"

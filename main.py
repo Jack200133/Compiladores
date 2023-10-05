@@ -21,6 +21,47 @@ def build_tree(dot, node, parser, parent=None):
         for child in node.children:
             build_tree(dot, child, parser, node)
 
+def recycle_temporals(code):
+    instructions = code.strip().split('\n')
+    
+    # Get lifespan of each temporary
+    lifespan = {}
+    for idx, line in enumerate(instructions):
+        tokens = line.split()
+        for token in tokens:
+            if token.startswith('t'):
+                if token not in lifespan:
+                    lifespan[token] = [idx, idx]
+                else:
+                    lifespan[token][1] = idx
+                    
+    # Recycle temporaries
+    recycled = {}
+    free_temps = set()
+    new_instructions = []
+    for idx, line in enumerate(instructions):
+        tokens = line.split()
+        
+        # Substitute temporaries based on recycled mapping
+        for token_idx, token in enumerate(tokens):
+            if token.startswith('t'):
+                if token in recycled:
+                    tokens[token_idx] = recycled[token]
+                elif free_temps:
+                    recycled_token = free_temps.pop()
+                    recycled[token] = recycled_token
+                    tokens[token_idx] = recycled_token
+                else:
+                    recycled[token] = token
+        
+        # Check for temporaries that are not used anymore and add to free_temps
+        for temp, (start, end) in lifespan.items():
+            if idx == end and temp in recycled and recycled[temp] == temp:
+                free_temps.add(temp)
+                
+        new_instructions.append(' '.join(tokens))
+    
+    return '\n'.join(new_instructions)
 
 def main():
     # # Set up the input and lexer
@@ -73,8 +114,19 @@ def main():
 
     if len(semantic_analyzer.ErrorList) > 0 or len(lexer_listener.ErrorList) > 0:
         return
-    my3D = TreeDirections(semantic_analyzer.symbol_table)
+    treedirectionsInfoPath = "./output/3D/tripletasR.txt"
+    my3D = TreeDirections(semantic_analyzer.symbol_table,treedirectionsInfoPath)
     my3D.visit(tree)
+
+    treedirectionsInfo = ""
+
+    with open(treedirectionsInfoPath, 'r') as file:
+        treedirectionsInfo = file.read()
+
+    result = recycle_temporals(treedirectionsInfo)
+    # with open('./output/3D/tripletasR.txt', 'a') as file:
+    #     file.write(result)
+
 
 if __name__ == '__main__':
     main()
