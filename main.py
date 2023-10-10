@@ -66,7 +66,7 @@ def recycle_temporals(code):
 def main():
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./inputs/realinput.txt', encoding="utf-8")
+    input_stream = FileStream('./inputs/recu.txt', encoding="utf-8")
     #input_stream = FileStream('./coolExp/recur.cl', encoding="utf-8")
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
@@ -114,7 +114,7 @@ def main():
 
     if len(semantic_analyzer.ErrorList) > 0 or len(lexer_listener.ErrorList) > 0:
         return
-    treedirectionsInfoPath = "./output/3D/tripletasR.txt"
+    treedirectionsInfoPath = "./output/3D/tripletasR3.txt"
     my3D = TreeDirections(semantic_analyzer.symbol_table,treedirectionsInfoPath)
     my3D.visit(tree)
 

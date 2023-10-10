@@ -95,10 +95,31 @@ class TreeDirections(ParseTreeVisitor):
         obj = ctx.getText()
 
         trip = f"CLASS {class_name}"
+        tripletas_inherits = []
         if ctx.INHERITS():  # Si hay herencia
             # Obtenemos el tipo padre
+            #tripletas_inherits = []
             inherits_from = ctx.TYPE_ID()[1].getText()
             trip += f" INHERITS ['{inherits_from}']"
+            # leer el documento de tripletas
+            file_txt = ""
+            with open(self.output, 'r') as file:
+                file_txt = file.read()
+            
+            banderin = False
+            # Buscar las tripletas de la clase padre
+            for line in file_txt.split('\n'):
+                if line.startswith(f"CLASS {inherits_from}"):
+                    #tripletas_inherits.append(line)
+                    banderin = True
+                elif banderin:
+                    if line.startswith("END CLASS"):
+                        banderin = False
+                    else:
+                        tripletas_inherits.append(line)
+            
+                
+
 
         symbol = self.symbol_table.lookup(class_name)
         class_scope = self.symbol_table.current_scope
@@ -110,6 +131,10 @@ class TreeDirections(ParseTreeVisitor):
         #self.symbol_table.current_scope = symbol
 
         self.write(trip)
+        if len(tripletas_inherits) > 0:
+            # Agregar las tripletas de la clase padre
+            for triplet in tripletas_inherits:
+                self.write(triplet)
         for child in ctx.children:
             self.visit(child)
 

@@ -84,10 +84,11 @@ def generate_images():
         'errors': complete_error_list
         }
     else:
-        my3D = TreeDirections(semantic_analyzer.symbol_table)
+        treedirectionsInfoPath = "./output/3D/tripletas.txt"
+
+        my3D = TreeDirections(semantic_analyzer.symbol_table,treedirectionsInfoPath)
         my3D.visit(tree)
 
-        treedirectionsInfoPath = "./output/3D/tripletas.txt"
         treedirectionsInfo = ""
 
         with open(treedirectionsInfoPath, 'r') as file:
