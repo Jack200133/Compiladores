@@ -116,7 +116,14 @@ class TreeDirections(ParseTreeVisitor):
                     if line.startswith("END CLASS"):
                         banderin = False
                     else:
-                        tripletas_inherits.append(line)
+                        if line.startswith("FUNCTION"):
+                            func_name = line.split(".")[1]
+                            tripletas_inherits.append(f"FUNCTION {class_name}.{func_name}")
+                        elif line.startswith("END FUNCTION"):
+                            func_name = line.split(".")[1]
+                            tripletas_inherits.append(f"FUNCTION {class_name}.{func_name}")
+                        else:
+                            tripletas_inherits.append(line)
             
                 
 
