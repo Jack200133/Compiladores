@@ -1,8 +1,9 @@
 from graphviz import Digraph
 from antlr4 import *
+from modules.Semantic import SemanticAnalyzer
 from modules.ErrorListener import MyErrorListener
 from modules.TreeDirections import TreeDirections
-from modules.Semantic import SemanticAnalyzer
+from modules.AssemblerConvertor import AssemblerConvertor
 from yapl.YAPLParser import YAPLParser
 from yapl.YAPLLexer import YAPLLexer
 
@@ -66,7 +67,7 @@ def recycle_temporals(code):
 def main():
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./inputs/recu.txt', encoding="utf-8")
+    input_stream = FileStream('./inputs/ar.txt', encoding="utf-8")
     #input_stream = FileStream('./coolExp/recur.cl', encoding="utf-8")
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one
@@ -114,7 +115,7 @@ def main():
 
     if len(semantic_analyzer.ErrorList) > 0 or len(lexer_listener.ErrorList) > 0:
         return
-    treedirectionsInfoPath = "./output/3D/tripletasR3.txt"
+    treedirectionsInfoPath = "./output/3D/tripletasR4.txt"
     my3D = TreeDirections(semantic_analyzer.symbol_table,treedirectionsInfoPath)
     my3D.visit(tree)
 
@@ -123,9 +124,9 @@ def main():
     with open(treedirectionsInfoPath, 'r') as file:
         treedirectionsInfo = file.read()
 
-    result = recycle_temporals(treedirectionsInfo)
-    # with open('./output/3D/tripletasR.txt', 'a') as file:
-    #     file.write(result)
+    traductor = AssemblerConvertor(treedirectionsInfo)
+
+
 
 
 if __name__ == '__main__':
