@@ -99,7 +99,8 @@ def generate_images():
             'grafo_image': grafo_base64,
             'symbol_table_image': symbol_table_base64,
             'errors': complete_error_list,
-            '3D': treedirectionsInfo
+            '3D': treedirectionsInfo,
+            'ASS': '.data\n.text'
         }
     
     return jsonify(response)

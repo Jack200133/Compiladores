@@ -11,6 +11,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         self.symbol_table = SymboTable()
         self.type_system = TypeSystem()
         self.nodes = {}
+        self.usages = {}
         self.ErrorList = []
 
     def add_error(self, error_mesagge, line, column, full_error):
@@ -91,15 +92,15 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         self.symbol_table.open_scope("IO", "Object")
         self.symbol_table.add(Symbol(
-            "out_string", "String", "FeatureDef", "out_string -> SELF_TYPE", "IO.out_string",myscope=self.symbol_table.current_scope))
-        self.symbol_table.open_scope("out_string", "String")
+            "out_string", "IO", "FeatureDef", "out_string -> SELF_TYPE", "IO.out_string",myscope=self.symbol_table.current_scope))
+        self.symbol_table.open_scope("out_string", "IO")
         self.symbol_table.add(
             Symbol("x", "String", "FormalDef", "x -> String", "IO.out_string.x",myscope=self.symbol_table.current_scope))
         self.symbol_table.close_scope()
 
         self.symbol_table.add(
-            Symbol("out_int", "Int", "FeatureDef", "out_int -> SELF_TYPE", "IO.out_int",myscope=self.symbol_table.current_scope))
-        self.symbol_table.open_scope("out_int", "Int")
+            Symbol("out_int", "IO", "FeatureDef", "out_int -> SELF_TYPE", "IO.out_int",myscope=self.symbol_table.current_scope))
+        self.symbol_table.open_scope("out_int", "IO")
         self.symbol_table.add(
             Symbol("x", "Int", "FormalDef", "x -> Int", "IO.out_int.x",myscope=self.symbol_table.current_scope))
         self.symbol_table.close_scope()
@@ -307,7 +308,14 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
             result = self.visitChildren(ctx)
             #definition.memory_usage = self.symbol_table.current_scope.current_memory_position
-            self.symbol_table.new_usage(class_name, self.symbol_table.current_scope.current_memory_position)
+            class_vars = []
+            for symbol_name, symbol in self.symbol_table.current_scope.symbols.items():
+                if symbol.isvar:
+                    class_vars.append(symbol.memory_usage)
+            
+            total_mem = sum(class_vars) + 4
+            # definition.memory_usage = total_mem
+            self.symbol_table.new_usage(class_name, total_mem)
             self.symbol_table.close_scope()  # Cerramos el alcance en la tabla de símbolos
             return result  # Retornamos el resultado
 
@@ -409,6 +417,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
             buscarFirma = True
 
         if ctx.LPAREN():
+            
             self.symbol_table.open_scope(name, type)
 
         children = []
@@ -426,7 +435,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 self.nodes[child] = node_data2
 
         if ctx.LPAREN():
-            self.symbol_table.close_scope()
+            pass
 
         result = children_types[-1]
 
@@ -454,11 +463,20 @@ class SemanticAnalyzer(ParseTreeVisitor):
             # print(ctx.getText())
             returns = []
             args = []
+            args_ctx = []
             for index, child in enumerate(children):
                 if isinstance(child, YAPLParser.ExprContext):
                     returns.append(index)
                 if isinstance(child, YAPLParser.FormalDefContext):
                     args.append(index)
+                    args_ctx.append(child)
+            
+            params_memory_usage = self.getParamsUsage(args_ctx)
+            function_memory_usage = self.getUsage(children[returns[0]])
+            total_mem = params_memory_usage + function_memory_usage + 8
+
+            self.symbol_table.new_usage(symbol.name, total_mem)
+            self.symbol_table.close_scope()
             # self.symbol_table.display()
             if len(returns) == 0:
                 sms = f"Error Semántico. En la línea {ctx.start.line}, columna {ctx.start.column}: La función '{name}' tiene un return invalido."
@@ -467,6 +485,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
                     f"La función '{name}' tiene un return invalido.", ctx.start.line, ctx.start.column, sms)
                 tipo = "Object"
             else:
+
                 tipo = children_types[returns[0]]["type"]
             tipo_func = children_types[0]["type"]
 
@@ -543,6 +562,76 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 return node_data
 
         return node_data
+
+
+    def getParamsUsage(self, ctxL:list):
+        func_usage = []
+        for ctx in ctxL:
+
+            obj = ctx.getText()
+
+            # Get name and type
+            name = ctx.OBJECT_ID().getText()
+
+            # busacr el simbolo
+            symbol = self.symbol_table.lookup(name)
+            func_usage.append(symbol.memory_usage)
+
+        return sum(func_usage)
+
+
+
+    def getUsage(self, ctx:YAPLParser.ExprContext):
+        if ctx in self.usages:
+            return self.usages[ctx]
+
+        if ctx is None:
+            return
+
+        if not isinstance(ctx, YAPLParser.ExprContext):
+            return
+        obj = ctx.getText()
+
+
+        if ctx.LET(): 
+        # LET OBJECT_ID COLON TYPE_ID (ASSIGN expr)? (COMMA OBJECT_ID COLON TYPE_ID (ASSIGN expr)?)* IN expr
+            let_vars = []
+            for index, child in enumerate(ctx.OBJECT_ID()):
+                let_vars.append(child.getText())
+            
+            let_types = []
+
+            for var in let_vars:
+                temp = self.symbol_table.lookup(var)
+                if temp is not None:
+                    let_types.append(temp.memory_usage)
+
+            return sum(let_types) 
+
+        # LBRACE (expr SEMICOLON)+ RBRACE
+        elif (ctx.LBRACE() and ctx.RBRACE()):
+            expr_indices = [index for index, child in enumerate(
+                ctx.children) if isinstance(child, YAPLParser.ExprContext)]
+            
+            usages_ = []
+
+            for index in expr_indices:
+                usage = self.getUsage(ctx.children[index])
+                if usage is not None:
+                    usages_.append(usage)
+
+            return sum(usages_)
+        
+        else:
+            usages_ = []
+            for index, child in enumerate(ctx.children):
+                if isinstance(child, YAPLParser.ExprContext):
+                    self.getUsage(child)
+                    usages_.append(self.getUsage(child))
+                else:
+                    usages_.append(0)
+            return sum(usages_)
+
 
     def visitExpr(self, ctx: YAPLParser.ExprContext):
         if ctx in self.nodes:

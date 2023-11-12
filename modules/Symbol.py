@@ -20,9 +20,11 @@ class Scope:
         self.symbols[symbol.name] = symbol
 
     def new_usage(self, symbol, new_usage):
-        
-        self.symbols[symbol.name].memory_usage += new_usage
-        self.current_memory_position += new_usage
+        original_usage = self.symbols[symbol.name].memory_usage
+        self.symbols[symbol.name].memory_usage = new_usage
+
+        difference = new_usage - original_usage
+        self.current_memory_position += difference
 
     def lookup(self, name):
         return self.symbols.get(name, None)
@@ -43,7 +45,7 @@ class Scope:
 
 
 class Symbol:
-    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False,memory_usage=16,isvar=False):
+    def __init__(self, name, _type, definicion=None, derivation=None, scope=None, myscope: Scope = None, initial_value=None, is_heredado=False,memory_usage=4,isvar=False):
         self.name = name
         self.type = _type
         self.isvar = isvar
@@ -54,9 +56,9 @@ class Symbol:
         self.value = initial_value
         self.is_heredado = is_heredado
         if self.type == "Int":
-            self.memory_usage = 8
+            self.memory_usage = 4
         elif self.type == "String":
-            self.memory_usage = 16
+            self.memory_usage = 4
         elif self.type == "Bool":
             self.memory_usage = 1
         else:

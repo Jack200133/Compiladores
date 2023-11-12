@@ -124,11 +124,9 @@ class TreeDirections(ParseTreeVisitor):
                             tripletas_inherits.append(f"FUNCTION {class_name}.{func_name}")
                         else:
                             tripletas_inherits.append(line)
-            
-                
-
 
         symbol = self.symbol_table.lookup(class_name)
+        trip += f" SIZE {symbol.memory_usage}"
         class_scope = self.symbol_table.current_scope
         for scope in symbol.myscope.children:
             if scope.name == class_name:
@@ -159,7 +157,7 @@ class TreeDirections(ParseTreeVisitor):
             self.sp = ""
             simbol: Symbol = self.symbol_table.lookup(name)
             function_scope = self.symbol_table.current_scope
-            self.write(f"\nFUNCTION {simbol.scope}")
+            self.write(f"\nFUNCTION {simbol.scope} SIZE {simbol.memory_usage}")
             for scope in simbol.myscope.children:
                 if scope.name == name:
                     function_scope = scope

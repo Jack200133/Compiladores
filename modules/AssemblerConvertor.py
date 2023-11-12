@@ -2,13 +2,14 @@
 # Version: 1.0
 # Descripcion: Genera la traduccion de un archivo codigo de 3 direcciones a assembler MIPS
 # Ultima modificacion: 26/10/2023
+from modules.Symbol import Symbol, SymboTable
 
 class AssemblerConvertor:
 
-    def __init__(self, code, file = "output/assembler.txt") -> None:
+    def __init__(self, code:str,symbol_table:SymboTable, file = "output/assembler.txt") -> None:
         self.__code = code.split('\n')
         self.output = file
-
+        self.symbol_table = symbol_table
         self.current_tab = ""
         self.use_temps = []
         self.use_stemps = []
@@ -30,7 +31,7 @@ class AssemblerConvertor:
                 return numero
             numero += 1
 
-    def prepare_aritmetic(self, a, b):
+    def prepare_aritmetic(self, a:str, b:str):
         if a.startswith("t"):
             temp1 = a
         else:
@@ -50,6 +51,8 @@ class AssemblerConvertor:
         return temp1, temp2
 
     def convert(self):
+        self.write_basic()
+        self.write("# ======== CODIGO ========")
         for instruction in self.__code:
             instruction = instruction.strip()
             if instruction.startswith("t"):
@@ -107,8 +110,6 @@ class AssemblerConvertor:
                     self.use_temps.remove(int(temp1[1:]))  # Free temp1
                     self.use_temps.remove(int(temp2[1:]))  # Free temp2
 
-
-
             elif instruction.startswith("FUNCTION"):
                 name = instruction.split(".")[1]
                 assmbler = f"{self.current_tab}{name}:"
@@ -118,7 +119,52 @@ class AssemblerConvertor:
             elif instruction.startswith("END FUNCTION"):
                 self.current_tab = self.current_tab[:-1]
 
+            elif instruction.startswith("CLASS"):
+                name = instruction.split(' ')[1]
+                assmbler = f"CLASS_{name}"
+                self.write(assmbler)
+                self.current_tab += "\t"
+
         self.end()
+
+    def reserva_memoria_class(self, name):
+        self.write(f"# ======== RESERVA DE MEMORIA para ClASS_{name} ========")
+        
+
+    def write_basic(self):
+        self.write("jal CLASS_MAIN")
+
+
+        self.write("# ======== FUNCIONES BASICAS ========")
+        self.write("out_int:")
+        self.write("\tli $v0, 1")
+        self.write("\tsyscall")
+        self.write("\tjr $ra")
+
+        self.write("out_string:")
+        self.write("\tli $v0, 4")
+        self.write("\tsyscall")
+        self.write("\tjr $ra")
+
+        self.write("in_int:")
+        self.write("\tli $v0, 5")
+        self.write("\tsyscall")
+        self.write("\tjr $ra")
+
+        self.write("in_string:")
+        self.write("\tli $v0, 8")
+        self.write("\tsyscall")
+        self.write("\tjr $ra")
+
+        # TODO: STRINGS FUNCS
+        # TODO concat
+        # Ejemplo en ASS/concat
+
+        # TODO substr
+        # Ejemplo en ASS/substr
+
+        # TODO length
+
 
     def write(self,triplet):
         with open(self.output, 'a') as file:

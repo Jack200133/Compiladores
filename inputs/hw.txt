@@ -1,0 +1,22 @@
+class Main {
+    name : String <- "Stefano\n";
+    enter : String <- "\n";
+    io : IO <- new IO;
+
+   print_name(): IO {
+    {
+        io.out_string(name);
+    }
+   };
+
+   main(): IO {
+    {
+        let a : String <- "Hey", b : Int <- 2 in {b <- b + b;};
+        a <- "Pulido\n";
+        io.out_string(a);
+        print_name();
+        io.out_string(enter);
+        io.out_string("Hello World\n");
+    }
+   };
+};
