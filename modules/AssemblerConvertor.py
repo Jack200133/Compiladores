@@ -69,7 +69,6 @@ class AssemblerConvertor:
                     # Liberar temp2
                     self.use_temps.remove(int(temp1[1:]))  # Free temp1
                     self.use_temps.remove(int(temp2[1:]))  # Free temp2
-
                 elif opcion[0] == "MINUS":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
@@ -109,30 +108,85 @@ class AssemblerConvertor:
                     # Liberar temp2
                     self.use_temps.remove(int(temp1[1:]))  # Free temp1
                     self.use_temps.remove(int(temp2[1:]))  # Free temp2
+                
+                # TODO: CALL
+                elif opcion[0] == "CALL":
+                    pass
 
             elif instruction.startswith("FUNCTION"):
-                name = instruction.split(".")[1]
-                assmbler = f"{self.current_tab}{name}:"
+                tokens = instruction.split(" ")
+                name = tokens[1]
+                assmbler = f"\n{name}:"
                 self.write(assmbler)
                 self.current_tab += "\t"
+                assmbler = f"\tmove $s1, $a0"
+                self.reserva_memoria_func(tokens)
 
+            # TODO: LIMPIAR MEMORIA
             elif instruction.startswith("END FUNCTION"):
                 self.current_tab = self.current_tab[:-1]
 
             elif instruction.startswith("CLASS"):
-                name = instruction.split(' ')[1]
-                assmbler = f"CLASS_{name}"
+                tokens = instruction.split(" ")
+                name = tokens[1]
+                assmbler = f"CLASS_{name}\n"
                 self.write(assmbler)
                 self.current_tab += "\t"
+                self.reserva_memoria_class(tokens)
+
+            elif instruction.startswith("ASSIGN"):
+                tokens = instruction.split(" ")
+                name = tokens[1]
+                value = tokens[2]
+                assmbler = f"{self.current_tab}li ${name}, {value}"
+                self.write(assmbler)
+
+            # TODO: LIMPIAR MEMORIA
+            elif instruction.startswith("END CLASS"):
+                self.current_tab = self.current_tab[:-1]
 
         self.end()
 
-    def reserva_memoria_class(self, name):
-        self.write(f"# ======== RESERVA DE MEMORIA para ClASS_{name} ========")
+    def reserva_memoria_class(self, tokens):
+        self.write(f"# ======== RESERVA DE MEMORIA para ClASS_{tokens[1]} ========")
+        size = 0
+
+        for index, token in enumerate(tokens):
+            if token == 'SIZE':
+                size = tokens[index + 1]
+                break
+
+        self.write(f"\tli $a0, {size}")
+        self.write(f"\tli $v0, 9")
+        self.write(f"\tsyscall")
+        self.write(f"\tmove $t0, $v0")
+        self.write(f"\tsw $t0, CLASS_{tokens[1]}")
+        
+
+    def reserva_memoria_func(self, tokens):
+        self.write(f"# ======== INICIALIZAR DE MEMORIA FUNCION {tokens[1]} ========")
+        size = 0
+
+        for index, token in enumerate(tokens):
+            if token == 'SIZE':
+                size = tokens[index + 1]
+                break
+
+        self.write(f"addi $sp, $sp, -{8}") # mover el stack pointer para hacer espacio para el $fp y $ra
+        self.write(f"sw $fp, 0($sp)") # guardar el frame pointer en el stack
+        self.write(f"sw $ra, 4($sp)") # guardar el return addres en el stack
+
+        # mover el frame pointer y reservar espacio para las variables locales
+        self.write(f"move $fp, $sp") # Actualizar el frame pointer
+        self.write(f"addi $sp, $sp, -{size}")# reservar espacio para las variables locales
+        
+
+
+
         
 
     def write_basic(self):
-        self.write("jal CLASS_MAIN")
+        self.write("jal CLASS_Main")
 
 
         self.write("# ======== FUNCIONES BASICAS ========")

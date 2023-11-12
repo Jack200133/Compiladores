@@ -158,11 +158,26 @@ class TreeDirections(ParseTreeVisitor):
             simbol: Symbol = self.symbol_table.lookup(name)
             function_scope = self.symbol_table.current_scope
             self.write(f"\nFUNCTION {simbol.scope} SIZE {simbol.memory_usage}")
+
             for scope in simbol.myscope.children:
                 if scope.name == name:
                     function_scope = scope
                     
             self.symbol_table.current_scope = function_scope    
+
+            functions_params = []
+            for index, child in enumerate(ctx.children):
+                if isinstance(child, YAPLParser.FormalDefContext):
+                    functions_params.append(child)
+
+            for idx, param in enumerate(functions_params):
+                name = param.OBJECT_ID().getText()
+
+                simbol: Symbol = self.symbol_table.lookup(name)
+                
+                smm = f"sp[{simbol.memory_position}] = PARAM_{idx}"
+                self.write(f"\t{smm}")
+
             children = []
             for child in ctx.children:
                 chil = self.visit(child)

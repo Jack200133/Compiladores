@@ -9,6 +9,13 @@ class Main {
     }
    };
 
+   
+   print_name2(name2 : String,name3 : String): IO {
+      {
+         io.out_string(name2);
+      }
+   };
+
    main(): IO {
     {
         let a : String <- "Hey", b : Int <- 2 in {b <- b + b;};
