@@ -173,9 +173,9 @@ class TreeDirections(ParseTreeVisitor):
             for idx, param in enumerate(functions_params):
                 name = param.OBJECT_ID().getText()
 
-                simbol: Symbol = self.symbol_table.lookup(name)
+                sim: Symbol = self.symbol_table.lookup(name)
                 
-                smm = f"sp[{simbol.memory_position}] = PARAM_{idx}"
+                smm = f"sp[{sim.memory_position}] = PARAM_{idx}"
                 self.write(f"\t{smm}")
 
             children = []

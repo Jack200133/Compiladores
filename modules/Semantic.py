@@ -313,7 +313,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
                 if symbol.isvar:
                     class_vars.append(symbol.memory_usage)
             
-            total_mem = sum(class_vars) + 4
+            total_mem = sum(class_vars) + 8
             # definition.memory_usage = total_mem
             self.symbol_table.new_usage(class_name, total_mem)
             self.symbol_table.close_scope()  # Cerramos el alcance en la tabla de símbolos
