@@ -329,8 +329,12 @@ class TreeDirections(ParseTreeVisitor):
                 pram_str = self.dobleinstance(param,"")
                 sms = f"\tPARAM {pram_str}"
                 self.write(sms)
+
+
+            func_str = ctx.OBJECT_ID()[0].getText()
+            sim = self.symbol_table.lookup(func_str)
             
-            triplet = f"CALL {ctx.OBJECT_ID()[0].getText()} {len(tempsParams)}"
+            triplet = f"CALL {sim.scope} {len(tempsParams)}"
             sms = f"\tt{self.getNextTemp()} = {triplet}"
             self.write(sms)
             temporal = Temporal(self.getNextTemp(), sms)

@@ -53,10 +53,16 @@ class AssemblerConvertor:
     def prepare_aritmetic(self, a:str, b:str):
         if a.startswith("t"):
             temp1 = a
-        elif b.startswith("sp_GLOBAL"):
-            pass
-        elif b.startswith("sp"):
-            sp_index = b.split("[")[1]
+        elif a.startswith("sp_GLOBAL"):
+            sp_index = a.split("[")[1]
+            sp_index = sp_index.split("]")[0]
+            sp_index = int(sp_index) + 8
+            temp1 = "s7"
+            assm = f"\tlw ${temp1}, {sp_index}($s7)"
+            self.write(assm)
+
+        elif a.startswith("sp"):
+            sp_index = a.split("[")[1]
             sp_index = sp_index.split("]")[0]
             sp_index = int(sp_index) + 4
             temp1 = "s1"
@@ -64,7 +70,6 @@ class AssemblerConvertor:
             self.write(assm)
         else:
             temp1 = "s1"
-            self.use_temps.append(temp1)
 
             assmbler = f"\tli ${temp1}, {a}"
             self.write(assmbler)
@@ -73,7 +78,14 @@ class AssemblerConvertor:
         if b.startswith("t"):
             temp2 = b
         elif b.startswith("sp_GLOBAL"):
-            pass
+            sp_index = b.split("[")[1]
+            sp_index = sp_index.split("]")[0]
+            sp_index = int(sp_index) + 8
+            temp2 = "s2"
+            assm = f"\tlw ${temp2}, {sp_index}($s7)"
+            self.write(assm)
+            
+
         elif b.startswith("sp"):
             sp_index = b.split("[")[1]
             sp_index = sp_index.split("]")[0]
@@ -83,7 +95,6 @@ class AssemblerConvertor:
             self.write(assm)
         else:
             temp2 = "s2"
-            self.use_temps.append(temp2)
 
             assmbler = f"\tli ${temp2}, {b}"
             self.write(assmbler)
@@ -100,7 +111,7 @@ class AssemblerConvertor:
                 if opcion[0] == "PLUS":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
-                    restemp = f"s{restemp[1:]}"
+                    restemp = f"t{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
                     assmbler = f"\tadd ${restemp}, ${temp1}, ${temp2}"
@@ -110,7 +121,7 @@ class AssemblerConvertor:
                 elif opcion[0] == "MINUS":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
-                    restemp = f"s{restemp[1:]}"
+                    restemp = f"t{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
                     assmbler = f"\tsub ${restemp}, ${temp1}, ${temp2}"
@@ -120,7 +131,7 @@ class AssemblerConvertor:
                 elif opcion[0] == "MULT":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
-                    restemp = f"s{restemp[1:]}"
+                    restemp = f"t{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
                     assmbler = f"\tmult ${temp1}, ${temp2}"
@@ -133,7 +144,7 @@ class AssemblerConvertor:
                 elif opcion[0] == "DIV":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
-                    restemp = f"s{restemp[1:]}"
+                    restemp = f"t{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
                     assmbler = f"\tdiv ${temp1}, ${temp2}"
@@ -158,8 +169,30 @@ class AssemblerConvertor:
                     if not is_reserved:
                         self.write(f"# ======== CALL {opcion[1]} ========")
 
-                        self.write(f"\tjal {opcion[1]}")
-                        self.write(f"\tmove ${op[0]}, $v0")
+                        self.write(f"\tlw $s2, 4($s1)")
+
+                        # Buscar en v_table
+                        calling = opcion[1].split(".")
+
+                        if len(calling) == 2:
+                            
+                            function_name = calling[1]
+                            class_name = calling[0]
+
+
+                        index = self.v_table[class_name].index(opcion[1])
+
+                        temp = self.getLastTemp()
+                        self.use_temps.append(temp)
+
+                        self.write(f"\tlw $t{temp}, {index}($s2)")
+                        self.write(f"\tmove $a0, $s1")
+                        
+                        self.write(f"\tjal save_registers")
+                        self.write(f"\tjal $t{temp}")
+                        self.write(f"\tjal restore_registers")
+                        restemp = op[0].strip()
+                        self.write(f"\tmove ${restemp}, $v0")
                     self.param_num -= int(param_num)
 
             elif instruction.startswith("FUNCTION"):
@@ -249,6 +282,31 @@ class AssemblerConvertor:
 
                     self.write(f"")
 
+            elif instruction.startswith("RETURN"):
+                tokens = instruction.split(" ")
+                name = tokens[1]
+
+                if name.startswith("sp_GLOBAL"):
+                    self.write(f"#TODO ======== RETURN sp_GLOBAL[index] ========")
+                    sp_index = name.split("[")[1]
+                    sp_index = sp_index.split("]")[0]
+                    sp_index = int(sp_index) + 8
+
+                    self.write(f"\tlw $v0, {sp_index}($s7)")
+
+                elif name.startswith("sp"):
+                    self.write(f"# ======== RETURN sp[index] ========")
+                    sp_index = name.split("[")[1]
+                    sp_index = sp_index.split("]")[0]
+                    sp_index = int(sp_index) + 4
+                    
+                    assm = f"\tlw $v0, {sp_index}($sp)"
+                    self.write(assm)
+                elif name.startswith("t"):
+                    self.write(f"# ======== RETURN t ========")
+                    
+                    self.write(f"\tmove $v0, ${name}")
+
 
 
                 # assmbler = f"\tli ${name}, {value}"
@@ -316,12 +374,13 @@ class AssemblerConvertor:
         self.write(f"\tsw $a{sp_param}, {sp_index}($sp)\n")
 
     def assign_sp_global(self, tokens):
-        self.write(f"# ======== sp_GLOBAL[index] = value ========")
+        
         sp_index = tokens[1].split("sp_GLOBAL[")[1]
         sp_index = sp_index[:-1]
         sp_index = int(sp_index) + 8
 
         if tokens[2].startswith('"'):
+            self.write(f"# ======== sp_GLOBAL[index] = value ========")
             value = tokens[2][1:-1]
             value = value.replace("\\n", "\n")
             value = value.replace("\\t", "\t")
@@ -332,35 +391,56 @@ class AssemblerConvertor:
             
 
             self.write(f"\tsw $t{temp}, {sp_index}($s7)")
-        
+            self.use_temps.remove(temp)
+
         elif tokens[2].startswith("sp"):
-            temp = self.getLastTemp()
-            self.use_temps.append(temp)
+            self.write(f"# ======== sp_GLOBAL[index] = sp[index] ========")
+            sp_index = tokens[1].split("sp_GLOBAL[")[1]
+            sp_index = sp_index[:-1]
+            sp_index = int(sp_index) + 8
+
+            sp_index2 = tokens[2].split("sp[")[1]
+            sp_index2 = sp_index2[:-1]
+            sp_index2 = int(sp_index2) + 4
+            
+            #TODO: REVISAR CON STEFANO
+            self.write(f"\tlw $t0, {sp_index2}($sp)")
+            self.write(f"\tsw $t0, {sp_index}($s7)")
+
+
+
         elif tokens[2].startswith("t"):
-            temp = self.getLastTemp()
-            self.use_temps.append(temp)
+            self.write(f"# ======== sp_GLOBAL[index] = temp# ========")
+            sp_index = tokens[1].split("sp_GLOBAL[")[1]
+            sp_index = sp_index[:-1]
+            sp_index = int(sp_index) + 8
+
+            assm = f"\tsw ${tokens[2]}, {sp_index}($s7)"
+            self.write(assm)
+
         elif tokens[2].startswith("NEW"):
-            temp = self.getLastTemp()
-            self.use_temps.append(temp)
+            pass
         else:
+            self.write(f"# ======== sp_GLOBAL[index] = value ========")
             temp = self.getLastTemp()
             self.use_temps.append(temp)
 
             self.write(f"\tli $t{temp}, {tokens[2]}")
             self.write(f"\tsw $t{temp}, {sp_index}($s7)")
-            
+            self.use_temps.remove(temp)
+
             #
 
 
-        self.use_temps.remove(temp)
-
+        
     def assing_sp(self, tokens):
-        self.write(f"# ======== sp[index] = value ========")
+        
         sp_index = tokens[1].split("sp[")[1]
         sp_index = sp_index[:-1]
         sp_index = int(sp_index) + 4
 
         if tokens[2].startswith('"'):
+            self.write(f"# ======== sp[index] = value ========")
             value = tokens[2][1:-1]
             value = value.replace("\\n", "\n")
             value = value.replace("\\t", "\t")
@@ -371,26 +451,45 @@ class AssemblerConvertor:
             
 
             self.write(f"\tsw $t{temp}, {sp_index}($sp)")
+            self.use_temps.remove(temp)
 
         elif tokens[2].startswith("sp"):
-            temp = self.getLastTemp()
-            self.use_temps.append(temp)
+            sp_index = tokens[1].split("sp[")[1]
+            sp_index = sp_index[:-1]
+            sp_index = int(sp_index) + 4
+
+            sp_index2 = tokens[2].split("sp[")[1]
+            sp_index2 = sp_index2[:-1]
+            sp_index2 = int(sp_index2) + 4
+
+            #TODO: REVISAR CON STEFANO
+            self.write(f"# ======== sp[index] = sp[index] ========")
+            self.write(f"\tlw $t0, {sp_index2}($sp)")
+            self.write(f"\tsw $t0, {sp_index}($sp)")
+
         elif tokens[2].startswith("t"):
-            temp = self.getLastTemp()
-            self.use_temps.append(temp)
+            self.write(f"# ======== sp[index] = temp# ========")
+            sp_index = tokens[1].split("sp[")[1]
+            sp_index = sp_index[:-1]
+            sp_index = int(sp_index) + 4
+
+            assm = f"\tsw ${tokens[2]}, {sp_index}($sp)"
+            self.write(assm)
+            
         elif tokens[2].startswith("NEW"):
-            temp = self.getLastTemp()
-            self.use_temps.append(temp)
+            pass
         else:
+            self.write(f"# ======== sp[index] = value ========")
             temp = self.getLastTemp()
             self.use_temps.append(temp)
 
             self.write(f"\tli $t{temp}, {tokens[2]}")
             self.write(f"\tsw $t{temp}, {sp_index}($sp)")
+            self.use_temps.remove(temp)
             
 
 
-        self.use_temps.remove(temp)
+        
 
     def reserva_cadena_en_heap(self, cadena):
 
@@ -505,6 +604,34 @@ class AssemblerConvertor:
         self.write("in_string:")
         self.write("\tli $v0, 8")
         self.write("\tsyscall")
+        self.write("\tjr $ra\n")
+
+        self.write("save_registers:")
+        self.write("\taddi $sp, $sp, -36")
+        self.write("\tsw $t0, 0($sp)")
+        self.write("\tsw $t1, 4($sp)")
+        self.write("\tsw $t2, 8($sp)")
+        self.write("\tsw $t3, 12($sp)")
+        self.write("\tsw $t4, 16($sp)")
+        self.write("\tsw $t5, 20($sp)")
+        self.write("\tsw $t6, 24($sp)")
+        self.write("\tsw $t7, 28($sp)")
+        self.write("\tsw $t8, 32($sp)")
+        self.write("\tsw $t9, 36($sp)")
+        self.write("\tjr $ra\n")
+
+        self.write("restore_registers:")
+        self.write("\tlw $t0, 0($sp)")
+        self.write("\tlw $t1, 4($sp)")
+        self.write("\tlw $t2, 8($sp)")
+        self.write("\tlw $t3, 12($sp)")
+        self.write("\tlw $t4, 16($sp)")
+        self.write("\tlw $t5, 20($sp)")
+        self.write("\tlw $t6, 24($sp)")
+        self.write("\tlw $t7, 28($sp)")
+        self.write("\tlw $t8, 32($sp)")
+        self.write("\tlw $t9, 36($sp)")
+        self.write("\taddi $sp, $sp, 36")
         self.write("\tjr $ra\n")
 
         # TODO: STRINGS FUNCS
