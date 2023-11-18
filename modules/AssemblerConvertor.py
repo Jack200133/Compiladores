@@ -10,11 +10,14 @@ class AssemblerConvertor:
         self.__code = code.split('\n')
         self.output = file
         self.symbol_table = symbol_table
-        self.current_tab = ""
         self.use_temps = []
         self.use_stemps = []
+        self.reserved = ['out_int', 'out_string', 'in_int', 'in_string', 'concat', 'substr', 'length']
+        self.param_num = 0
+        self.ass_temp = []
+        self.v_table = {}
 
-        self.clean()
+        # self.clean()
         self.convert()
     
     def getNextTemp(self):
@@ -52,15 +55,17 @@ class AssemblerConvertor:
             temp1 = self.getNextTemp()
             self.use_temps.append(temp1)
             temp1 = f"t{temp1}"
-            assmbler = f"{self.current_tab}li ${temp1}, {a}"
+            assmbler = f"\tli ${temp1}, {a}"
             self.write(assmbler)
         if b.startswith("t"):
             temp2 = b
+        elif b.startswith("sp"):
+            pass
         else:
             temp2 = self.getNextTemp()
             self.use_temps.append(temp2)
             temp2 = f"t{temp2}"
-            assmbler = f"{self.current_tab}li ${temp2}, {b}"
+            assmbler = f"\tli ${temp2}, {b}"
             self.write(assmbler)
         return temp1, temp2
 
@@ -78,7 +83,7 @@ class AssemblerConvertor:
                     restemp = f"s{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
-                    assmbler = f"{self.current_tab}add ${restemp}, ${temp1}, ${temp2}"
+                    assmbler = f"\tadd ${restemp}, ${temp1}, ${temp2}"
                     self.write(assmbler)
                     # Liberar temp2
                     self.use_temps.remove(int(temp1[1:]))  # Free temp1
@@ -89,7 +94,7 @@ class AssemblerConvertor:
                     restemp = f"s{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
-                    assmbler = f"{self.current_tab}sub ${restemp}, ${temp1}, ${temp2}"
+                    assmbler = f"\tsub ${restemp}, ${temp1}, ${temp2}"
                     self.write(assmbler)
                     # Liberar temp2
                     self.use_temps.remove(int(temp1[1:]))  # Free temp1
@@ -100,10 +105,10 @@ class AssemblerConvertor:
                     restemp = f"s{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
-                    assmbler = f"{self.current_tab}mult ${temp1}, ${temp2}"
+                    assmbler = f"\tmult ${temp1}, ${temp2}"
                     self.write(assmbler)
 
-                    assmbler = f"{self.current_tab}mflo ${restemp}"
+                    assmbler = f"\tmflo ${restemp}"
                     self.write(assmbler)
                     # Liberar temp2
                     self.use_temps.remove(int(temp1[1:]))  # Free temp1
@@ -114,10 +119,10 @@ class AssemblerConvertor:
                     restemp = f"s{restemp[1:]}"
                     temp1, temp2 = self.prepare_aritmetic(opcion[1], opcion[2])
                     
-                    assmbler = f"{self.current_tab}div ${temp1}, ${temp2}"
+                    assmbler = f"\tdiv ${temp1}, ${temp2}"
                     self.write(assmbler)
 
-                    assmbler = f"{self.current_tab}mflo ${restemp}"
+                    assmbler = f"\tmflo ${restemp}"
                     self.write(assmbler)
                     # Liberar temp2
                     self.use_temps.remove(int(temp1[1:]))  # Free temp1
@@ -125,24 +130,53 @@ class AssemblerConvertor:
                 
                 # TODO: CALL
                 elif opcion[0] == "CALL":
-                    pass
+                    param_num = opcion[2]
+                    is_reserved = False
+                    # REVISAR SI TIENE FUNCION RESERVADA
+                    for res in self.reserved:
+                        if res in opcion[1]:
+                            self.call_reserved(opcion)
+                                
+                            is_reserved = True
+                            break
+                    if not is_reserved:
+                        self.write(f"# ======== CALL {opcion[1]} ========")
+
+                        self.write(f"\tjal {opcion[1]}")
+                        self.write(f"\tmove ${op[0]}, $v0")
+                    self.param_num -= int(param_num)
 
             elif instruction.startswith("FUNCTION"):
                 tokens = instruction.split(" ")
                 name = tokens[1]
                 assmbler = f"\n{name}:"
+
+                class_name = name.split(".")[0]
+                self.v_table[class_name].append(name)
+
                 self.write(assmbler)
-                self.current_tab += "\t"
                 assmbler = f"\tmove $s1, $a0"
                 self.reserva_memoria_func(tokens)
-
+                self.write('\tsw $s1, 0($sp)')
+            
             elif instruction.startswith("sp"):
-                # TODO: CARGA DE PARAMETROS al stack
-                pass
+                tokens = instruction.split(" ")
+                self.read_sp_param(tokens)
+
+
+            elif instruction.startswith("PARAM"):
+                tokens = instruction.split(" ")
+                name = tokens[1]
+                self.param_num += 1
+                # Name sp || sp_GLOBAL || string || int || float
+                if name.startswith("sp_GLOBAL") :
+                    self.assign_spGlobal_param(tokens)
+                elif name.startswith("sp"):
+                    self.assign_sp_param(tokens)
 
 
             elif instruction.startswith("END FUNCTION"):
-                self.current_tab = self.current_tab[:-1]
+
                 tokens = instruction.split(" ")
                 self.write(f"# ======== FIN FUNCION {tokens[2]} ========") # Restaurar el return address
                 self.write(f"\tmove $sp, $fp") # Restaurar el stack pointer
@@ -156,7 +190,9 @@ class AssemblerConvertor:
                 name = tokens[1]
                 assmbler = f"CLASS_{name}:\n"
                 self.write(assmbler)
-                self.current_tab += "\t"
+
+                self.v_table[name] = []
+
                 self.reserva_memoria_class(tokens)
 
             elif instruction.startswith("ASSIGN"):
@@ -166,22 +202,71 @@ class AssemblerConvertor:
 
                 if name.startswith("sp_GLOBAL"):
                     self.assign_sp_global(tokens)
+                elif name.startswith("sp"):
+                    pass
+                elif name.startswith('"'):
+                    temp = self.reserva_cadena_en_heap(value[1:-1])
+
+                    self.write(f"")
 
 
-                # assmbler = f"{self.current_tab}li ${name}, {value}"
+
+                # assmbler = f"\tli ${name}, {value}"
                 # self.write(assmbler)
 
             # TODO: LIMPIAR MEMORIA
-            elif instruction.startswith("END CLASS"):
-                self.current_tab = self.current_tab[:-1]
-                tokens = instruction.split(" ")
-                self.write(f"# ======== FIN MEMORIA CLASS {tokens[2]} ========") # Restaurar el return address
+            # elif instruction.startswith("END CLASS"):
 
-                self.write(f"\tlw $t0, 0($sp)")
-                self.write(f"\taddi $sp, $sp, 4")
+            #     tokens = instruction.split(" ")
+            #     self.write(f"# ======== FIN MEMORIA CLASS {tokens[2]} ========") # Restaurar el return address
+
+            #     self.write(f"\tlw $t0, 0($sp)")
+            #     self.write(f"\taddi $sp, $sp, 4")
 
 
         self.end()
+
+    def call_reserved(self, tokens):
+        tipe = tokens[1]
+        func_name = tokens[1].split(".")[1]
+        if func_name == "out_string":
+            self.write(f"# ======== CALL out_string ========")
+            self.write(f"\tmove $a0, $a1")
+            self.write(f"\tjal out_string\n")
+
+            self.write(f"\tlw $s2, 0($sp)")
+            self.write(f"\tmove $s1, $s2")
+
+
+
+    def assign_sp_param(self, tokens):
+        self.write(f"# ======== PARAM = sp[index] ========")
+        sp_index = tokens[1].split("sp[")[1]
+        sp_index = int(sp_index[:-1]) + 8
+
+        sp_param = self.param_num
+        
+        self.write(f"\tlw $a{sp_param}, {sp_index}($sp)\n")
+
+    def assign_spGlobal_param(self, tokens):
+        self.write(f"# ======== PARAM = sp_GLOBAL[index] ========")
+        sp_index = tokens[1].split("sp_GLOBAL[")[1]
+        sp_index = int(sp_index[:-1]) + 8
+        
+       
+        self.write(f"\tlw $s1, 0($sp)")
+        self.write(f"\tlw $a1, {sp_index}($s1)\n")
+
+    def read_sp_param(self, tokens):
+        self.write(f"# ======== sp[index] = PARAM_X ========")
+        sp_index = tokens[0].split("sp[")[1]
+        sp_index = int(sp_index[:-1]) + 4
+
+        sp_param = tokens[2].split("PARAM_")[1]
+        sp_param = int(sp_param) + 1
+
+        
+        self.write(f"\tsw $a{sp_param}, {sp_index}($sp)\n")
 
     def assign_sp_global(self, tokens):
         self.write(f"# ======== sp_GLOBAL[index] = value ========")
@@ -210,6 +295,14 @@ class AssemblerConvertor:
 
 
         self.use_temps.remove(temp)
+
+    def reserva_cadena_en_heap(self, cadena):
+
+        name_len = len(cadena) + 1
+        name_mem = self.reserva_bytes_en_heap(name_len)
+        self.alamcenar_cadena_en_heap(cadena, name_mem)
+
+        return name_mem
 
     def reserva_memoria_class(self, tokens):
         self.write(f"# ======== RESERVA DE MEMORIA para CLASS_{tokens[1]} ========")
@@ -280,7 +373,7 @@ class AssemblerConvertor:
 
         for index, token in enumerate(tokens):
             if token == 'SIZE':
-                size = tokens[index + 1]
+                size = int(tokens[index + 1]) + 4
                 break
 
         self.write(f"\taddi $sp, $sp, -{8}") # mover el stack pointer para hacer espacio para el $fp y $ra
@@ -293,7 +386,8 @@ class AssemblerConvertor:
 
 
     def write_basic(self):
-        self.write("jal CLASS_Main")
+        self.write("\nmain:")
+        self.write("\tjal CLASS_Main")
 
 
         self.write("# ======== FUNCIONES BASICAS ========")
@@ -328,15 +422,33 @@ class AssemblerConvertor:
 
 
     def write(self,triplet):
-        with open(self.output, 'a') as file:
-            file.write(str(triplet) + '\n')
+        # with open(self.output, 'a') as file:
+        #     file.write(str(triplet) + '\n')
+        self.ass_temp.append(str(triplet) + '\n')
 
     def clean(self):
-        init = ".data\n.text\n"
+
+        formated_V_table = ""
+
+        for key in self.v_table:
+            current_ = f"vt_{key}:\n"
+            formated_V_table += current_
+            for item in self.v_table[key]:
+                word = f"\t.word {item}\n"
+                formated_V_table += word
+
+
+        init = f".data\n{formated_V_table}\n.text\n"
         with open(self.output, 'w') as file:
             file.write(init)
 
     def end(self):
+        self.clean()
+
         end = "\n# ======== Salida del Programa ========\n\tli $v0, 10\n\tsyscall"
         self.write(end)
 
+        complete_Ass = "".join(self.ass_temp)
+        with open(self.output, 'a') as file:
+            file.write(str(complete_Ass) + '\n')
+        print('fin')

@@ -175,7 +175,7 @@ class TreeDirections(ParseTreeVisitor):
 
                 sim: Symbol = self.symbol_table.lookup(name)
                 
-                smm = f"sp[{sim.memory_position}] = PARAM_{idx}"
+                smm = f"sp[{sim.memory_position}] = {sim.type}.PARAM_{idx}"
                 self.write(f"\t{smm}")
 
             children = []
@@ -186,7 +186,7 @@ class TreeDirections(ParseTreeVisitor):
             
             retunr_srt = self.dobleinstance(children[-1],"")
 
-            self.write(f"RETURN {retunr_srt}\n")
+            self.write(f"\tRETURN {retunr_srt}\n")
             self.write(f"END FUNCTION {simbol.scope}\n")
             self.temporals = []
 

@@ -312,7 +312,8 @@ class SemanticAnalyzer(ParseTreeVisitor):
             for symbol_name, symbol in self.symbol_table.current_scope.symbols.items():
                 if symbol.isvar:
                     class_vars.append(symbol.memory_usage)
-            
+            # + 4 por el nombre de la clase
+            # + 4 por la tabla virtual
             total_mem = sum(class_vars) + 8
             # definition.memory_usage = total_mem
             self.symbol_table.new_usage(class_name, total_mem)
@@ -473,7 +474,9 @@ class SemanticAnalyzer(ParseTreeVisitor):
             
             params_memory_usage = self.getParamsUsage(args_ctx)
             function_memory_usage = self.getUsage(children[returns[0]])
-            total_mem = params_memory_usage + function_memory_usage + 8
+            # + 4 por la direccion de la clase
+
+            total_mem = params_memory_usage + function_memory_usage + 4
 
             self.symbol_table.new_usage(symbol.name, total_mem)
             self.symbol_table.close_scope()

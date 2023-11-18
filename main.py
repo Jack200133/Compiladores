@@ -94,10 +94,10 @@ def main():
 
     # Render the graph
     dot.render(filename='./output/grafo', format='png', cleanup=True)
-    dot.view()
+    # dot.view()
     semantic_analyzer = SemanticAnalyzer()
     semantic_analyzer.visit(tree)
-    semantic_analyzer.symbol_table.displayTree()
+    # semantic_analyzer.symbol_table.displayTree()
     
     symbols = semantic_analyzer.symbol_table.get_all_symbols()
     print("\nTabla de Símbolos:")
@@ -124,7 +124,7 @@ def main():
     with open(treedirectionsInfoPath, 'r') as file:
         treedirectionsInfo = file.read()
 
-    assemblerInfoPath = "./output/ASS/hw.txt"
+    assemblerInfoPath = "./output/ASS/hw.s"
     traductor = AssemblerConvertor(treedirectionsInfo,semantic_analyzer.symbol_table,assemblerInfoPath)
 
 
