@@ -1,0 +1,17 @@
+CLASS Main
+
+FUNCTION Main.main
+	t0 = PLUS 10 5
+	ASSIGN sp_GLOBAL[0] t0
+	t0 = MINUS 10 5
+	ASSIGN sp_GLOBAL[8] t0
+	t0 = MULT 10 5
+	ASSIGN sp_GLOBAL[16] t0
+	t0 = DIV 10 5
+	ASSIGN sp_GLOBAL[24] t0
+RETURN sp_GLOBAL[24] 
+
+END FUNCTION Main.main
+
+END CLASS Main
+

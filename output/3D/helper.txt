@@ -1,0 +1,259 @@
+CLASS Factorial
+	ASSIGN sp_GLOBAL[0] 0
+
+FUNCTION Factorial.factorial
+	t0 = PLUS 1 1
+	ASSIGN sp[8] t0
+	t0 = EQ sp[0] 0
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	ASSIGN sp[8] 0
+	t0 = sp[8]
+	GOTO LABEL_L2
+LABEL_L1:
+	t1 = EQ sp[0] 1
+	IF t1 GOTO LABEL_L3
+	GOTO LABEL_L4
+LABEL_L3:
+	ASSIGN sp[8] 1
+	t1 = sp[8]
+	GOTO LABEL_L5
+LABEL_L4:
+	t2 = MINUS sp[0] 1
+	PARAM t2 
+	t2 = CALL factorial 1
+	t2 = MULT sp[0] t2
+	ASSIGN sp[8] t2
+	t1 = sp[8]
+LABEL_L5:
+	t0 = t1
+LABEL_L2:
+RETURN sp[8] 
+
+END FUNCTION Factorial.factorial
+
+END CLASS Factorial
+
+CLASS Fibonacci
+
+FUNCTION Fibonacci.fibonacci
+	t0 = EQ sp[0] 1
+	IF t0 GOTO LABEL_L6
+	GOTO LABEL_L7
+LABEL_L6:
+	ASSIGN sp[8] 1
+	t0 = sp[8]
+	GOTO LABEL_L8
+LABEL_L7:
+	t1 = EQ sp[0] 2
+	IF t1 GOTO LABEL_L9
+	GOTO LABEL_L10
+LABEL_L9:
+	ASSIGN sp[8] 1
+	t1 = sp[8]
+	GOTO LABEL_L11
+LABEL_L10:
+	t2 = MINUS sp[0] 1
+	PARAM t2 
+	t3 = CALL fibonacci 1
+	t4 = MINUS sp[0] 2
+	PARAM t4 
+	t5 = CALL fibonacci 1
+	t2 = PLUS t3 t5
+	ASSIGN sp[8] t2
+	t1 = sp[8]
+LABEL_L11:
+	t0 = t1
+LABEL_L8:
+RETURN sp[8] 
+
+END FUNCTION Fibonacci.fibonacci
+
+
+FUNCTION Fibonacci.is_even
+	ASSIGN sp[8] sp[0]
+	t0 = LT sp[8] 0
+	IF t0 GOTO LABEL_L12
+	GOTO LABEL_L13
+LABEL_L12:
+	t0 = NEG sp[8] 
+	PARAM t0 
+	t1 = CALL is_even 1
+	t0 = t1
+	GOTO LABEL_L14
+LABEL_L13:
+	t1 = EQ 0 sp[8]
+	IF t1 GOTO LABEL_L15
+	GOTO LABEL_L16
+LABEL_L15:
+	t1 = true
+	GOTO LABEL_L17
+LABEL_L16:
+	t2 = EQ 1 sp[8]
+	IF t2 GOTO LABEL_L18
+	GOTO LABEL_L19
+LABEL_L18:
+	t2 = false
+	GOTO LABEL_L20
+LABEL_L19:
+	t3 = MINUS sp[8] 2
+	PARAM t3 
+	t4 = CALL is_even 1
+	t2 = t4
+LABEL_L20:
+	t1 = t2
+LABEL_L17:
+	t0 = t1
+LABEL_L14:
+RETURN t0 
+
+END FUNCTION Fibonacci.is_even
+
+END CLASS Fibonacci
+
+
+CLASS Factorial
+	ASSIGN sp_GLOBAL[0] 0
+
+FUNCTION Factorial.factorial
+	t0 = PLUS 1 1
+	t0 = MULT t0 2
+	ASSIGN sp[8] t0
+	t0 = EQ sp[0] 0
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	ASSIGN sp[8] 0
+	t0 = sp[8]
+	GOTO LABEL_L2
+LABEL_L1:
+	t1 = EQ sp[0] 1
+	IF t1 GOTO LABEL_L3
+	GOTO LABEL_L4
+LABEL_L3:
+	ASSIGN sp[8] 1
+	t1 = sp[8]
+	GOTO LABEL_L5
+LABEL_L4:
+	t2 = MINUS sp[0] 1
+	PARAM t2 
+	t3 = CALL factorial 1
+	t2 = MULT sp[0] t3
+	ASSIGN sp[8] t2
+	t1 = sp[8]
+LABEL_L5:
+
+
+
+struct Animal:
+String name = ""
+Int age = 0
+endstruct Animal
+
+struct Dog:
+String name = ""
+Int age = 0
+String breed = "Golden"
+String barkSound = ""
+Bool isRescued = true
+Dog mom = None
+endstruct Dog
+
+struct Cat:
+String name = ""
+Int age = 0
+String color = ""
+endstruct Cat
+
+struct Main:
+endstruct Main
+begin_func Animal_setAge
+obj = param1
+a = param2
+obj.age = a
+end_func Animal_setAge
+begin_func Animal_isOld
+obj = param1
+t0 = obj.age
+t1 = 10
+t2 = t0 > t1
+return t2
+end_func Animal_isOld
+begin_func Dog_setAge
+obj = param1
+a = param2
+obj.age = a
+end_func Dog_setAge
+begin_func Dog_isOld
+obj = param1
+t0 = obj.age
+t1 = 10
+t2 = t0 > t1
+return t2
+end_func Dog_isOld
+begin_func Dog_barkTimes
+obj = param1
+times = param2
+t0 = 1
+t1 = times - t0
+return t1
+end_func Dog_barkTimes
+begin_func Dog_setMom
+obj = param1
+m = param2
+obj.mom = m
+t0 = obj.mom
+return t0
+end_func Dog_setMom
+begin_func Cat_setAge
+obj = param1
+a = param2
+obj.age = a
+end_func Cat_setAge
+begin_func Cat_isOld
+obj = param1
+t0 = obj.age
+t1 = 10
+t2 = t0 > t1
+return t2
+end_func Cat_isOld
+begin_func Cat_getLifes
+obj = param1
+t0 = 9
+return t0
+end_func Cat_getLifes
+begin_func Main_main
+obj = param1
+x = alloc(Dog)
+y = 0
+x = alloc(Dog)
+t0 = x
+param_push1 = t0
+param_push2 = alloc(Dog)
+t1 = call Dog_setMom
+t2 = x
+param_push1 = t2
+t3 = 5
+param_push2 = t3
+t4 = call Dog_setAge
+t5 = x
+param_push1 = t5
+t6 = call Dog_isOld
+t7 = t6
+IF_Main_main_0
+ifFalse t7 == 1 goto NOT_Main_main_0
+t8 = x
+param_push1 = t8
+t9 = 3
+param_push2 = t9
+t10 = call Dog_barkTimes
+y = t10
+NOT_Main_main_0
+t11 = x
+param_push1 = t11
+t12 = 1
+param_push2 = t12
+t13 = call Dog_barkTimes
+y = t13
+end_func Main_main

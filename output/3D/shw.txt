@@ -1,0 +1,24 @@
+CLASS Main INHERITS ['IO'] SIZE 8
+	sp_GLOBAL[0] = "Stefano\n"
+	sp_GLOBAL[4] = "\n"
+
+FUNCTION Main.print_name SIZE 4
+	REGISTRO[0] = CALL Main.out_string(sp_GLOBAL[0])
+	RETURN REGISTRO[0]
+END FUNCTION Main.print_name
+
+FUNCTION Main.main SIZE 12
+	sp[0] = "Hey"
+	sp[4] = 2
+	REGISTRO[4] = sp[4] + sp[4]
+	sp[4] = REGISTRO[4]
+	sp[0] = "Pulido\n"
+	REGISTRO[0] = CALL Main.out_string(sp[0])
+	REGISTRO[0] = CALL Main.print_name()
+	REGISTRO[0] = CALL Main.out_string(sp_GLOBAL[4])
+	REGISTRO[0] = CALL Main.out_string("Hello World\n")
+	RETURN REGISTRO[0]
+END FUNCTION Main.main
+END CLASS Main
+
+CALL Main.main

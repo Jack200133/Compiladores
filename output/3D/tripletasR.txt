@@ -1,0 +1,32 @@
+CLASS Main
+
+FUNCTION Main.factorial
+	t0 = EQ sp[0] true
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	t0 = 1
+	GOTO LABEL_L2
+LABEL_L1:
+	t1 = MINUS sp[0] 1
+	PARAM t1 
+	t2 = CALL factorial 1
+	t1 = MULT sp[0] t2
+	t0 = t1
+LABEL_L2:
+RETURN t0 
+
+END FUNCTION Main.factorial
+
+
+FUNCTION Main.main
+	ASSIGN sp_GLOBAL[0] 5
+	PARAM sp_GLOBAL[0] 
+	t0 = CALL factorial 1
+	ASSIGN sp_GLOBAL[0] t0
+RETURN sp_GLOBAL[0] 
+
+END FUNCTION Main.main
+
+END CLASS Main
+

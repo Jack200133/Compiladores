@@ -1,0 +1,779 @@
+CLASS A
+	ASSIGN sp_GLOBAL[0] 0
+	ASSIGN sp_GLOBAL[8] 0
+
+FUNCTION A.value
+RETURN sp_GLOBAL[0] 
+
+END FUNCTION A.value
+
+
+FUNCTION A.set_var
+	ASSIGN sp_GLOBAL[0] sp[0]
+	t0 = self
+RETURN t0 
+
+END FUNCTION A.set_var
+
+
+FUNCTION A.method1
+	t0 = self
+RETURN t0 
+
+END FUNCTION A.method1
+
+
+FUNCTION A.method2
+	t0 = PLUS sp[0] sp[8]
+	ASSIGN sp[16] t0
+	PARAM sp[16] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+END FUNCTION A.method2
+
+
+FUNCTION A.method3
+	t0 = NEG sp[0] 
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+END FUNCTION A.method3
+
+
+FUNCTION A.method4
+	t0 = LT sp[8] sp[0]
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	t1 = MINUS sp[0] sp[8]
+	ASSIGN sp[16] t1
+	PARAM sp[16] 
+	t1 = CALL NEW A.set_var 1
+	t0 = t1
+	GOTO LABEL_L2
+LABEL_L1:
+	t0 = MINUS sp[8] sp[0]
+	ASSIGN sp[24] t0
+	PARAM sp[24] 
+	t0 = CALL NEW A.set_var 1
+	t0 = t0
+LABEL_L2:
+RETURN t0 
+
+END FUNCTION A.method4
+
+
+FUNCTION A.method5
+	ASSIGN sp[8] 1
+	ASSIGN sp[16] 1
+	t0 = LE sp[16] sp[0]
+LABEL_L3:
+	IF t0 GOTO LABEL_L5
+	GOTO LABEL_L4
+LABEL_L5:
+	t0 = MULT sp[8] sp[16]
+	ASSIGN sp[8] t0
+	t0 = PLUS sp[16] 1
+	ASSIGN sp[16] t0
+	GOTO LABEL_L3
+LABEL_L4:
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+END FUNCTION A.method5
+
+END CLASS A
+
+CLASS B INHERITS ['A']
+	ASSIGN sp_GLOBAL[0] 0
+	ASSIGN sp_GLOBAL[8] 0
+
+FUNCTION B.value
+RETURN sp_GLOBAL[0] 
+
+FUNCTION B.value
+
+
+FUNCTION B.set_var
+	ASSIGN sp_GLOBAL[0] sp[0]
+	t0 = self
+RETURN t0 
+
+FUNCTION B.set_var
+
+
+FUNCTION B.method1
+	t0 = self
+RETURN t0 
+
+FUNCTION B.method1
+
+
+FUNCTION B.method2
+	t0 = PLUS sp[0] sp[8]
+	ASSIGN sp[16] t0
+	PARAM sp[16] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION B.method2
+
+
+FUNCTION B.method3
+	t0 = NEG sp[0] 
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION B.method3
+
+
+FUNCTION B.method4
+	t0 = LT sp[8] sp[0]
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	t1 = MINUS sp[0] sp[8]
+	ASSIGN sp[16] t1
+	PARAM sp[16] 
+	t1 = CALL NEW A.set_var 1
+	t0 = t1
+	GOTO LABEL_L2
+LABEL_L1:
+	t0 = MINUS sp[8] sp[0]
+	ASSIGN sp[24] t0
+	PARAM sp[24] 
+	t0 = CALL NEW A.set_var 1
+	t0 = t0
+LABEL_L2:
+RETURN t0 
+
+FUNCTION B.method4
+
+
+FUNCTION B.method5
+	ASSIGN sp[8] 1
+	ASSIGN sp[16] 1
+	t0 = LE sp[16] sp[0]
+LABEL_L3:
+	IF t0 GOTO LABEL_L5
+	GOTO LABEL_L4
+LABEL_L5:
+	t0 = MULT sp[8] sp[16]
+	ASSIGN sp[8] t0
+	t0 = PLUS sp[16] 1
+	ASSIGN sp[16] t0
+	GOTO LABEL_L3
+LABEL_L4:
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION B.method5
+
+
+FUNCTION B.method5
+	t0 = MULT sp[0] sp[0]
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW B.set_var 1
+RETURN t0 
+
+END FUNCTION B.method5
+
+END CLASS B
+
+CLASS C INHERITS ['B']
+	ASSIGN sp_GLOBAL[0] 0
+	ASSIGN sp_GLOBAL[8] 0
+
+FUNCTION C.value
+RETURN sp_GLOBAL[0] 
+
+FUNCTION C.value
+
+
+FUNCTION C.set_var
+	ASSIGN sp_GLOBAL[0] sp[0]
+	t0 = self
+RETURN t0 
+
+FUNCTION C.set_var
+
+
+FUNCTION C.method1
+	t0 = self
+RETURN t0 
+
+FUNCTION C.method1
+
+
+FUNCTION C.method2
+	t0 = PLUS sp[0] sp[8]
+	ASSIGN sp[16] t0
+	PARAM sp[16] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION C.method2
+
+
+FUNCTION C.method3
+	t0 = NEG sp[0] 
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION C.method3
+
+
+FUNCTION C.method4
+	t0 = LT sp[8] sp[0]
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	t1 = MINUS sp[0] sp[8]
+	ASSIGN sp[16] t1
+	PARAM sp[16] 
+	t1 = CALL NEW A.set_var 1
+	t0 = t1
+	GOTO LABEL_L2
+LABEL_L1:
+	t0 = MINUS sp[8] sp[0]
+	ASSIGN sp[24] t0
+	PARAM sp[24] 
+	t0 = CALL NEW A.set_var 1
+	t0 = t0
+LABEL_L2:
+RETURN t0 
+
+FUNCTION C.method4
+
+
+FUNCTION C.method5
+	ASSIGN sp[8] 1
+	ASSIGN sp[16] 1
+	t0 = LE sp[16] sp[0]
+LABEL_L3:
+	IF t0 GOTO LABEL_L5
+	GOTO LABEL_L4
+LABEL_L5:
+	t0 = MULT sp[8] sp[16]
+	ASSIGN sp[8] t0
+	t0 = PLUS sp[16] 1
+	ASSIGN sp[16] t0
+	GOTO LABEL_L3
+LABEL_L4:
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION C.method5
+
+
+FUNCTION C.method5
+	t0 = MULT sp[0] sp[0]
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW B.set_var 1
+RETURN t0 
+
+FUNCTION C.method5
+
+
+FUNCTION C.method6
+	t0 = NEG sp[0] 
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+END FUNCTION C.method6
+
+
+FUNCTION C.method5
+	t0 = MULT sp[0] sp[0]
+	t0 = MULT t0 sp[0]
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW B.set_var 1
+RETURN t0 
+
+END FUNCTION C.method5
+
+END CLASS C
+
+CLASS D INHERITS ['B']
+	ASSIGN sp_GLOBAL[0] 0
+	ASSIGN sp_GLOBAL[8] 0
+
+FUNCTION D.value
+RETURN sp_GLOBAL[0] 
+
+FUNCTION D.value
+
+
+FUNCTION D.set_var
+	ASSIGN sp_GLOBAL[0] sp[0]
+	t0 = self
+RETURN t0 
+
+FUNCTION D.set_var
+
+
+FUNCTION D.method1
+	t0 = self
+RETURN t0 
+
+FUNCTION D.method1
+
+
+FUNCTION D.method2
+	t0 = PLUS sp[0] sp[8]
+	ASSIGN sp[16] t0
+	PARAM sp[16] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION D.method2
+
+
+FUNCTION D.method3
+	t0 = NEG sp[0] 
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION D.method3
+
+
+FUNCTION D.method4
+	t0 = LT sp[8] sp[0]
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	t1 = MINUS sp[0] sp[8]
+	ASSIGN sp[16] t1
+	PARAM sp[16] 
+	t1 = CALL NEW A.set_var 1
+	t0 = t1
+	GOTO LABEL_L2
+LABEL_L1:
+	t0 = MINUS sp[8] sp[0]
+	ASSIGN sp[24] t0
+	PARAM sp[24] 
+	t0 = CALL NEW A.set_var 1
+	t0 = t0
+LABEL_L2:
+RETURN t0 
+
+FUNCTION D.method4
+
+
+FUNCTION D.method5
+	ASSIGN sp[8] 1
+	ASSIGN sp[16] 1
+	t0 = LE sp[16] sp[0]
+LABEL_L3:
+	IF t0 GOTO LABEL_L5
+	GOTO LABEL_L4
+LABEL_L5:
+	t0 = MULT sp[8] sp[16]
+	ASSIGN sp[8] t0
+	t0 = PLUS sp[16] 1
+	ASSIGN sp[16] t0
+	GOTO LABEL_L3
+LABEL_L4:
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION D.method5
+
+
+FUNCTION D.method5
+	t0 = MULT sp[0] sp[0]
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW B.set_var 1
+RETURN t0 
+
+FUNCTION D.method5
+
+
+FUNCTION D.method7
+	ASSIGN sp[8] sp[0]
+	t0 = LT sp[8] 0
+	IF t0 GOTO LABEL_L6
+	GOTO LABEL_L7
+LABEL_L6:
+	t1 = NEG sp[8] 
+	PARAM t1 
+	t2 = CALL method7 1
+	t0 = t2
+	GOTO LABEL_L8
+LABEL_L7:
+	t1 = EQ 0 sp[8]
+	IF t1 GOTO LABEL_L9
+	GOTO LABEL_L10
+LABEL_L9:
+	t1 = true
+	GOTO LABEL_L11
+LABEL_L10:
+	t3 = EQ 1 sp[8]
+	IF t3 GOTO LABEL_L12
+	GOTO LABEL_L13
+LABEL_L12:
+	t3 = false
+	GOTO LABEL_L14
+LABEL_L13:
+	t4 = EQ 2 sp[8]
+	IF t4 GOTO LABEL_L15
+	GOTO LABEL_L16
+LABEL_L15:
+	t4 = false
+	GOTO LABEL_L17
+LABEL_L16:
+	t5 = MINUS sp[8] 3
+	PARAM t5 
+	t6 = CALL method7 1
+	t4 = t6
+LABEL_L17:
+	t3 = t4
+LABEL_L14:
+	t1 = t3
+LABEL_L11:
+	t0 = t1
+LABEL_L8:
+RETURN t0 
+
+END FUNCTION D.method7
+
+END CLASS D
+
+CLASS E INHERITS ['D']
+	ASSIGN sp_GLOBAL[0] 0
+	ASSIGN sp_GLOBAL[8] 0
+
+FUNCTION E.value
+RETURN sp_GLOBAL[0] 
+
+FUNCTION E.value
+
+
+FUNCTION E.set_var
+	ASSIGN sp_GLOBAL[0] sp[0]
+	t0 = self
+RETURN t0 
+
+FUNCTION E.set_var
+
+
+FUNCTION E.method1
+	t0 = self
+RETURN t0 
+
+FUNCTION E.method1
+
+
+FUNCTION E.method2
+	t0 = PLUS sp[0] sp[8]
+	ASSIGN sp[16] t0
+	PARAM sp[16] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION E.method2
+
+
+FUNCTION E.method3
+	t0 = NEG sp[0] 
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION E.method3
+
+
+FUNCTION E.method4
+	t0 = LT sp[8] sp[0]
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	t1 = MINUS sp[0] sp[8]
+	ASSIGN sp[16] t1
+	PARAM sp[16] 
+	t1 = CALL NEW A.set_var 1
+	t0 = t1
+	GOTO LABEL_L2
+LABEL_L1:
+	t0 = MINUS sp[8] sp[0]
+	ASSIGN sp[24] t0
+	PARAM sp[24] 
+	t0 = CALL NEW A.set_var 1
+	t0 = t0
+LABEL_L2:
+RETURN t0 
+
+FUNCTION E.method4
+
+
+FUNCTION E.method5
+	ASSIGN sp[8] 1
+	ASSIGN sp[16] 1
+	t0 = LE sp[16] sp[0]
+LABEL_L3:
+	IF t0 GOTO LABEL_L5
+	GOTO LABEL_L4
+LABEL_L5:
+	t0 = MULT sp[8] sp[16]
+	ASSIGN sp[8] t0
+	t0 = PLUS sp[16] 1
+	ASSIGN sp[16] t0
+	GOTO LABEL_L3
+LABEL_L4:
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+FUNCTION E.method5
+
+
+FUNCTION E.method5
+	t0 = MULT sp[0] sp[0]
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW B.set_var 1
+RETURN t0 
+
+FUNCTION E.method5
+
+
+FUNCTION E.method7
+	ASSIGN sp[8] sp[0]
+	t0 = LT sp[8] 0
+	IF t0 GOTO LABEL_L6
+	GOTO LABEL_L7
+LABEL_L6:
+	t1 = NEG sp[8] 
+	PARAM t1 
+	t2 = CALL method7 1
+	t0 = t2
+	GOTO LABEL_L8
+LABEL_L7:
+	t1 = EQ 0 sp[8]
+	IF t1 GOTO LABEL_L9
+	GOTO LABEL_L10
+LABEL_L9:
+	t1 = true
+	GOTO LABEL_L11
+LABEL_L10:
+	t3 = EQ 1 sp[8]
+	IF t3 GOTO LABEL_L12
+	GOTO LABEL_L13
+LABEL_L12:
+	t3 = false
+	GOTO LABEL_L14
+LABEL_L13:
+	t4 = EQ 2 sp[8]
+	IF t4 GOTO LABEL_L15
+	GOTO LABEL_L16
+LABEL_L15:
+	t4 = false
+	GOTO LABEL_L17
+LABEL_L16:
+	t5 = MINUS sp[8] 3
+	PARAM t5 
+	t6 = CALL method7 1
+	t4 = t6
+LABEL_L17:
+	t3 = t4
+LABEL_L14:
+	t1 = t3
+LABEL_L11:
+	t0 = t1
+LABEL_L8:
+RETURN t0 
+
+FUNCTION E.method7
+
+
+FUNCTION E.method6
+	t0 = DIV sp[0] 8
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+END FUNCTION E.method6
+
+END CLASS E
+
+CLASS F
+
+FUNCTION F.method5
+	t0 = DIV sp[0] 8
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+END FUNCTION F.method5
+
+END CLASS F
+
+CLASS H INHERITS ['IO']
+
+FUNCTION H.method9
+	t0 = DIV sp[0] 8
+	ASSIGN sp[8] t0
+	PARAM sp[8] 
+	t0 = CALL NEW A.set_var 1
+RETURN t0 
+
+END FUNCTION H.method9
+
+END CLASS H
+
+CLASS Main
+	ASSIGN sp_GLOBAL[288] true
+
+FUNCTION Main.is_even
+	ASSIGN sp[8] sp[0]
+	t0 = LT sp[8] 0
+	IF t0 GOTO LABEL_L18
+	GOTO LABEL_L19
+LABEL_L18:
+	t1 = NEG sp[8] 
+	PARAM t1 
+	t2 = CALL is_even 1
+	t0 = t2
+	GOTO LABEL_L20
+LABEL_L19:
+	t1 = EQ 0 sp[8]
+	IF t1 GOTO LABEL_L21
+	GOTO LABEL_L22
+LABEL_L21:
+	t1 = true
+	GOTO LABEL_L23
+LABEL_L22:
+	t3 = EQ 1 sp[8]
+	IF t3 GOTO LABEL_L24
+	GOTO LABEL_L25
+LABEL_L24:
+	t3 = false
+	GOTO LABEL_L26
+LABEL_L25:
+	t4 = MINUS sp[8] 2
+	PARAM t4 
+	t5 = CALL is_even 1
+	t3 = t5
+LABEL_L26:
+	t1 = t3
+LABEL_L23:
+	t0 = t1
+LABEL_L20:
+RETURN t0 
+
+END FUNCTION Main.is_even
+
+
+FUNCTION Main.main
+	ASSIGN sp_GLOBAL[16] NEW A
+	ASSIGN sp_GLOBAL[305] NEW H
+	PARAM 2 
+	t0 = CALL sp_GLOBAL[16].set_var 1
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[305].out_int 1
+	t0 = CALL NEW IO.in_string 0
+	ASSIGN sp_GLOBAL[289] t0
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL is_even 1
+	IF t1 GOTO LABEL_L27
+	GOTO LABEL_L28
+LABEL_L27:
+	PARAM " es par!\n" 
+	t1 = CALL NEW IO.out_string 1
+	t0 = t1
+	GOTO LABEL_L29
+LABEL_L28:
+	PARAM " es impar!\n" 
+	t2 = CALL NEW IO.out_string 1
+	t0 = t2
+LABEL_L29:
+	PARAM 3 
+	t0 = CALL NEW A.set_var 1
+	ASSIGN sp_GLOBAL[152] t0
+	t0 = CALL sp_GLOBAL[16].value 0
+	t1 = CALL sp_GLOBAL[152].value 0
+	PARAM t0 
+	PARAM t1 
+	t2 = CALL NEW B.method2 2
+	ASSIGN sp_GLOBAL[16] t2
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[305].out_int 1
+	PARAM "\n" 
+	t0 = CALL NEW IO.out_string 1
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL NEW C.method6 1
+	ASSIGN sp_GLOBAL[16] t1
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[305].out_int 1
+	PARAM "\n" 
+	t0 = CALL NEW IO.out_string 1
+	PARAM 5 
+	t0 = CALL NEW A.set_var 1
+	ASSIGN sp_GLOBAL[152] t0
+	t0 = CALL sp_GLOBAL[16].value 0
+	t1 = CALL sp_GLOBAL[152].value 0
+	PARAM t0 
+	PARAM t1 
+	t2 = CALL NEW D.method4 2
+	ASSIGN sp_GLOBAL[16] t2
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[305].out_int 1
+	PARAM "\n" 
+	t0 = CALL NEW IO.out_string 1
+	PARAM 5 
+	t0 = CALL sp_GLOBAL[16].set_var 1
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL NEW C.A.method5 1
+	ASSIGN sp_GLOBAL[16] t1
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[305].out_int 1
+	PARAM "\n" 
+	t0 = CALL NEW IO.out_string 1
+	PARAM 6 
+	t0 = CALL sp_GLOBAL[16].set_var 1
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL NEW C.B.method5 1
+	ASSIGN sp_GLOBAL[16] t1
+	t0 = CALL sp_GLOBAL[16].value 0
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[305].out_int 1
+	PARAM "\n" 
+	t0 = CALL NEW IO.out_string 1
+	t0 = self
+RETURN t0 
+
+END FUNCTION Main.main
+
+END CLASS Main
+

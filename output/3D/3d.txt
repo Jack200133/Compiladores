@@ -1,0 +1,92 @@
+CLASS Factorial
+	t1 = 0
+	sp_GLOBAL[0] = t1
+
+FUNCTION Factorial.factorial
+	t3 = 0
+	t4 = sp[0] == t3
+	IF t4 GOTO label1
+	GOTO label2
+LABEL label1
+	t5 = 0
+	sp[8] = t5
+	GOTO label3
+LABEL label2
+	t6 = 1
+	t7 = sp[0] == t6
+	IF t7 GOTO label4
+	GOTO label5
+LABEL label4
+	t8 = 1
+	sp[8] = t8
+	GOTO label6
+LABEL label5
+	t9 = 1
+	t10 = sp[0] - t9
+	t11 = factorial(t10)
+	t12 = sp[0] * t11
+	sp[8] = t12
+LABEL label6 
+
+LABEL label3 
+
+RETURN sp[8]
+END FUNCTION Factorial.factorial
+END CLASS Factorial
+
+CLASS Fibonacci
+	t13 = 0
+	sp_GLOBAL[0] = t13
+
+FUNCTION Fibonacci.fibonacci
+	t15 = 1
+	t16 = sp_GLOBAL[0] == t15
+	IF t16 GOTO label7
+	GOTO label8
+LABEL label7
+	t17 = 1
+	sp[8] = t17
+	GOTO label9
+LABEL label8
+	t18 = 2
+	t19 = sp[0] == t18
+	IF t19 GOTO label10
+	GOTO label11
+LABEL label10
+	t20 = 1
+	sp[8] = t20
+	GOTO label12
+LABEL label11
+	t21 = 1
+	t22 = sp[0] - t21
+	t23 = fibonacci(t22)
+	t24 = 2
+	t25 = sp[0] - t24
+	t26 = fibonacci(t25)
+	t27 = t23 + t26
+	sp[8] = t27
+LABEL label12 
+
+LABEL label9 
+
+RETURN sp[8]
+END FUNCTION Fibonacci.fibonacci
+END CLASS Fibonacci
+
+CLASS Main INHERITS ['IO']
+	t28 = 10
+	sp_GLOBAL[0] = t28
+
+FUNCTION Main.main
+	t30 = new Factorial
+	sp_GLOBAL[8] = t30
+	t31 = new Fibonacci
+	sp_GLOBAL[24] = t31
+	t32 = sp_GLOBAL[8].factorial(sp_GLOBAL[0])
+	t33 = out_int(t32)
+	t34 = sp_GLOBAL[24].fibonacci(sp_GLOBAL[0])
+	t35 = out_int(t34)
+	t36 = self
+RETURN t36
+END FUNCTION Main.main
+END CLASS Main

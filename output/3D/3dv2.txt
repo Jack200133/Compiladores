@@ -1,0 +1,88 @@
+CLASS Factorial
+	sp_GLOBAL[0] = 0
+
+FUNCTION Factorial.factorial
+	REGISTRO[0] = sp[0] == 0
+	IF REGISTRO[0] GOTO label1
+	GOTO label2
+LABEL label1
+	sp[8] = 0
+	REGISTRO[4] = sp[8]
+	GOTO label3
+LABEL label2
+	REGISTRO[0] = sp[0] == 1
+	IF REGISTRO[0] GOTO label4
+	GOTO label5
+LABEL label4
+	sp[8] = 1
+	REGISTRO[8] = sp[8]
+	GOTO label6
+LABEL label5
+	REGISTRO[0] = sp[0] - 1
+	REGISTRO[12] = CALL factorial(REGISTRO[0])
+	REGISTRO[0] = sp[0] * REGISTRO[12]
+	sp[8] = REGISTRO[0]
+	REGISTRO[8] = sp[8]
+LABEL label6 
+
+	REGISTRO[4] = REGISTRO[8]
+LABEL label3 
+
+	RETURN sp[8]
+END FUNCTION Factorial.factorial
+END CLASS Factorial
+
+CLASS Fibonacci
+	sp_GLOBAL[0] = 0
+
+FUNCTION Fibonacci.fibonacci
+	REGISTRO[0] = sp_GLOBAL[0] == 1
+	IF REGISTRO[0] GOTO label7
+	GOTO label8
+LABEL label7
+	sp[8] = 1
+	REGISTRO[4] = sp[8]
+	GOTO label9
+LABEL label8
+	REGISTRO[0] = sp[0] == 2
+	IF REGISTRO[0] GOTO label10
+	GOTO label11
+LABEL label10
+	sp[8] = 1
+	REGISTRO[8] = sp[8]
+	GOTO label12
+LABEL label11
+	REGISTRO[0] = sp[0] - 1
+	REGISTRO[12] = CALL fibonacci(REGISTRO[0])
+	REGISTRO[0] = sp[0] - 2
+	REGISTRO[16] = CALL fibonacci(REGISTRO[0])
+	REGISTRO[0] = REGISTRO[12] + REGISTRO[16]
+	sp[8] = REGISTRO[0]
+	REGISTRO[8] = sp[8]
+LABEL label12 
+
+	REGISTRO[4] = REGISTRO[8]
+LABEL label9 
+
+	RETURN sp[8]
+END FUNCTION Fibonacci.fibonacci
+END CLASS Fibonacci
+
+CLASS Main INHERITS ['IO']
+	sp_GLOBAL[0] = 10
+
+FUNCTION Main.main
+	REGISTRO[0] = new Factorial
+	sp_GLOBAL[8] = REGISTRO[0]
+	REGISTRO[4] = new Fibonacci
+	sp_GLOBAL[24] = REGISTRO[4]
+	REGISTRO[0] = CALL sp_GLOBAL[8].factorial(sp_GLOBAL[0])
+	REGISTRO[4] = CALL out_int(REGISTRO[0])
+	REGISTRO[0] = CALL sp_GLOBAL[24].fibonacci(sp_GLOBAL[0])
+	REGISTRO[4] = CALL out_int(REGISTRO[0])
+	REGISTRO[0] = self
+	RETURN REGISTRO[0]
+END FUNCTION Main.main
+END CLASS Main
+
+CALL Main.main

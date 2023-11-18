@@ -1,0 +1,21 @@
+.data
+.text
+main:
+	li $t0, 10
+	li $t1, 5
+	add $s0, $t0, $t1
+	li $t0, 10
+	li $t1, 5
+	sub $s0, $t0, $t1
+	li $t0, 10
+	li $t1, 5
+	mult $t0, $t1
+	mflo $s0
+	li $t0, 10
+	li $t1, 5
+	div $t0, $t1
+	mflo $s0
+
+#Salida del Programa
+	li $v0, 10
+	syscall
