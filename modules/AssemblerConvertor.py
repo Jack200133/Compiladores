@@ -16,6 +16,8 @@ class AssemblerConvertor:
         self.param_num = 0
         self.ass_temp = []
         self.v_table = {}
+        self.main_isCalled = False
+        self.main_isStarted = False
 
         # self.clean()
         self.convert()
@@ -51,20 +53,38 @@ class AssemblerConvertor:
     def prepare_aritmetic(self, a:str, b:str):
         if a.startswith("t"):
             temp1 = a
+        elif b.startswith("sp_GLOBAL"):
+            pass
+        elif b.startswith("sp"):
+            sp_index = b.split("[")[1]
+            sp_index = sp_index.split("]")[0]
+            sp_index = int(sp_index) + 4
+            temp1 = "s1"
+            assm = f"\tlw ${temp1}, {sp_index}($sp)"
+            self.write(assm)
         else:
-            temp1 = self.getNextTemp()
+            temp1 = "s1"
             self.use_temps.append(temp1)
-            temp1 = f"t{temp1}"
+
             assmbler = f"\tli ${temp1}, {a}"
             self.write(assmbler)
+
+
         if b.startswith("t"):
             temp2 = b
-        elif b.startswith("sp"):
+        elif b.startswith("sp_GLOBAL"):
             pass
+        elif b.startswith("sp"):
+            sp_index = b.split("[")[1]
+            sp_index = sp_index.split("]")[0]
+            sp_index = int(sp_index) + 4
+            temp2 = "s2"
+            assm = f"\tlw ${temp2}, {sp_index}($sp)"
+            self.write(assm)
         else:
-            temp2 = self.getNextTemp()
+            temp2 = "s2"
             self.use_temps.append(temp2)
-            temp2 = f"t{temp2}"
+
             assmbler = f"\tli ${temp2}, {b}"
             self.write(assmbler)
         return temp1, temp2
@@ -86,8 +106,7 @@ class AssemblerConvertor:
                     assmbler = f"\tadd ${restemp}, ${temp1}, ${temp2}"
                     self.write(assmbler)
                     # Liberar temp2
-                    self.use_temps.remove(int(temp1[1:]))  # Free temp1
-                    self.use_temps.remove(int(temp2[1:]))  # Free temp2
+
                 elif opcion[0] == "MINUS":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
@@ -97,8 +116,7 @@ class AssemblerConvertor:
                     assmbler = f"\tsub ${restemp}, ${temp1}, ${temp2}"
                     self.write(assmbler)
                     # Liberar temp2
-                    self.use_temps.remove(int(temp1[1:]))  # Free temp1
-                    self.use_temps.remove(int(temp2[1:]))  # Free temp2
+
                 elif opcion[0] == "MULT":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
@@ -111,8 +129,7 @@ class AssemblerConvertor:
                     assmbler = f"\tmflo ${restemp}"
                     self.write(assmbler)
                     # Liberar temp2
-                    self.use_temps.remove(int(temp1[1:]))  # Free temp1
-                    self.use_temps.remove(int(temp2[1:]))  # Free temp2
+
                 elif opcion[0] == "DIV":
                     restemp = op[0].strip()
                     self.use_stemps.append(int(restemp[1:]))
@@ -125,8 +142,7 @@ class AssemblerConvertor:
                     assmbler = f"\tmflo ${restemp}"
                     self.write(assmbler)
                     # Liberar temp2
-                    self.use_temps.remove(int(temp1[1:]))  # Free temp1
-                    self.use_temps.remove(int(temp2[1:]))  # Free temp2
+
                 
                 # TODO: CALL
                 elif opcion[0] == "CALL":
@@ -147,6 +163,11 @@ class AssemblerConvertor:
                     self.param_num -= int(param_num)
 
             elif instruction.startswith("FUNCTION"):
+                
+                if self.main_isStarted and not self.main_isCalled:
+                    self.write(f"\tjal Main.main")
+                    self.main_isCalled = True
+
                 tokens = instruction.split(" ")
                 name = tokens[1]
                 assmbler = f"\n{name}:"
@@ -157,7 +178,10 @@ class AssemblerConvertor:
                 self.write(assmbler)
                 assmbler = f"\tmove $s1, $a0"
                 self.reserva_memoria_func(tokens)
-                self.write('\tsw $s1, 0($sp)')
+                
+                self.write('\tsw $s7, 0($sp)')
+                self.write('\tlw $s2, 0($sp)')
+                self.write('\tmove $s1, $s2')
             
             elif instruction.startswith("sp"):
                 tokens = instruction.split(" ")
@@ -173,23 +197,39 @@ class AssemblerConvertor:
                     self.assign_spGlobal_param(tokens)
                 elif name.startswith("sp"):
                     self.assign_sp_param(tokens)
+                elif name.startswith('"'):
+
+                    value = instruction.split('PARAM ')[1]
+                    value = value[1:-1]
+                    value = value.replace("\\n", "\n")
+                    value = value.replace("\\t", "\t")
+                    temp = self.reserva_cadena_en_heap(value)
+                    self.write(f"\tmove $a{self.param_num}, $t{temp}")
+                    self.use_temps.remove(temp)
 
 
             elif instruction.startswith("END FUNCTION"):
-
+                if name == "Main":
+                    self.main_isStarted = False
                 tokens = instruction.split(" ")
                 self.write(f"# ======== FIN FUNCION {tokens[2]} ========") # Restaurar el return address
                 self.write(f"\tmove $sp, $fp") # Restaurar el stack pointer
                 self.write(f"\tlw $ra, 4($sp)") # Restaurar el return address
                 self.write(f"\tlw $fp, 0($sp)") # Restaurar el frame pointer
                 self.write(f"\taddi $sp, $sp, 8") # Liberar el espacio del frame pointer y el return address
-                self.write(f"\tjr $ra") # Retornar
+
+                if tokens[2] != "Main.main":
+                    self.write(f"\tjr $ra")
+
 
             elif instruction.startswith("CLASS"):
                 tokens = instruction.split(" ")
                 name = tokens[1]
                 assmbler = f"CLASS_{name}:\n"
                 self.write(assmbler)
+
+                if name == "Main":
+                    self.main_isStarted = True
 
                 self.v_table[name] = []
 
@@ -203,7 +243,7 @@ class AssemblerConvertor:
                 if name.startswith("sp_GLOBAL"):
                     self.assign_sp_global(tokens)
                 elif name.startswith("sp"):
-                    pass
+                    self.assing_sp(tokens)
                 elif name.startswith('"'):
                     temp = self.reserva_cadena_en_heap(value[1:-1])
 
@@ -236,13 +276,20 @@ class AssemblerConvertor:
 
             self.write(f"\tlw $s2, 0($sp)")
             self.write(f"\tmove $s1, $s2")
+        elif func_name == "out_int":
+            self.write(f"# ======== CALL out_int ========")
+            self.write(f"\tmove $a0, $a1")
+            self.write(f"\tjal out_int\n")
+
+            self.write(f"\tlw $s2, 0($sp)")
+            self.write(f"\tmove $s1, $s2")
 
 
 
     def assign_sp_param(self, tokens):
         self.write(f"# ======== PARAM = sp[index] ========")
         sp_index = tokens[1].split("sp[")[1]
-        sp_index = int(sp_index[:-1]) + 8
+        sp_index = int(sp_index[:-1]) + 4
 
         sp_param = self.param_num
         
@@ -285,13 +332,62 @@ class AssemblerConvertor:
             
 
             self.write(f"\tsw $t{temp}, {sp_index}($s7)")
-
+        
+        elif tokens[2].startswith("sp"):
+            temp = self.getLastTemp()
+            self.use_temps.append(temp)
+        elif tokens[2].startswith("t"):
+            temp = self.getLastTemp()
+            self.use_temps.append(temp)
+        elif tokens[2].startswith("NEW"):
+            temp = self.getLastTemp()
+            self.use_temps.append(temp)
         else:
-            temp = self.getNextTemp()
+            temp = self.getLastTemp()
             self.use_temps.append(temp)
 
+            self.write(f"\tli $t{temp}, {tokens[2]}")
+            self.write(f"\tsw $t{temp}, {sp_index}($s7)")
             
             #
+
+
+        self.use_temps.remove(temp)
+
+    def assing_sp(self, tokens):
+        self.write(f"# ======== sp[index] = value ========")
+        sp_index = tokens[1].split("sp[")[1]
+        sp_index = sp_index[:-1]
+        sp_index = int(sp_index) + 4
+
+        if tokens[2].startswith('"'):
+            value = tokens[2][1:-1]
+            value = value.replace("\\n", "\n")
+            value = value.replace("\\t", "\t")
+            tvalue = len(value) +1 
+            temp = self.reserva_bytes_en_heap(tvalue)
+        
+            self.alamcenar_cadena_en_heap(value, temp)
+            
+
+            self.write(f"\tsw $t{temp}, {sp_index}($sp)")
+
+        elif tokens[2].startswith("sp"):
+            temp = self.getLastTemp()
+            self.use_temps.append(temp)
+        elif tokens[2].startswith("t"):
+            temp = self.getLastTemp()
+            self.use_temps.append(temp)
+        elif tokens[2].startswith("NEW"):
+            temp = self.getLastTemp()
+            self.use_temps.append(temp)
+        else:
+            temp = self.getLastTemp()
+            self.use_temps.append(temp)
+
+            self.write(f"\tli $t{temp}, {tokens[2]}")
+            self.write(f"\tsw $t{temp}, {sp_index}($sp)")
+            
 
 
         self.use_temps.remove(temp)

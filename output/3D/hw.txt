@@ -1,15 +1,27 @@
-CLASS Main SIZE 20
+CLASS Main SIZE 24
 	ASSIGN sp_GLOBAL[0] "Stefano\n"
 	ASSIGN sp_GLOBAL[4] "\n"
-	ASSIGN sp_GLOBAL[8] NEW IO
+	ASSIGN sp_GLOBAL[8] 2
+	ASSIGN sp_GLOBAL[12] NEW IO
 
-FUNCTION Main.main SIZE 4
-	PARAM sp_GLOBAL[0] 
-	t0 = CALL sp_GLOBAL[8].out_string 1
+FUNCTION Main.main SIZE 12
+	ASSIGN sp[0] "Hey"
+	ASSIGN sp[4] 2
+	t0 = PLUS sp[4] sp[4]
+	ASSIGN sp[4] t0
+	ASSIGN sp[0] "Pulido\n"
+	PARAM sp[0] 
+	t0 = CALL sp_GLOBAL[12].out_string 1
 	PARAM sp_GLOBAL[4] 
-	t0 = CALL sp_GLOBAL[8].out_string 1
+	t0 = CALL sp_GLOBAL[12].out_string 1
 	PARAM sp_GLOBAL[0] 
-	t0 = CALL sp_GLOBAL[8].out_string 1
+	t0 = CALL sp_GLOBAL[12].out_string 1
+	PARAM sp_GLOBAL[4] 
+	t0 = CALL sp_GLOBAL[12].out_string 1
+	PARAM "Hello World\n" 
+	t0 = CALL sp_GLOBAL[12].out_string 1
+	PARAM sp[4] 
+	t0 = CALL sp_GLOBAL[12].out_int 1
 	RETURN t0 
 
 END FUNCTION Main.main

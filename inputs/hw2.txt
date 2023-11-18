@@ -19,7 +19,7 @@ class Main {
    main(): IO {
     {
         let a : String <- "Hey", b : Int <- 2 in {b <- b + b;};
-        a <- "Pulido\n";
+        enter <- "Pulido\n";
         io.out_string(a);
         print_name();
         io.out_string(enter);
