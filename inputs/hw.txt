@@ -1,21 +1,28 @@
 class Main {
     name : String <- "Stefano\n";
     enter : String <- "\n";
-    alchile: Int <- 3;
     io : IO <- new IO;
 
+   print_name(): IO {
+    {
+        io.out_string(name);
+    }
+   };
 
+   
    print_name2(name2 : String): IO {
     {
         io.out_string(name2);
     }
    };
 
-
    main(): IO {
     {
-        print_name2(name);
-        print_name2("name");
+        enter <- "Pulido\n";
+
+        io.out_string(enter);
+        io.out_string(name);
+
     }
    };
 };

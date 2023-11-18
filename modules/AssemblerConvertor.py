@@ -162,6 +162,16 @@ class AssemblerConvertor:
                     # REVISAR SI TIENE FUNCION RESERVADA
                     for res in self.reserved:
                         if res in opcion[1]:
+
+                            calling = opcion[1].split(".")
+                            clas = calling[0]
+                            if clas.startswith('sp_GLOBAL'):
+                                self.write(f"# ======== sp_GLOBAL[index] ========")
+                                sp_index = clas.split("[")[1]
+                                sp_index = sp_index.split("]")[0]
+                                sp_index = int(sp_index) + 8
+                                self.write(f"\tlw $s2, 0($sp)")
+                                self.write(f"\tlw $s1, {sp_index}($s2)")
                             self.call_reserved(opcion)
                                 
                             is_reserved = True
@@ -178,6 +188,16 @@ class AssemblerConvertor:
                             
                             function_name = calling[1]
                             class_name = calling[0]
+                            if class_name.startswith('sp_GLOBAL'):
+                                self.write(f"# ======== CALL sp_GLOBAL[index] ========")
+                                sp_index = class_name.split("[")[1]
+                                sp_index = sp_index.split("]")[0]
+                                sp_index = int(sp_index) + 8
+                                self.write(f"\tlw $s2, 0($sp)")
+                                self.write(f"\tlw $s1, {sp_index}($s2)")
+
+
+                            
 
 
                         index = self.v_table[class_name].index(opcion[1])
@@ -189,10 +209,12 @@ class AssemblerConvertor:
                         self.write(f"\tmove $a0, $s1")
                         
                         self.write(f"\tjal save_registers")
-                        self.write(f"\tjal $t{temp}")
+                        self.write(f"\tjalr $t{temp}")
                         self.write(f"\tjal restore_registers")
                         restemp = op[0].strip()
                         self.write(f"\tmove ${restemp}, $v0")
+
+
                     self.param_num -= int(param_num)
 
             elif instruction.startswith("FUNCTION"):
@@ -209,13 +231,23 @@ class AssemblerConvertor:
                 self.v_table[class_name].append(name)
 
                 self.write(assmbler)
-                assmbler = f"\tmove $s1, $a0"
-                self.reserva_memoria_func(tokens)
+
+                if name != "Main.main":
+
+                    assmbler = f"\tmove $s1, $a0"
+                    self.write(assmbler)
+                    self.reserva_memoria_func(tokens)
+                    
+                    self.write('\tsw $s1, 0($sp)')
+                else:
+
+                    self.reserva_memoria_func(tokens)
+                    
+                    self.write('\tsw $s7, 0($sp)')
+                    self.write('\tlw $s1, 0($sp)')
+                    self.write('\tmove $s1, $s2')
+
                 
-                self.write('\tsw $s7, 0($sp)')
-                self.write('\tlw $s2, 0($sp)')
-                self.write('\tmove $s1, $s2')
-            
             elif instruction.startswith("sp"):
                 tokens = instruction.split(" ")
                 self.read_sp_param(tokens)
@@ -562,7 +594,6 @@ class AssemblerConvertor:
 
 
     def reserva_memoria_func(self, tokens):
-        self.write("\tmove $s1, $a0")
         self.write(f"# ======== INICIALIZAR DE MEMORIA FUNCION {tokens[1]} ========")
         size = 0
 

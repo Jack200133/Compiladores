@@ -1,5 +1,6 @@
 .data
 vt_Main:
+	.word Main.print_name
 	.word Main.print_name2
 	.word Main.main
 
@@ -60,7 +61,7 @@ restore_registers:
 CLASS_Main:
 
 # ======== RESERVA DE MEMORIA para CLASS_Main ========
-	li $a0, 24
+	li $a0, 20
 	li $v0, 9
 	syscall
 	move $t8, $v0
@@ -125,10 +126,38 @@ CLASS_Main:
 	sb $zero, 1($t8)
 
 	sw $t8, 12($s7)
-# ======== sp_GLOBAL[index] = value ========
-	li $t8, 3
-	sw $t8, 16($s7)
 	jal Main.main
+
+Main.print_name:
+	move $s1, $a0
+# ======== INICIALIZAR DE MEMORIA FUNCION Main.print_name ========
+	addi $sp, $sp, -8
+	sw $fp, 0($sp)
+	sw $ra, 4($sp)
+	move $fp, $sp
+	addi $sp, $sp, -8
+	sw $s1, 0($sp)
+# ======== PARAM = sp_GLOBAL[index] ========
+	lw $s1, 0($sp)
+	lw $a1, 8($s1)
+
+# ======== sp_GLOBAL[index] ========
+	lw $s2, 0($sp)
+	lw $s1, 16($s2)
+# ======== CALL out_string ========
+	move $a0, $a1
+	jal out_string
+
+	lw $s2, 0($sp)
+	move $s1, $s2
+# ======== RETURN t ========
+	move $v0, $t0
+# ======== FIN FUNCION Main.print_name ========
+	move $sp, $fp
+	lw $ra, 4($sp)
+	lw $fp, 0($sp)
+	addi $sp, $sp, 8
+	jr $ra
 
 Main.print_name2:
 	move $s1, $a0
@@ -138,15 +167,16 @@ Main.print_name2:
 	sw $ra, 4($sp)
 	move $fp, $sp
 	addi $sp, $sp, -12
-	sw $s7, 0($sp)
-	lw $s2, 0($sp)
-	move $s1, $s2
+	sw $s1, 0($sp)
 # ======== sp[index] = PARAM_X ========
 	sw $a1, 4($sp)
 
 # ======== PARAM = sp[index] ========
 	lw $a1, 4($sp)
 
+# ======== sp_GLOBAL[index] ========
+	lw $s2, 0($sp)
+	lw $s1, 16($s2)
 # ======== CALL out_string ========
 	move $a0, $a1
 	jal out_string
@@ -163,7 +193,6 @@ Main.print_name2:
 	jr $ra
 
 Main.main:
-	move $s1, $a0
 # ======== INICIALIZAR DE MEMORIA FUNCION Main.main ========
 	addi $sp, $sp, -8
 	sw $fp, 0($sp)
@@ -171,46 +200,59 @@ Main.main:
 	move $fp, $sp
 	addi $sp, $sp, -8
 	sw $s7, 0($sp)
+	lw $s1, 0($sp)
+	move $s1, $s2
+# ======== sp_GLOBAL[index] = value ========
+# ======== RESERVA DE 8 BYTES EN HEAP ========
+	li $t8, 8
+	move $a0, $t8
+	li $v0, 9
+	syscall
+	move $t8, $v0
+# ======== ALMACENAR CADENA EN HEAP ========
+	li $t7, 80
+	sb $t7, 0($t8)
+	li $t7, 117
+	sb $t7, 1($t8)
+	li $t7, 108
+	sb $t7, 2($t8)
+	li $t7, 105
+	sb $t7, 3($t8)
+	li $t7, 100
+	sb $t7, 4($t8)
+	li $t7, 111
+	sb $t7, 5($t8)
+	li $t7, 10
+	sb $t7, 6($t8)
+	sb $zero, 7($t8)
+
+	sw $t8, 12($s7)
+# ======== PARAM = sp_GLOBAL[index] ========
+	lw $s1, 0($sp)
+	lw $a1, 12($s1)
+
+# ======== sp_GLOBAL[index] ========
+	lw $s2, 0($sp)
+	lw $s1, 16($s2)
+# ======== CALL out_string ========
+	move $a0, $a1
+	jal out_string
+
 	lw $s2, 0($sp)
 	move $s1, $s2
 # ======== PARAM = sp_GLOBAL[index] ========
 	lw $s1, 0($sp)
 	lw $a1, 8($s1)
 
-# ======== CALL Main.print_name2 ========
-	lw $s2, 4($s1)
-	lw $t8, 0($s2)
-	move $a0, $s1
-	jal save_registers
-	jal $t8
-	jal restore_registers
-	move $t0, $v0
-# ======== RESERVA DE 5 BYTES EN HEAP ========
-	li $t7, 5
-	move $a0, $t7
-	li $v0, 9
-	syscall
-	move $t7, $v0
-# ======== ALMACENAR CADENA EN HEAP ========
-	li $t6, 110
-	sb $t6, 0($t7)
-	li $t6, 97
-	sb $t6, 1($t7)
-	li $t6, 109
-	sb $t6, 2($t7)
-	li $t6, 101
-	sb $t6, 3($t7)
-	sb $zero, 4($t7)
+# ======== sp_GLOBAL[index] ========
+	lw $s2, 0($sp)
+	lw $s1, 16($s2)
+# ======== CALL out_string ========
+	move $a0, $a1
+	jal out_string
 
-	move $a1, $t7
-# ======== CALL Main.print_name2 ========
-	lw $s2, 4($s1)
-	lw $t7, 0($s2)
-	move $a0, $s1
-	jal save_registers
-	jal $t7
-	jal restore_registers
-	move $t0, $v0
+	lw $s2, 0($sp)
+	move $s1, $s2
 # ======== RETURN t ========
 	move $v0, $t0
 # ======== FIN FUNCION Main.main ========
