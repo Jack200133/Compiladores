@@ -227,22 +227,17 @@ Main.main:
 	sb $zero, 7($t8)
 
 	sw $t8, 12($s7)
+# ======== CALL Main.print_name ========
+	lw $s2, 4($s1)
+	lw $t8, 0($s2)
+	move $a0, $s1
+	jal save_registers
+	jalr $t8
+	jal restore_registers
+	move $t0, $v0
 # ======== PARAM = sp_GLOBAL[index] ========
 	lw $s1, 0($sp)
 	lw $a1, 12($s1)
-
-# ======== sp_GLOBAL[index] ========
-	lw $s2, 0($sp)
-	lw $s1, 16($s2)
-# ======== CALL out_string ========
-	move $a0, $a1
-	jal out_string
-
-	lw $s2, 0($sp)
-	move $s1, $s2
-# ======== PARAM = sp_GLOBAL[index] ========
-	lw $s1, 0($sp)
-	lw $a1, 8($s1)
 
 # ======== sp_GLOBAL[index] ========
 	lw $s2, 0($sp)

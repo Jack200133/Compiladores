@@ -19,9 +19,8 @@ class Main {
    main(): IO {
     {
         enter <- "Pulido\n";
-
+        print_name();
         io.out_string(enter);
-        io.out_string(name);
 
     }
    };

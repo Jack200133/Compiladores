@@ -22,9 +22,8 @@ END FUNCTION Main.print_name2
 
 FUNCTION Main.main SIZE 4
 	ASSIGN sp_GLOBAL[4] "Pulido\n"
+	t0 = CALL Main.print_name 0
 	PARAM sp_GLOBAL[4] 
-	t0 = CALL sp_GLOBAL[8].out_string 1
-	PARAM sp_GLOBAL[0] 
 	t0 = CALL sp_GLOBAL[8].out_string 1
 	RETURN t0 
 
