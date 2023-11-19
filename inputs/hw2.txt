@@ -1,5 +1,5 @@
 class Main {
-    name : String <- "Stefano\n";
+    name : String <- "Carrera\n";
     enter : String <- "\n";
     io : IO <- new IO;
 

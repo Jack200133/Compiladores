@@ -29,7 +29,7 @@ class Mannin inherits Manes {
 };
 
 class Main {
-    name : String <- "Stefano\n";
+    name : String <- "CARRERA\n";
 
     ace : String;
     io : IO <- new IO;

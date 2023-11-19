@@ -507,6 +507,15 @@ class AssemblerConvertor:
             # mover el resultado a temp
             
             self.write(f"\tmove ${restemp}, $v0")
+        elif func_name == "substr":
+            self.write(f"# ======== CALL substr ========")
+            self.write(f"\tmove $a0, $a1")
+            self.write(f"\tmove $a1, $a2")
+            self.write(f"\tmove $a2, $a3")
+            self.write(f"\tjal substr\n")
+
+            self.write(f"\tlw $s2, 0($sp)")
+            self.write(f"\tmove $s1, $s2")
 
 
 
@@ -868,13 +877,47 @@ CLASS_IO:
     move $s6, $s7
     move $s7, $t8
     jr $ra
+
+substr:
+    move $a0, $s1
+    move $a1, $s2
+    move $a2, $s3
+    li $s4, 0
+    add $s5, $s2, $s3
+
+# ======== RESERVAR ESPACIO EN EL HEAP PARA LA NUEVA SUBCADENA ========
+    addi $a2, $a2, 1
+    move $a0, $a2
+    li $v0, 9
+    syscall
+    move $s6, $v0
+    move $t5, $s6
+
+# ======== COPIAR LOS CARACTERES DE LA CADENA ORIGINAL A LA NUEVA SUBCADENA ========
+substr_loop:
+    beq $s4, $s5, substr_end
+    blt $s4, $s2, skip_char
+
+# ======== COPIAR CARACTERES ========
+    lb $t3, 0($s1)
+    sb $t3, 0($s6)
+    addi $s6, $s6, 1
+
+# ======== SALTO DE CARACTERES ========
+skip_char:
+    addi $s4, $s4, 1
+    addi $s1, $s1, 1
+    j substr_loop
+
+# ======== TERMINAR LA FUNCIÓN substr ========
+substr_end:
+    sb $zero, 0($s6)
+    move $v0, $t5
+    jr $ra
+
 """     
         self.write(clas_io)
 
-        # TODO: STRINGS FUNCS
-
-        # TODO substr
-        # Ejemplo en ASS/substr
 
 
     def write(self,triplet):
