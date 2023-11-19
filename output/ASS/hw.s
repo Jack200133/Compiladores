@@ -134,6 +134,7 @@ CLASS_Factorial:
 
 	jr $ra
 
+
 Factorial.factorial:
 	move $s1, $a0
 # ======== INICIALIZAR DE MEMORIA FUNCION Factorial.factorial ========
@@ -146,12 +147,62 @@ Factorial.factorial:
 # ======== sp[index] = PARAM_X ========
 	sw $a1, 4($sp)
 
-# ======== sp[index] = value ========
-	li $t8, 0
-	sw $t8, 8($sp)
+	lw $s1, 4($sp)
+	li $s2, 0
+	beq $s1, $s2, set_true0
+	li $t0, 0
+	j continue_labnel0
+set_true0:
+	li $t0, 1
+continue_labnel0:
+# ======== IF temp ========
+	bne $t0, $zero, label_l0
+
+# ======== GOTO ========
+	j label_l1
+
+# ======== LABEL ========
+label_l0:
+
 # ======== sp[index] = value ========
 	li $t8, 1
 	sw $t8, 8($sp)
+# ======== temp = sp[index] ========
+	lw $t0, 8($sp)
+# ======== GOTO ========
+	j label_l2
+
+# ======== LABEL ========
+label_l1:
+
+	lw $s1, 4($sp)
+	li $s2, 1
+	beq $s1, $s2, set_true1
+	li $t1, 0
+	j continue_labnel1
+set_true1:
+	li $t1, 1
+continue_labnel1:
+# ======== IF temp ========
+	bne $t1, $zero, label_l3
+
+# ======== GOTO ========
+	j label_l4
+
+# ======== LABEL ========
+label_l3:
+
+# ======== sp[index] = value ========
+	li $t8, 1
+	sw $t8, 8($sp)
+# ======== temp = sp[index] ========
+	lw $t1, 8($sp)
+# ======== GOTO ========
+	j label_l5
+
+# ======== LABEL ========
+label_l4:
+
 	lw $s1, 4($sp)
 	li $s2, 1
 	sub $t2, $s1, $s2
@@ -171,6 +222,16 @@ Factorial.factorial:
 	mflo $t2
 # ======== sp[index] = temp# ========
 	sw $t2, 8($sp)
+# ======== temp = sp[index] ========
+	lw $t1, 8($sp)
+# ======== LABEL ========
+label_l5:
+
+# ======== temp = temp ========
+	move $t0, $t1
+# ======== LABEL ========
+label_l2:
+
 # ======== RETURN sp[index] ========
 	lw $v0, 8($sp)
 # ======== FIN FUNCION Factorial.factorial ========
@@ -179,6 +240,7 @@ Factorial.factorial:
 	lw $fp, 0($sp)
 	addi $sp, $sp, 8
 	jr $ra
+
 CLASS_Fibonacci:
 
 # ======== RESERVA DE MEMORIA para CLASS_Fibonacci ========
@@ -223,6 +285,7 @@ CLASS_Fibonacci:
 
 	jr $ra
 
+
 Fibonacci.fibonacci:
 	move $s1, $a0
 # ======== INICIALIZAR DE MEMORIA FUNCION Fibonacci.fibonacci ========
@@ -230,17 +293,67 @@ Fibonacci.fibonacci:
 	sw $fp, 0($sp)
 	sw $ra, 4($sp)
 	move $fp, $sp
-	addi $sp, $sp, -16
+	addi $sp, $sp, -20
 	sw $s1, 0($sp)
 # ======== sp[index] = PARAM_X ========
 	sw $a1, 4($sp)
 
+	lw $s1, 4($sp)
+	li $s2, 0
+	beq $s1, $s2, set_true2
+	li $t0, 0
+	j continue_labnel2
+set_true2:
+	li $t0, 1
+continue_labnel2:
+# ======== IF temp ========
+	bne $t0, $zero, label_l6
+
+# ======== GOTO ========
+	j label_l7
+
+# ======== LABEL ========
+label_l6:
+
+# ======== sp[index] = value ========
+	li $t8, 0
+	sw $t8, 8($sp)
+# ======== temp = sp[index] ========
+	lw $t0, 8($sp)
+# ======== GOTO ========
+	j label_l8
+
+# ======== LABEL ========
+label_l7:
+
+	lw $s1, 4($sp)
+	li $s2, 1
+	beq $s1, $s2, set_true3
+	li $t1, 0
+	j continue_labnel3
+set_true3:
+	li $t1, 1
+continue_labnel3:
+# ======== IF temp ========
+	bne $t1, $zero, label_l9
+
+# ======== GOTO ========
+	j label_l10
+
+# ======== LABEL ========
+label_l9:
+
 # ======== sp[index] = value ========
 	li $t8, 1
 	sw $t8, 8($sp)
-# ======== sp[index] = value ========
-	li $t8, 1
-	sw $t8, 8($sp)
+# ======== temp = sp[index] ========
+	lw $t1, 8($sp)
+# ======== GOTO ========
+	j label_l11
+
+# ======== LABEL ========
+label_l10:
+
 	lw $s1, 4($sp)
 	li $s2, 1
 	sub $t2, $s1, $s2
@@ -272,6 +385,16 @@ Fibonacci.fibonacci:
 	add $t2, $t3, $t4
 # ======== sp[index] = temp# ========
 	sw $t2, 8($sp)
+# ======== temp = sp[index] ========
+	lw $t1, 8($sp)
+# ======== LABEL ========
+label_l11:
+
+# ======== temp = temp ========
+	move $t0, $t1
+# ======== LABEL ========
+label_l8:
+
 # ======== RETURN sp[index] ========
 	lw $v0, 8($sp)
 # ======== FIN FUNCION Fibonacci.fibonacci ========
@@ -280,6 +403,7 @@ Fibonacci.fibonacci:
 	lw $fp, 0($sp)
 	addi $sp, $sp, 8
 	jr $ra
+
 CLASS_Main:
 
 # ======== RESERVA DE MEMORIA para CLASS_Main ========
@@ -325,15 +449,18 @@ Main.main:
 	move $s1, $s2
 # ======== CREAR NUEVO OBJETO Factorial========
 	jal CLASS_Factorial
-	sw $s7, 12($s6)
+	lw $s2, 0($sp)
+	sw $s7, 12($s2)
 	move $s7, $s6
 # ======== CREAR NUEVO OBJETO Fibonacci========
 	jal CLASS_Fibonacci
-	sw $s7, 24($s6)
+	lw $s2, 0($sp)
+	sw $s7, 24($s2)
 	move $s7, $s6
 # ======== CREAR NUEVO OBJETO IO========
 	jal CLASS_IO
-	sw $s7, 36($s6)
+	lw $s2, 0($sp)
+	sw $s7, 36($s2)
 	move $s7, $s6
 # ======== PARAM = sp_GLOBAL[index] ========
 	lw $s1, 0($sp)
@@ -360,6 +487,27 @@ Main.main:
 # ======== CALL out_int ========
 	move $a0, $a1
 	jal out_int
+
+	lw $s2, 0($sp)
+	move $s1, $s2
+# ======== RESERVA DE 2 BYTES EN HEAP ========
+	li $t8, 2
+	move $a0, $t8
+	li $v0, 9
+	syscall
+	move $t8, $v0
+# ======== ALMACENAR CADENA EN HEAP ========
+	li $t7, 10
+	sb $t7, 0($t8)
+	sb $zero, 1($t8)
+
+	move $a1, $t8
+# ======== sp_GLOBAL[index] ========
+	lw $s2, 0($sp)
+	lw $s1, 36($s2)
+# ======== CALL out_string ========
+	move $a0, $a1
+	jal out_string
 
 	lw $s2, 0($sp)
 	move $s1, $s2

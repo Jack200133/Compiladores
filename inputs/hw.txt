@@ -49,6 +49,9 @@ class Main {
         print_name();
         ace <- mm.print_name2();
         io.out_string(ace);
+        io.out_string("\n");
+        ace <- io.in_string();
+        io.out_string(ace);
     }
    };
 };

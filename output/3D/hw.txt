@@ -7,7 +7,7 @@ FUNCTION Factorial.factorial SIZE 12
 	IF t0 GOTO LABEL_L0
 	GOTO LABEL_L1
 LABEL_L0:
-	ASSIGN sp[4] 0
+	ASSIGN sp[4] 1
 	t0 = sp[4]
 	GOTO LABEL_L2
 LABEL_L1:
@@ -37,17 +37,17 @@ END CLASS Factorial
 CLASS Fibonacci SIZE 12
 	ASSIGN sp_GLOBAL[0] 0
 
-FUNCTION Fibonacci.fibonacci SIZE 12
+FUNCTION Fibonacci.fibonacci SIZE 16
 	sp[0] = Int.PARAM_0
-	t0 = EQ sp_GLOBAL[0] 1
+	t0 = EQ sp[0] 0
 	IF t0 GOTO LABEL_L6
 	GOTO LABEL_L7
 LABEL_L6:
-	ASSIGN sp[4] 1
+	ASSIGN sp[4] 0
 	t0 = sp[4]
 	GOTO LABEL_L8
 LABEL_L7:
-	t1 = EQ sp[0] 2
+	t1 = EQ sp[0] 1
 	IF t1 GOTO LABEL_L9
 	GOTO LABEL_L10
 LABEL_L9:
@@ -84,6 +84,8 @@ FUNCTION Main.main SIZE 4
 	t0 = CALL sp_GLOBAL[4].factorial 1
 	PARAM t0 
 	t1 = CALL sp_GLOBAL[28].out_int 1
+	PARAM "\n" 
+	t0 = CALL sp_GLOBAL[28].out_string 1
 	PARAM sp_GLOBAL[0] 
 	t0 = CALL sp_GLOBAL[16].fibonacci 1
 	PARAM t0 
