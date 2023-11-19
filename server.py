@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from graphviz import Digraph
 from antlr4 import *
+from modules.AssemblerConvertor import AssemblerConvertor
 from modules.TreeDirections import TreeDirections
 from modules.ErrorListener import MyErrorListener
 from modules.Semantic import SemanticAnalyzer
@@ -94,13 +95,19 @@ def generate_images():
         with open(treedirectionsInfoPath, 'r') as file:
             treedirectionsInfo = file.read()
 
+        assemblerInfoPath = "./output/ASS/serve.s"
+        AssemblerConvertor(treedirectionsInfo,semantic_analyzer.symbol_table,assemblerInfoPath)
+
+        with open(assemblerInfoPath, 'r') as file:
+            assembler = file.read()
+
         # Devuelve las imágenes en base64 y el array de errores como respuesta JSON
         response = {
             'grafo_image': grafo_base64,
             'symbol_table_image': symbol_table_base64,
             'errors': complete_error_list,
             '3D': treedirectionsInfo,
-            'ASS': '.data\n.text'
+            'ASS': assembler
         }
     
     return jsonify(response)

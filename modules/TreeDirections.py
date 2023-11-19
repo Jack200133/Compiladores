@@ -95,7 +95,9 @@ class TreeDirections(ParseTreeVisitor):
         obj = ctx.getText()
 
         trip = f"CLASS {class_name}"
-        tripletas_inherits = []
+        tripletas_inherits_funcs = {}
+        tripletas_inherits_vars = []
+        funcct_started = ''
         if ctx.INHERITS():  # Si hay herencia
             # Obtenemos el tipo padre
             #tripletas_inherits = []
@@ -118,12 +120,18 @@ class TreeDirections(ParseTreeVisitor):
                     else:
                         if line.startswith("FUNCTION"):
                             func_name = line.split(".")[1]
-                            tripletas_inherits.append(f"FUNCTION {class_name}.{func_name}")
+                            funcct_started = func_name
+                            tripletas_inherits_funcs[funcct_started] = []
+                            tripletas_inherits_funcs[funcct_started].append(f"FUNCTION {class_name}.{func_name}")
                         elif line.startswith("END FUNCTION"):
                             func_name = line.split(".")[1]
-                            tripletas_inherits.append(f"FUNCTION {class_name}.{func_name}")
+                            tripletas_inherits_funcs[funcct_started].append(f"END FUNCTION {class_name}.{func_name}")
+                            funcct_started = ''
                         else:
-                            tripletas_inherits.append(line)
+                            if funcct_started != '':
+                                tripletas_inherits_funcs[funcct_started].append(line)
+                            else:
+                                tripletas_inherits_vars.append(line)
 
         symbol = self.symbol_table.lookup(class_name)
         trip += f" SIZE {symbol.memory_usage}"
@@ -136,14 +144,34 @@ class TreeDirections(ParseTreeVisitor):
         #self.symbol_table.current_scope = symbol
 
         self.write(trip)
-        if len(tripletas_inherits) > 0:
+
+        if len(tripletas_inherits_vars) > 0:
             # Agregar las tripletas de la clase padre
-            for triplet in tripletas_inherits:
+            for triplet in tripletas_inherits_vars:
                 self.write(triplet)
+        
         for child in ctx.children:
             self.visit(child)
-
         self.symbol_table.current_scope = self.symbol_table.current_scope.parent
+        
+        if len(tripletas_inherits_funcs) > 0:
+            # Agregar las tripletas de la clase padre
+            for func in tripletas_inherits_funcs:
+
+                with open(self.output, 'r') as file:
+                    file_txt = file.read()
+                
+                banderin = False
+                formated_T = f"FUNCTION {class_name}.{func}"
+
+                for line in file_txt.split('\n'):
+                    if line.startswith(formated_T):
+                        banderin = True
+
+                if banderin == False:
+
+                    for triplet in tripletas_inherits_funcs[func]:
+                        self.write(triplet)
 
         trip2 = f"END CLASS {class_name}\n"
         self.write(trip2)

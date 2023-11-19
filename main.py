@@ -67,7 +67,7 @@ def recycle_temporals(code):
 def main():
     # # Set up the input and lexer
     # input_stream = FileStream(args.input_file)
-    input_stream = FileStream('./inputs/hw.txt', encoding="utf-8")
+    input_stream = FileStream('./inputs/mirecu.txt', encoding="utf-8")
     #input_stream = FileStream('./coolExp/recur.cl', encoding="utf-8")
     lexer = YAPLLexer(input_stream)
     # Remove the default error listener and add the custom one

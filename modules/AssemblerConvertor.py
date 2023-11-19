@@ -18,6 +18,7 @@ class AssemblerConvertor:
         self.v_table = {}
         self.main_isCalled = False
         self.main_isStarted = False
+        self.current_class = ""
 
         # self.clean()
         self.convert()
@@ -57,7 +58,7 @@ class AssemblerConvertor:
             sp_index = a.split("[")[1]
             sp_index = sp_index.split("]")[0]
             sp_index = int(sp_index) + 8
-            temp1 = "s7"
+            temp1 = "s1"
             assm = f"\tlw ${temp1}, {sp_index}($s7)"
             self.write(assm)
 
@@ -162,7 +163,7 @@ class AssemblerConvertor:
                     # REVISAR SI TIENE FUNCION RESERVADA
                     for res in self.reserved:
                         if res in opcion[1]:
-
+                            restemp = op[0].strip()
                             calling = opcion[1].split(".")
                             clas = calling[0]
                             if clas.startswith('sp_GLOBAL'):
@@ -172,47 +173,58 @@ class AssemblerConvertor:
                                 sp_index = int(sp_index) + 8
                                 self.write(f"\tlw $s2, 0($sp)")
                                 self.write(f"\tlw $s1, {sp_index}($s2)")
-                            self.call_reserved(opcion)
+                            self.call_reserved(opcion,restemp)
                                 
                             is_reserved = True
                             break
                     if not is_reserved:
                         self.write(f"# ======== CALL {opcion[1]} ========")
-
+                        self.write(f"\tlw $s1, 0($sp)")
                         self.write(f"\tlw $s2, 4($s1)")
 
                         # Buscar en v_table
                         calling = opcion[1].split(".")
 
-                        if len(calling) == 2:
                             
-                            function_name = calling[1]
-                            class_name = calling[0]
-                            if class_name.startswith('sp_GLOBAL'):
-                                self.write(f"# ======== CALL sp_GLOBAL[index] ========")
-                                sp_index = class_name.split("[")[1]
-                                sp_index = sp_index.split("]")[0]
-                                sp_index = int(sp_index) + 8
-                                self.write(f"\tlw $s2, 0($sp)")
-                                self.write(f"\tlw $s1, {sp_index}($s2)")
-
-
+                        function_name = calling[1]
+                        class_name = calling[0]
+                        if class_name.startswith('sp_GLOBAL'):
+                            self.write(f"# ======== CALL sp_GLOBAL[index] ========")
+                            sp_index = class_name.split("[")[1]
+                            sp_index = sp_index.split("]")[0]
+                            sp_index = int(sp_index) + 8
+                            self.write(f"\tlw $s2, 0($sp)")
+                            self.write(f"\tlw $s1, {sp_index}($s2)")
                             
+                            temp = self.getLastTemp()
+                            self.use_temps.append(temp)
 
+                            self.write(f"\tlw $s2, 4($s1)")
+                            self.write(f"\tlw $t{temp}, 0($s2)")
+                            self.write(f"\tmove $a0, $s1")
+                            self.write(f"\tjal save_registers")
+                            self.write(f"\tjalr $t{temp}")
+                            self.write(f"\tjal restore_registers")
+                            restemp = op[0].strip()
+                            self.write(f"\tmove ${restemp}, $v0")
+                            self.use_temps.remove(temp)
 
-                        index = self.v_table[class_name].index(opcion[1])
-
-                        temp = self.getLastTemp()
-                        self.use_temps.append(temp)
-
-                        self.write(f"\tlw $t{temp}, {index}($s2)")
-                        self.write(f"\tmove $a0, $s1")
+                        else: 
                         
-                        self.write(f"\tjal save_registers")
-                        self.write(f"\tjalr $t{temp}")
-                        self.write(f"\tjal restore_registers")
-                        restemp = op[0].strip()
-                        self.write(f"\tmove ${restemp}, $v0")
+                            index = self.v_table[class_name].index(opcion[1]) * 4
+
+                            temp = self.getLastTemp()
+                            self.use_temps.append(temp)
+
+                            self.write(f"\tlw $t{temp}, {index}($s2)")
+                            self.write(f"\tmove $a0, $s1")
+                            
+                            self.write(f"\tjal save_registers")
+                            self.write(f"\tjalr $t{temp}")
+                            self.write(f"\tjal restore_registers")
+                            restemp = op[0].strip()
+                            self.write(f"\tmove ${restemp}, $v0")
+                            self.use_temps.remove(temp)
 
 
                     self.param_num -= int(param_num)
@@ -222,6 +234,10 @@ class AssemblerConvertor:
                 if self.main_isStarted and not self.main_isCalled:
                     self.write(f"\tjal Main.main")
                     self.main_isCalled = True
+                elif self.current_class != "Main":
+                    if self.ass_temp[-1] != "\tjr $ra\n":
+                        self.write(f"\n\tjr $ra")
+
 
                 tokens = instruction.split(" ")
                 name = tokens[1]
@@ -271,6 +287,14 @@ class AssemblerConvertor:
                     temp = self.reserva_cadena_en_heap(value)
                     self.write(f"\tmove $a{self.param_num}, $t{temp}")
                     self.use_temps.remove(temp)
+                elif name.startswith("t"):
+                    self.write(f"# ======== PARAM = temp ========")
+                    assm = f"\tmove $a{self.param_num}, ${name}"
+                    self.write(assm)
+                else:
+                    self.write(f"# ======== PARAM = value ========")
+                    assm = f"\tli $a{self.param_num}, {name}"
+                    self.write(assm)
 
 
             elif instruction.startswith("END FUNCTION"):
@@ -299,6 +323,7 @@ class AssemblerConvertor:
                 self.v_table[name] = []
 
                 self.reserva_memoria_class(tokens)
+                self.current_class = name
 
             elif instruction.startswith("ASSIGN"):
                 tokens = instruction.split(" ")
@@ -319,12 +344,12 @@ class AssemblerConvertor:
                 name = tokens[1]
 
                 if name.startswith("sp_GLOBAL"):
-                    self.write(f"#TODO ======== RETURN sp_GLOBAL[index] ========")
+                    self.write(f"# ======== RETURN sp_GLOBAL[index] ========")
                     sp_index = name.split("[")[1]
                     sp_index = sp_index.split("]")[0]
                     sp_index = int(sp_index) + 8
-
-                    self.write(f"\tlw $v0, {sp_index}($s7)")
+                    self.write(f"\tlw $s1, 0($sp)")
+                    self.write(f"\tlw $v0, {sp_index}($s1)")
 
                 elif name.startswith("sp"):
                     self.write(f"# ======== RETURN sp[index] ========")
@@ -356,9 +381,9 @@ class AssemblerConvertor:
 
         self.end()
 
-    def call_reserved(self, tokens):
+    def call_reserved(self, tokens, restemp):
         tipe = tokens[1]
-        func_name = tokens[1].split(".")[1]
+        func_name = tipe.split(".")[1]
         if func_name == "out_string":
             self.write(f"# ======== CALL out_string ========")
             self.write(f"\tmove $a0, $a1")
@@ -373,6 +398,21 @@ class AssemblerConvertor:
 
             self.write(f"\tlw $s2, 0($sp)")
             self.write(f"\tmove $s1, $s2")
+        elif func_name == "in_string":
+            self.write(f"# ======== CALL in_string ========")
+            self.write(f"\tjal in_string\n")
+
+            self.write(f"\tlw $s2, 0($sp)")
+            self.write(f"\tmove $s1, $s2")
+        elif func_name == "in_int":
+            self.write(f"# ======== CALL in_int ========")
+            self.write(f"\tjal in_int\n")
+
+            self.write(f"\tlw $s2, 0($sp)")
+            self.write(f"\tmove $s1, $s2")
+            # mover el resultado a temp
+            
+            self.write(f"\tmove ${restemp}, $v0")
 
 
 
@@ -451,7 +491,15 @@ class AssemblerConvertor:
             self.write(assm)
 
         elif tokens[2].startswith("NEW"):
-            pass
+            
+            self.write(f"# ======== CREAR NUEVO OBJETO {tokens[3]}========")
+        
+            self.write(f"\tjal CLASS_{tokens[3]}")
+            sp_index = tokens[1].split("sp_GLOBAL[")[1]
+            sp_index = sp_index[:-1]
+            sp_index = int(sp_index) + 8
+            self.write(f"\tsw $s7, {sp_index}($s6)")
+            self.write(f"\tmove $s7, $s6")
         else:
             self.write(f"# ======== sp_GLOBAL[index] = value ========")
             temp = self.getLastTemp()
@@ -509,7 +557,15 @@ class AssemblerConvertor:
             self.write(assm)
             
         elif tokens[2].startswith("NEW"):
-            pass
+            self.write(f"# ======== CREAR NUEVO OBJETO {tokens[3]}========")
+        
+            self.write(f"\tjal CLASS_{tokens[3]}")
+            self.write(f"\tlw $s2, {0}($sp)")
+            sp_index = tokens[1].split("sp_GLOBAL[")[1]
+            sp_index = sp_index[:-1]
+            sp_index = int(sp_index) + 8
+            self.write(f"\tsw $s7, {sp_index}($s2)")
+            self.write(f"\tmove $s7, $s6")
         else:
             self.write(f"# ======== sp[index] = value ========")
             temp = self.getLastTemp()
@@ -635,35 +691,71 @@ class AssemblerConvertor:
         self.write("in_string:")
         self.write("\tli $v0, 8")
         self.write("\tsyscall")
+
         self.write("\tjr $ra\n")
 
-        self.write("save_registers:")
-        self.write("\taddi $sp, $sp, -36")
-        self.write("\tsw $t0, 0($sp)")
-        self.write("\tsw $t1, 4($sp)")
-        self.write("\tsw $t2, 8($sp)")
-        self.write("\tsw $t3, 12($sp)")
-        self.write("\tsw $t4, 16($sp)")
-        self.write("\tsw $t5, 20($sp)")
-        self.write("\tsw $t6, 24($sp)")
-        self.write("\tsw $t7, 28($sp)")
-        self.write("\tsw $t8, 32($sp)")
-        self.write("\tsw $t9, 36($sp)")
-        self.write("\tjr $ra\n")
+        save_restoree ="""
+save_registers:
+    addi $sp, $sp, -36
+    sw $t0, 0($sp)
+    sw $t1, 4($sp)
+    sw $t2, 8($sp)
+    sw $t3, 12($sp)
+    sw $t4, 16($sp)
+    sw $t5, 20($sp)
+    sw $t6, 24($sp)
+    sw $t7, 28($sp)
+    sw $t8, 32($sp)
+    jr $ra
 
-        self.write("restore_registers:")
-        self.write("\tlw $t0, 0($sp)")
-        self.write("\tlw $t1, 4($sp)")
-        self.write("\tlw $t2, 8($sp)")
-        self.write("\tlw $t3, 12($sp)")
-        self.write("\tlw $t4, 16($sp)")
-        self.write("\tlw $t5, 20($sp)")
-        self.write("\tlw $t6, 24($sp)")
-        self.write("\tlw $t7, 28($sp)")
-        self.write("\tlw $t8, 32($sp)")
-        self.write("\tlw $t9, 36($sp)")
-        self.write("\taddi $sp, $sp, 36")
-        self.write("\tjr $ra\n")
+
+restore_registers:
+    lw $t0, 0($sp)
+    lw $t1, 4($sp)
+    lw $t2, 8($sp)
+    lw $t3, 12($sp)
+    lw $t4, 16($sp)
+    lw $t5, 20($sp)
+    lw $t6, 24($sp)
+    lw $t7, 28($sp)
+    lw $t8, 32($sp)
+    addi $sp, $sp, 36
+    jr $ra
+
+"""
+        self.write(save_restoree)
+
+
+        clas_io = """
+# ======== CREAR CLASE IO ========
+CLASS_IO:
+
+# ======== RESERVAR ESPACIO EN EL HEAP PARA LA CLASE Object ========
+    li $a0, 8
+    li $v0, 9
+    syscall
+    move $t8, $v0
+
+# ======== RESERVAR 3 BYTES EN EL HEAP ========
+    li $t7, 3
+    move $a0, $t7
+    li $v0, 9
+    syscall
+    move $t7, $v0
+
+# ======== ALMACENAR CADENA EN HEAP ========
+    li $t6, 73
+    sb $t6, 0($t7)
+    li $t6, 79
+    sb $t6, 1($t7)
+    sb $zero, 2($t7)
+
+    sw $t7, 0($t8)
+    move $s6, $s7
+    move $s7, $t8
+    jr $ra
+"""     
+        self.write(clas_io)
 
         # TODO: STRINGS FUNCS
         # TODO concat

@@ -237,12 +237,12 @@ class SemanticAnalyzer(ParseTreeVisitor):
         self.symbol_table.close_scope()
 
         self.symbol_table.add(Symbol(
-            "in_string", "String", "FeatureDef", "in_string -> String", "IO.in_string"))
+            "in_string", "String", "FeatureDef", "in_string -> String", "IO.in_string",memory_usage=4))
         self.symbol_table.open_scope("in_string", "String")
         self.symbol_table.close_scope()
 
         self.symbol_table.add(
-            Symbol("in_int", "Int", "FeatureDef", "in_int -> Int", "IO.in_int"))
+            Symbol("in_int", "Int", "FeatureDef", "in_int -> Int", "IO.in_int",memory_usage=4))
         self.symbol_table.open_scope("in_int", "Int")
         self.symbol_table.close_scope()
 
@@ -400,6 +400,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
 
         myscope = self.symbol_table.current_scope
 
+        
         if type not in ["Bool", "Int", "String", "SELF_TYPE", "Object"]:
             funcSymbol = self.symbol_table.lookup(type)
             mem_usage = funcSymbol.memory_usage
@@ -410,8 +411,13 @@ class SemanticAnalyzer(ParseTreeVisitor):
                         memory_usage=mem_usage)
         else: 
             symbol = Symbol(name, type, 'FeatureDef',
-                            f"{dev} -> {type}", dev, myscope=myscope)
-        self.symbol_table.add(symbol)
+                            f"{dev} -> {type}", dev, myscope=myscope,
+                            )
+            
+        if sym is None:
+            self.symbol_table.add(symbol)
+        if sym is not None:
+            sym.scope = f"{class_name}.{name}"
 
         buscarFirma = False
         if sym is not None and sym.is_heredado == True:
@@ -462,6 +468,7 @@ class SemanticAnalyzer(ParseTreeVisitor):
         # TODO:
         if ctx.LPAREN():
             # print(ctx.getText())
+            obj = ctx.getText()
             returns = []
             args = []
             args_ctx = []

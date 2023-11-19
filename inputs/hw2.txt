@@ -24,6 +24,12 @@ class Main {
         print_name();
         io.out_string(enter);
         io.out_string("Hello World\n");
+        io.out_int(2);
+        io.out_string("\n");
+        io.out_int(b);
+        io.out_string("\n");
+        b <- io.in_int();
+        io.out_int(b*2);
     }
    };
 };

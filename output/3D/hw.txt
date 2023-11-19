@@ -1,30 +1,94 @@
-CLASS Main SIZE 20
-	ASSIGN sp_GLOBAL[0] "Stefano\n"
-	ASSIGN sp_GLOBAL[4] "\n"
-	ASSIGN sp_GLOBAL[8] NEW IO
+CLASS Factorial SIZE 12
+	ASSIGN sp_GLOBAL[0] 0
 
-FUNCTION Main.print_name SIZE 4
-	PARAM sp_GLOBAL[0] 
-	t0 = CALL sp_GLOBAL[8].out_string 1
-	RETURN t0 
+FUNCTION Factorial.factorial SIZE 12
+	sp[0] = Int.PARAM_0
+	t0 = EQ sp[0] 0
+	IF t0 GOTO LABEL_L0
+	GOTO LABEL_L1
+LABEL_L0:
+	ASSIGN sp[4] 0
+	t0 = sp[4]
+	GOTO LABEL_L2
+LABEL_L1:
+	t1 = EQ sp[0] 1
+	IF t1 GOTO LABEL_L3
+	GOTO LABEL_L4
+LABEL_L3:
+	ASSIGN sp[4] 1
+	t1 = sp[4]
+	GOTO LABEL_L5
+LABEL_L4:
+	t2 = MINUS sp[0] 1
+	PARAM t2 
+	t3 = CALL Factorial.factorial 1
+	t2 = MULT sp[0] t3
+	ASSIGN sp[4] t2
+	t1 = sp[4]
+LABEL_L5:
+	t0 = t1
+LABEL_L2:
+	RETURN sp[4] 
 
-END FUNCTION Main.print_name
+END FUNCTION Factorial.factorial
 
+END CLASS Factorial
 
-FUNCTION Main.print_name2 SIZE 8
-	sp[0] = String.PARAM_0
-	PARAM sp[0] 
-	t0 = CALL sp_GLOBAL[8].out_string 1
-	RETURN t0 
+CLASS Fibonacci SIZE 12
+	ASSIGN sp_GLOBAL[0] 0
 
-END FUNCTION Main.print_name2
+FUNCTION Fibonacci.fibonacci SIZE 12
+	sp[0] = Int.PARAM_0
+	t0 = EQ sp_GLOBAL[0] 1
+	IF t0 GOTO LABEL_L6
+	GOTO LABEL_L7
+LABEL_L6:
+	ASSIGN sp[4] 1
+	t0 = sp[4]
+	GOTO LABEL_L8
+LABEL_L7:
+	t1 = EQ sp[0] 2
+	IF t1 GOTO LABEL_L9
+	GOTO LABEL_L10
+LABEL_L9:
+	ASSIGN sp[4] 1
+	t1 = sp[4]
+	GOTO LABEL_L11
+LABEL_L10:
+	t2 = MINUS sp[0] 1
+	PARAM t2 
+	t3 = CALL Fibonacci.fibonacci 1
+	t2 = MINUS sp[0] 2
+	PARAM t2 
+	t4 = CALL Fibonacci.fibonacci 1
+	t2 = PLUS t3 t4
+	ASSIGN sp[4] t2
+	t1 = sp[4]
+LABEL_L11:
+	t0 = t1
+LABEL_L8:
+	RETURN sp[4] 
 
+END FUNCTION Fibonacci.fibonacci
+
+END CLASS Fibonacci
+
+CLASS Main SIZE 40
+	ASSIGN sp_GLOBAL[0] 10
 
 FUNCTION Main.main SIZE 4
-	ASSIGN sp_GLOBAL[4] "Pulido\n"
-	t0 = CALL Main.print_name 0
-	PARAM sp_GLOBAL[4] 
-	t0 = CALL sp_GLOBAL[8].out_string 1
+	ASSIGN sp_GLOBAL[4] NEW Factorial
+	ASSIGN sp_GLOBAL[16] NEW Fibonacci
+	ASSIGN sp_GLOBAL[28] NEW IO
+	PARAM sp_GLOBAL[0] 
+	t0 = CALL sp_GLOBAL[4].factorial 1
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[28].out_int 1
+	PARAM sp_GLOBAL[0] 
+	t0 = CALL sp_GLOBAL[16].fibonacci 1
+	PARAM t0 
+	t1 = CALL sp_GLOBAL[28].out_int 1
+	t0 = self
 	RETURN t0 
 
 END FUNCTION Main.main
